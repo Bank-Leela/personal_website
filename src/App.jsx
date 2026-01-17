@@ -16,10 +16,10 @@ function App() {
       <div className="fixed inset-0 -z-10 h-screen w-full">
         {/* Make sure your gif is in the 'public' folder and named 'hero-bg.gif' */}
         <img 
-          src="/hero-bg.gif" 
+          src="/background.gif" 
           className="w-full h-full object-cover" 
           alt="background" 
-        />
+          />
         {/* This darkens the GIF slightly so your white text is easy to read */}
         <div className="absolute inset-0 bg-black/40"></div>
       </div>
