@@ -22,7 +22,7 @@ function App() {
         <img 
           src="/background2.gif" 
           className="w-full h-full object-cover" 
-          alt="background" 
+          alt="background2" 
         />
         {/* Subtle overlay to help white text pop */}
         <div className="absolute inset-0 bg-black/30"></div>
