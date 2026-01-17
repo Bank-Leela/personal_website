@@ -9,63 +9,81 @@ function App() {
     { title: "SkyCast AI", description: "Weather prediction app using machine learning to forecast localized micro-climates.", tags: ["Python", "React", "API"], repo: "#", demo: "#" },
   ];
 
+  const scrollToWork = () => {
+    document.getElementById('work')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <div className="relative selection:bg-blue-500/40">
+    <div className="relative selection:bg-blue-500/40 bg-black">
       
-      {/* 1. FIXED BACKGROUND: This stays in place while you scroll */}
+      {/* 1. FIXED BACKGROUND */}
       <div className="fixed inset-0 -z-10 h-screen w-full">
-        {/* Make sure your gif is in the 'public' folder and named 'hero-bg.gif' */}
+        {/* Path updated to match your pushed file name exactly */}
         <img 
           src="/background.gif" 
           className="w-full h-full object-cover" 
           alt="background" 
-          />
-        {/* This darkens the GIF slightly so your white text is easy to read */}
-        <div className="absolute inset-0 bg-black/40"></div>
+        />
+        {/* Subtle overlay to help white text pop */}
+        <div className="absolute inset-0 bg-black/30"></div>
       </div>
 
-      {/* 2. CONTENT LAYER: This moves over the background */}
+      {/* 2. CONTENT LAYER */}
       <div className="relative z-10">
         
         {/* Glassmorphism Nav */}
         <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/50 backdrop-blur-md">
           <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-            <span className="text-xl font-black tracking-tighter">PORTFOLIO.</span>
-            <div className="flex gap-8 text-sm font-medium text-gray-400">
-              <a href="#work" className="hover:text-blue-400 transition-colors">Work</a>
-              <a href="#contact" className="hover:text-blue-400 transition-colors">Contact</a>
+            <span className="text-xl font-black tracking-tighter text-white">PORTFOLIO.</span>
+            <div className="flex gap-8 text-sm font-medium text-white/70">
+              <a href="#work" className="hover:text-white transition-colors">Work</a>
+              <a href="#contact" className="hover:text-white transition-colors">Contact</a>
             </div>
           </div>
         </nav>
 
-        {/* Hero Section (Transparent background to show the GIF) */}
+        {/* Hero Section */}
         <header className="relative h-screen flex items-center px-6 max-w-6xl mx-auto">
           <div className="relative z-10">
-            <p className="text-blue-500 font-mono mb-4 tracking-widest uppercase text-sm">Available for work 2026</p>
+            {/* Changed to white */}
+            <p className="text-white font-mono mb-4 tracking-widest uppercase text-sm opacity-90">
+              Available for work 2026
+            </p>
+            
             <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter mb-8 leading-[0.85]">
               Bank Leelathanapipat
             </h1>
-            <p className="max-w-xl text-gray-300 text-lg md:text-xl mb-10 leading-relaxed">
+            
+            {/* Changed description to white/90 */}
+            <p className="max-w-xl text-white/90 text-lg md:text-xl mb-10 leading-relaxed">
               Specializing in high-end web applications and interactive 3D experiences. 
               Turning complex problems into elegant, code-driven solutions.
             </p>
             
             <div className="flex gap-4">
-              <button className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full font-bold transition-all transform hover:scale-105 active:scale-95">
+              <button 
+                onClick={scrollToWork}
+                className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full font-bold transition-all transform hover:scale-105 active:scale-95"
+              >
                 View Projects
               </button>
-              <div className="flex items-center gap-4 px-6">
-                <Github className="text-gray-400 hover:text-white cursor-pointer" />
-                <Linkedin className="text-gray-400 hover:text-white cursor-pointer" />
+              <div className="flex items-center gap-6 px-4">
+                {/* Updated with your specific links */}
+                <a href="https://github.com/Bank-Leela" target="_blank" rel="noreferrer">
+                  <Github className="text-white/60 hover:text-white cursor-pointer transition-colors" size={28} />
+                </a>
+                <a href="https://www.linkedin.com/in/bank-leelathanapipat" target="_blank" rel="noreferrer">
+                  <Linkedin className="text-white/60 hover:text-white cursor-pointer transition-colors" size={28} />
+                </a>
               </div>
             </div>
           </div>
         </header>
 
-        {/* 3. THE TRANSITION: This fades the GIF out into solid black */}
+        {/* 3. THE TRANSITION: Fades GIF out into solid black */}
         <div className="h-40 bg-gradient-to-b from-transparent to-[#050505]"></div>
 
-        {/* 4. SOLID BLACK SECTION: Your work and contact info live here */}
+        {/* 4. SOLID BLACK SECTION */}
         <main className="bg-[#050505]">
           {/* Project Section */}
           <section id="work" className="max-w-6xl mx-auto px-6 py-24">
@@ -74,7 +92,7 @@ function App() {
                 <h2 className="text-4xl font-bold tracking-tight mb-2 text-white">Selected Works</h2>
                 <div className="h-1 w-20 bg-blue-600" />
               </div>
-              <ArrowDown className="text-gray-700 animate-bounce" />
+              <ArrowDown className="text-white/30 animate-bounce" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -87,8 +105,8 @@ function App() {
           {/* Contact Section */}
           <footer id="contact" className="max-w-6xl mx-auto px-6 py-32 border-t border-white/5">
             <div className="text-center">
-              <h2 className="text-5xl font-bold mb-6">Let's create something.</h2>
-              <a href="mailto:hello@yoursite.com" className="text-2xl text-blue-400 hover:underline decoration-2 underline-offset-8">
+              <h2 className="text-5xl font-bold mb-6 text-white">Let's create something.</h2>
+              <a href="mailto:hello@yoursite.com" className="text-2xl text-blue-400 hover:text-blue-300 hover:underline decoration-2 underline-offset-8 transition-all">
                 hello@yoursite.com
               </a>
             </div>
