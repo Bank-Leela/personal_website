@@ -14,7 +14,7 @@ function App() {
   };
 
   return (
-    <div className="relative selection:bg-blue-500/40 bg-black">
+    <div className="relative selection:bg-blue-500/40">
       
       {/* 1. FIXED BACKGROUND */}
       <div className="fixed inset-0 -z-10 h-screen w-full">
