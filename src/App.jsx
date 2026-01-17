@@ -20,7 +20,7 @@ function App() {
       <div className="fixed inset-0 -z-10 h-screen w-full">
         {/* Path updated to match your pushed file name exactly */}
         <img 
-          src="/background.gif" 
+          src="/background2.gif" 
           className="w-full h-full object-cover" 
           alt="background" 
         />
