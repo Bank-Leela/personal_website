@@ -106,8 +106,11 @@ function App() {
           <footer id="contact" className="max-w-6xl mx-auto px-6 py-32 border-t border-white/5">
             <div className="text-center">
               <h2 className="text-5xl font-bold mb-6 text-white">Let's create something.</h2>
-              <a href="mailto:hello@yoursite.com" className="text-2xl text-blue-400 hover:text-blue-300 hover:underline decoration-2 underline-offset-8 transition-all">
-                hello@yoursite.com
+                <a 
+                  href="mailto:nleelath@uwaterloo.ca" 
+                  className="text-2xl text-white hover:text-blue-400 hover:underline decoration-2 underline-offset-8 transition-all"
+                >
+                nleelath@uwaterloo.ca
               </a>
             </div>
           </footer>
