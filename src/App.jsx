@@ -34,19 +34,18 @@ function App() {
     {
       name: "Badminton",
       image: "kv.jpg",
-      description:
-        "Playing competitive matches and working on footwork and smashes.",
+      description: "Inspired by the technical precision and tactical brilliance of Kunlavut Vitidsarn, I enjoy studying the mechanics of the game and applying elite strategies to the court."
     },
     {
-      name: "IoT Tinkering",
-      image: "",
-      description: "Building custom smart home sensors and automation scripts.",
+      name: "Anime",
+      image: "frieren.jpg",
+      description: "In my free time, I watch anime and read some manga. Some favorite anime I watch so far are: Gotoubun no Hanayome, Your Name, Clannad, Charlotte, Reborn, and Love, Chunibyo & Other Delusions!",
     },
     {
       name: "Gaming",
-      image: "",
+      image: "minecraft.avif",
       description:
-        "Competitive strategy games and exploring immersive RPG worlds.",
+        "Strategy and teamwork focused. I enjoy the tactical depth of Valorant, the sandbox creativity of Minecraft, and the high-pressure coordination required in co-op horror like Phasmophobia and Devour.",
     },
   ];
 
