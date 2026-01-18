@@ -9,6 +9,12 @@ function App() {
     { title: "SkyCast AI", description: "Weather prediction app using machine learning to forecast localized micro-climates.", tags: ["Python", "React", "API"], repo: "#", demo: "#" },
   ];
 
+  const hobbies = [
+    { name: "Photography", icon: "📷", description: "Capturing architecture and street life around Waterloo." },
+    { name: "IoT Tinkering", icon: "🔧", description: "Building custom smart home sensors and automation scripts." },
+    { name: "Gaming", icon: "🎮", description: "Competitive strategy games and exploring immersive RPG worlds." }
+  ];
+
   const scrollToWork = () => {
     document.getElementById('work')?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -37,6 +43,7 @@ function App() {
             <span className="text-xl font-black tracking-tighter text-white">PORTFOLIO.</span>
             <div className="flex gap-8 text-sm font-medium text-white/70">
               <a href="#work" className="hover:text-white transition-colors">Work</a>
+              <a href="#hobbies" className="hover:text-white transition-colors">Hobbies</a>
               <a href="#contact" className="hover:text-white transition-colors">Contact</a>
             </div>
           </div>
@@ -98,6 +105,29 @@ function App() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {projects.map((p, i) => (
                 <ProjectCard key={i} {...p} />
+              ))}
+            </div>
+          </section>
+
+          {/* Hobby Section */}
+          <section id="hobbies" className="max-w-6xl mx-auto px-6 py-24 border-t border-white/5">
+            <div className="mb-16">
+              <h2 className="text-4xl font-bold tracking-tight mb-2 text-white">Beyond the Code</h2>
+              <div className="h-1 w-20 bg-blue-600" />
+              <p className="mt-6 text-white/60 max-w-xl">
+                When I'm not in the lab or debugging React, you can find me exploring these interests.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {hobbies.map((hobby, i) => (
+                <div key={i} className="group p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all duration-300">
+                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300 inline-block">
+                    {hobby.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">{hobby.name}</h3>
+                  <p className="text-white/50 leading-relaxed">{hobby.description}</p>
+                </div>
               ))}
             </div>
           </section>
