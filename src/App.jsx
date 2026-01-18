@@ -31,25 +31,19 @@ function App() {
   ];
 
   const hobbies = [
-    { 
-      name: "Badminton", 
-      icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="15.5" cy="8.5" r="5.5" /><line x1="11.5" y1="12.5" x2="4" y2="20" /><path d="M11 17.5L14.5 14" /><path d="M18 4l2 2" />
-        </svg>
-      ),
-      image: "kv.jpg", 
-      description: "Playing competitive matches and working on footwork and smashes." 
+    {
+      name: "Badminton",
+      image: "kv.jpg",
+      description:
+        "Playing competitive matches and working on footwork and smashes.",
     },
     {
       name: "IoT Tinkering",
-      icon: "🔧",
       image: "",
       description: "Building custom smart home sensors and automation scripts.",
     },
     {
       name: "Gaming",
-      icon: "🎮",
       image: "",
       description:
         "Competitive strategy games and exploring immersive RPG worlds.",
@@ -204,17 +198,24 @@ function App() {
               {hobbies.map((hobby, i) => (
                 <div
                   key={i}
-                  className="group p-8 rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all duration-300"
+                  className="rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all group overflow-hidden"
                 >
-                  <div className="text-4xl mb-4 group-hover:scale-110 transition-transform duration-300 inline-block">
-                    {hobby.icon}
+                  {/* Hobby Image */}
+                  <div className="aspect-video w-full overflow-hidden">
+                    <img
+                      src={hobby.image}
+                      alt={hobby.name}
+                      className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                    />
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-2">
-                    {hobby.name}
-                  </h3>
-                  <p className="text-white/50 leading-relaxed">
-                    {hobby.description}
-                  </p>
+
+                  {/* Text Content */}
+                  <div className="p-8">
+                    <h3 className="text-xl font-bold text-white mb-2">
+                      {hobby.name}
+                    </h3>
+                    <p className="text-white/50">{hobby.description}</p>
+                  </div>
                 </div>
               ))}
             </div>
