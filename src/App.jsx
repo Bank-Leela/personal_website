@@ -111,12 +111,13 @@ function App() {
             <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter mb-8 leading-[0.85]">
               Bank Leelathanapipat
             </h1>
+            <p className="text-xl md:text-2xl font-bold text-white mb-8 tracking-tight opacity-90">
+            Comp Eng '30 | UWaterloo
+            </p>
 
             {/* Changed description to white/90 */}
             <p className="max-w-xl text-white/90 text-lg md:text-xl mb-10 leading-relaxed">
-              Specializing in high-end web applications and interactive 3D
-              experiences. Turning complex problems into elegant, code-driven
-              solutions.
+              Focused on mastering VLSI design and computer architecture to innovate the future of GPU development
             </p>
 
             <div className="flex gap-4">
