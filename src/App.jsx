@@ -200,7 +200,7 @@ function App() {
                   className="rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all group overflow-hidden"
                 >
                   {/* Hobby Image */}
-                  <div className="aspect-[3/4] w-full overflow-hidden">
+                  <div className="aspect-video w-full overflow-hidden">
                     <img
                       src={hobby.image}
                       alt={hobby.name}
