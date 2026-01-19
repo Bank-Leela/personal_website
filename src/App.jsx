@@ -41,7 +41,6 @@ function App() {
             href={social.href}
             target="_blank"
             rel="noreferrer"
-            // CHANGED: hover:border-blue-500 and hover:text-blue-500
             className="w-12 h-12 flex items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-500/10 transition-all duration-300"
             title={social.label}
           >
@@ -221,13 +220,13 @@ function App() {
         <div className="h-40 bg-gradient-to-b from-transparent to-[#050505]"></div>
 
         <main className="bg-[#050505]">
-          {/* PROFESSIONAL JOURNEY - Font size increased (text-base) */}
+          {/* PROFESSIONAL JOURNEY */}
           <section id="experience" className="max-w-6xl mx-auto px-6 py-24">
-            <div className="mb-20">
-              <h2 className="text-base uppercase tracking-[0.4em] text-white/40 mb-4 font-black">
+            <div className="mb-20 group">
+              <h2 className="text-2xl uppercase tracking-[0.4em] text-white/40 mb-4 font-black transition-colors duration-300 hover:text-blue-500 cursor-default">
                 Professional Journey
               </h2>
-              <div className="h-[1px] w-full bg-white/10" />
+              <div className="h-[1px] w-full bg-white/10 group-hover:bg-blue-500/50 transition-colors duration-300" />
             </div>
 
             <div className="space-y-24">
@@ -282,16 +281,16 @@ function App() {
             </div>
           </section>
 
-          {/* SELECTED WORKS - Unified Header Style */}
+          {/* SELECTED WORKS */}
           <section
             id="work"
             className="max-w-6xl mx-auto px-6 py-24 border-t border-white/5"
           >
-            <div className="mb-20">
-              <h2 className="text-base uppercase tracking-[0.4em] text-white/40 mb-4 font-black">
+            <div className="mb-20 group">
+              <h2 className="text-2xl uppercase tracking-[0.4em] text-white/40 mb-4 font-black transition-colors duration-300 hover:text-blue-500 cursor-default">
                 Selected Works
               </h2>
-              <div className="h-[1px] w-full bg-white/10" />
+              <div className="h-[1px] w-full bg-white/10 group-hover:bg-blue-500/50 transition-colors duration-300" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -301,16 +300,20 @@ function App() {
             </div>
           </section>
 
-          {/* BEYOND THE CODE - Unified Header Style */}
+          {/* BEYOND THE CODE */}
           <section
             id="hobbies"
             className="max-w-6xl mx-auto px-6 py-24 border-t border-white/5"
           >
-            <div className="mb-20">
-              <h2 className="text-base uppercase tracking-[0.4em] text-white/40 mb-4 font-black">
+            <div className="mb-20 group">
+              <h2 className="text-2xl uppercase tracking-[0.4em] text-white/40 mb-4 font-black transition-colors duration-300 hover:text-blue-500 cursor-default">
                 Beyond the Code
               </h2>
-              <div className="h-[1px] w-full bg-white/10" />
+              <div className="h-[1px] w-full bg-white/10 group-hover:bg-blue-500/50 transition-colors duration-300" />
+              <p className="mt-6 text-white/60 max-w-xl font-bold">
+                When I'm not in the lab or debugging React, you can find me
+                exploring these interests.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
