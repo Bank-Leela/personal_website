@@ -14,16 +14,16 @@ function App() {
     },
     {
       title: "Upcoming Project",
-      description: "",
-      tags: "",
+      description: "...",
+      tags: "[]",
       repo: "#",
       link: "#",
     },
     {
       title: "Upcoming Project",
       description:
-        "",
-      tags: "",
+        "...",
+      tags: "[]",
       repo: "#",
       link: "#",
     },
