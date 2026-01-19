@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 function App() {
+  // Circular Social Icons Component
   const SocialLinks = () => {
     return (
       <div className="flex items-center gap-3">
@@ -49,6 +50,7 @@ function App() {
       </div>
     );
   };
+
   const experience = [
     {
       company: "IEEE",
@@ -203,35 +205,15 @@ function App() {
               innovate the future of GPU development
             </p>
 
-            <div className="flex gap-4">
+            {/* INTEGRATED SOCIAL LINKS HERE */}
+            <div className="flex flex-wrap items-center gap-6">
               <button
                 onClick={scrollToExperience}
-                className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full font-bold transition-all transform hover:scale-105 active:scale-95"
+                className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full font-bold transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-600/20"
               >
                 View Experience
               </button>
-              <div className="flex items-center gap-6 px-4">
-                <a
-                  href="https://github.com/Bank-Leela"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Github
-                    className="text-white/60 hover:text-white cursor-pointer transition-colors"
-                    size={28}
-                  />
-                </a>
-                <a
-                  href="https://www.linkedin.com/in/bank-leelathanapipat"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  <Linkedin
-                    className="text-white/60 hover:text-white cursor-pointer transition-colors"
-                    size={28}
-                  />
-                </a>
-              </div>
+              <SocialLinks />
             </div>
           </div>
         </header>
@@ -239,7 +221,6 @@ function App() {
         <div className="h-40 bg-gradient-to-b from-transparent to-[#050505]"></div>
 
         <main className="bg-[#050505]">
-          {/* Professional Journey Section */}
           <section id="experience" className="max-w-6xl mx-auto px-6 py-24">
             <div className="mb-20">
               <h2 className="text-sm uppercase tracking-[0.3em] text-white/40 mb-4 font-black">
@@ -300,14 +281,13 @@ function App() {
             </div>
           </section>
 
-          {/* Selected Works Section */}
           <section
             id="work"
             className="max-w-6xl mx-auto px-6 py-24 border-t border-white/5"
           >
-            <div className="flex items-end justify-between mb-16">
+            <div className="flex items-end justify-between mb-16 text-white">
               <div>
-                <h2 className="text-4xl font-bold tracking-tight mb-2 text-white">
+                <h2 className="text-4xl font-bold tracking-tight mb-2">
                   Selected Works
                 </h2>
                 <div className="h-1 w-20 bg-blue-600" />
@@ -322,7 +302,6 @@ function App() {
             </div>
           </section>
 
-          {/* Hobby Section */}
           <section
             id="hobbies"
             className="max-w-6xl mx-auto px-6 py-24 border-t border-white/5"
@@ -351,7 +330,6 @@ function App() {
                       className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
                     />
                   </div>
-
                   <div className="p-8">
                     <h3 className="text-xl font-bold text-white mb-2">
                       {hobby.name}
