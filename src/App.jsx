@@ -5,28 +5,28 @@ import { Mail, Linkedin, Github, ArrowDown, MapPin } from "lucide-react";
 function App() {
   const projects = [
     {
-      title: "Neuro-Link UI",
+      title: "Badminton Tracker",
       description:
-        "A dark-themed interface for neural network visualization using Three.js and React.",
-      tags: ["React", "Three.js", "Tailwind"],
-      repo: "#",
-      demo: "#",
+        "A full-stack match analytics platform. Built with a React frontend and MongoDB backend to track real-time scores and historical match performance.",
+      tags: ["MERN Stack", "Tailwind CSS", "Data Analytics"],
+      repo: "https://github.com/nleelath/badminton_tracker",
+      link: "#",
     },
     {
-      title: "Vault Keeper",
+      title: "Upcoming Project",
       description:
-        "Encrypted password manager with biometric simulation and cloud sync.",
-      tags: ["Node.js", "AES-256", "React"],
+        "Hardware-focused development exploring GPU microarchitectures and parallel processing optimization.",
+      tags: ["Hardware", "VLSI", "Architecture"],
       repo: "#",
-      demo: "#",
+      link: "#",
     },
     {
-      title: "SkyCast AI",
+      title: "Upcoming Project",
       description:
-        "Weather prediction app using machine learning to forecast localized micro-climates.",
-      tags: ["Python", "React", "API"],
+        "Low-level systems project focused on high-performance computing and memory management.",
+      tags: ["C++", "Systems", "Optimization"],
       repo: "#",
-      demo: "#",
+      link: "#",
     },
   ];
 
@@ -34,12 +34,14 @@ function App() {
     {
       name: "Badminton",
       image: "kv.jpg",
-      description: "Inspired by the technical precision and tactical brilliance of Kunlavut Vitidsarn, I enjoy studying the mechanics of the game and applying elite strategies to the court."
+      description:
+        "Inspired by the technical precision and tactical brilliance of Kunlavut Vitidsarn, I enjoy studying the mechanics of the game and applying elite strategies to the court.",
     },
     {
       name: "Anime",
       image: "frieren.jpg",
-      description: "In my free time, I watch anime and read some manga. Some favorite anime I watch so far are: Gotoubun no Hanayome, Your Name, Clannad, Charlotte, Reborn, and Love, Chunibyo & Other Delusions!",
+      description:
+        "In my free time, I watch anime and read some manga. Some favorite anime I watch so far are: Gotoubun no Hanayome, Your Name, Clannad, Charlotte, Reborn, and Love, Chunibyo & Other Delusions!",
     },
     {
       name: "Gaming",
@@ -112,12 +114,13 @@ function App() {
               Bank Leelathanapipat
             </h1>
             <p className="text-xl md:text-2xl font-bold text-white mb-8 tracking-tight opacity-90">
-            Comp Eng '30 | UWaterloo
+              Comp Eng '30 | UWaterloo
             </p>
 
             {/* Changed description to white/90 */}
             <p className="max-w-xl text-white/90 text-lg md:text-xl mb-10 leading-relaxed">
-              Focused on mastering VLSI design and computer architecture to innovate the future of GPU development
+              Focused on mastering VLSI design and computer architecture to
+              innovate the future of GPU development
             </p>
 
             <div className="flex gap-4">
@@ -159,7 +162,6 @@ function App() {
 
         {/* 4. SOLID BLACK SECTION */}
         <main className="bg-[#050505]">
-          {/* Project Section */}
           <section id="work" className="max-w-6xl mx-auto px-6 py-24">
             <div className="flex items-end justify-between mb-16">
               <div>
@@ -171,6 +173,7 @@ function App() {
               <ArrowDown className="text-white/30 animate-bounce" />
             </div>
 
+            {/* Standard 3-column grid layout */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {projects.map((p, i) => (
                 <ProjectCard key={i} {...p} />
