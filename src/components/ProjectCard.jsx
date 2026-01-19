@@ -1,10 +1,10 @@
+// src/components/ProjectCard.jsx
 import React from 'react';
 import { ExternalLink, Github } from 'lucide-react';
 
 const ProjectCard = ({ title, description, tags, repo, link }) => {
   return (
     <div className="group relative bg-[#111] border border-white/10 p-8 rounded-3xl hover:border-blue-500/50 transition-all duration-500 shadow-2xl h-full flex flex-col">
-      {/* Animated Background Gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl" />
       
       <div className="relative z-10 flex flex-col h-full">
@@ -20,7 +20,8 @@ const ProjectCard = ({ title, description, tags, repo, link }) => {
           </div>
         </div>
         
-        <p className="text-gray-400 mb-8 line-clamp-3 leading-relaxed">
+        {/* REMOVED line-clamp-3 HERE */}
+        <p className="text-gray-400 mb-8 leading-relaxed">
           {description}
         </p>
         

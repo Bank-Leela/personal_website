@@ -8,23 +8,22 @@ function App() {
       title: "Badminton Tracker",
       description:
         "A full-stack match analytics platform. Built with a React frontend and MongoDB backend to track real-time scores and historical match performance.",
-      tags: ["MERN Stack", "Tailwind CSS", "Data Analytics"],
+      tags: ["MERN Stack", "API Development", "Tailwind CSS", "Data Analytics", "MongoDB"],
       repo: "https://github.com/nleelath/badminton_tracker",
       link: "#",
     },
     {
       title: "Upcoming Project",
-      description:
-        "Hardware-focused development exploring GPU microarchitectures and parallel processing optimization.",
-      tags: ["Hardware", "VLSI", "Architecture"],
+      description: "",
+      tags: "",
       repo: "#",
       link: "#",
     },
     {
       title: "Upcoming Project",
       description:
-        "Low-level systems project focused on high-performance computing and memory management.",
-      tags: ["C++", "Systems", "Optimization"],
+        "",
+      tags: "",
       repo: "#",
       link: "#",
     },
