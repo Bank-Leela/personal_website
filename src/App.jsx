@@ -15,7 +15,7 @@ function App() {
     {
       title: "Upcoming Project",
       description: "...",
-      tags: "[]",
+      tags: [],
       repo: "#",
       link: "#",
     },
@@ -23,7 +23,7 @@ function App() {
       title: "Upcoming Project",
       description:
         "...",
-      tags: "[]",
+      tags: [],
       repo: "#",
       link: "#",
     },
