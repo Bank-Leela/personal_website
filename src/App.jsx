@@ -3,13 +3,40 @@ import ProjectCard from "./components/ProjectCard";
 import { Mail, Linkedin, Github, ArrowDown, MapPin } from "lucide-react";
 
 function App() {
+  const experience = [
+    {
+      company: "IEEE",
+      role: "Research Assistant",
+      period: "Jul 2024 — May 2025",
+      description: "Engineered a low-budget IoT water level measurement system using ESP32 to facilitate flood mitigation. Results are officially published in the IEEE Xplore Digital Library.",
+      tags: ["IoT", "ESP32", "System Design", "Research"],
+      link: "#"
+    },
+    {
+      company: "ODDS-Thailand",
+      role: "Software Engineering Intern",
+      period: "Jul 2024 — Aug. 2024",
+      description: "Developed responsive UI components for a $300M financial platform. Optimized database queries for a MongoDB cluster containing 20M+ entries.",
+      tags: ["React", "Tailwind CSS", "MongoDB", "Optimization"],
+      link: "#"
+    },
+    {
+      company: "NurseMetrics",
+      role: "Lead Developer",
+      period: "May 2023 — Aug. 2024",
+      description: "Architected a KPI tracking web application using Google Apps Script (JavaScript) to automate data entry, reducing reporting time by 70%.",
+      tags: ["JavaScript", "Automation", "Healthcare Tech"],
+      link: "#"
+    }
+  ];
+
   const projects = [
     {
       title: "Badminton Tracker",
       description:
         "A full-stack match analytics platform. Built with a React frontend and MongoDB backend to track real-time scores and historical match performance.",
       tags: ["MERN Stack", "API Development", "Tailwind CSS", "Data Analytics", "MongoDB"],
-      repo: "https://github.com/nleelath/badminton_tracker",
+      repo: "https://github.com/Bank-Leela/badminton_tracker",
       link: "#",
     },
     {
@@ -50,33 +77,31 @@ function App() {
     },
   ];
 
-  const scrollToWork = () => {
-    document.getElementById("work")?.scrollIntoView({ behavior: "smooth" });
+  const scrollToExperience = () => {
+    document.getElementById("experience")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
     <div className="relative selection:bg-blue-500/40">
-      {/* 1. FIXED BACKGROUND */}
       <div className="fixed inset-0 -z-10 h-screen w-full">
-        {/* Path updated to match your pushed file name exactly */}
         <img
           src="/background2.gif"
           className="w-full h-full object-cover"
           alt="background"
         />
-        {/* Subtle overlay to help white text pop */}
         <div className="absolute inset-0 bg-black/30"></div>
       </div>
 
-      {/* 2. CONTENT LAYER */}
       <div className="relative z-10">
-        {/* Glassmorphism Nav */}
         <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/50 backdrop-blur-md">
           <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
             <span className="text-xl font-black tracking-tighter text-white">
               PORTFOLIO.
             </span>
             <div className="flex gap-8 text-sm font-medium text-white/70">
+              <a href="#experience" className="hover:text-white transition-colors">
+                Experience
+              </a>
               <a href="#work" className="hover:text-white transition-colors">
                 Work
               </a>
@@ -90,10 +115,8 @@ function App() {
           </div>
         </nav>
 
-        {/* Hero Section */}
         <header className="relative h-screen flex items-center px-6 max-w-6xl mx-auto">
           <div className="relative z-10">
-            {/* Changed to white */}
             <div className="flex flex-wrap items-center gap-3 mb-8">
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
                 <MapPin size={14} className="text-blue-500" />
@@ -116,7 +139,6 @@ function App() {
               Comp Eng '30 | UWaterloo
             </p>
 
-            {/* Changed description to white/90 */}
             <p className="max-w-xl text-white/90 text-lg md:text-xl mb-10 leading-relaxed">
               Focused on mastering VLSI design and computer architecture to
               innovate the future of GPU development
@@ -124,13 +146,12 @@ function App() {
 
             <div className="flex gap-4">
               <button
-                onClick={scrollToWork}
+                onClick={scrollToExperience}
                 className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full font-bold transition-all transform hover:scale-105 active:scale-95"
               >
-                View Projects
+                View Experience
               </button>
               <div className="flex items-center gap-6 px-4">
-                {/* Updated with your specific links */}
                 <a
                   href="https://github.com/Bank-Leela"
                   target="_blank"
@@ -156,12 +177,61 @@ function App() {
           </div>
         </header>
 
-        {/* 3. THE TRANSITION: Fades GIF out into solid black */}
         <div className="h-40 bg-gradient-to-b from-transparent to-[#050505]"></div>
 
-        {/* 4. SOLID BLACK SECTION */}
         <main className="bg-[#050505]">
-          <section id="work" className="max-w-6xl mx-auto px-6 py-24">
+          {/* Professional Journey Section */}
+          <section id="experience" className="max-w-6xl mx-auto px-6 py-24">
+            <div className="mb-20">
+              <h2 className="text-sm uppercase tracking-[0.3em] text-white/40 mb-4 font-black">
+                Professional Journey
+              </h2>
+              <div className="h-[1px] w-full bg-white/10" />
+            </div>
+
+            <div className="space-y-24">
+              {experience.map((job, i) => (
+                <div key={i} className="group relative grid grid-cols-1 md:grid-cols-[1fr_auto] gap-x-12 gap-y-6">
+                  <div className="space-y-6">
+                    <div className="space-y-3">
+                      <h3 className="text-4xl md:text-5xl font-black text-white group-hover:text-blue-500 transition-colors duration-500 tracking-tighter">
+                        {job.company}
+                      </h3>
+                      <p className="text-xl text-white/80 font-bold tracking-tight">
+                        {job.role}
+                      </p>
+                    </div>
+                    
+                    <p className="max-w-3xl text-white/50 leading-relaxed text-lg">
+                      {job.description}
+                    </p>
+
+                    <div className="flex flex-wrap gap-2">
+                      {job.tags.map((tag) => (
+                        <span key={tag} className="text-[10px] font-black uppercase tracking-widest px-3 py-1 border border-white/10 text-white/40 bg-white/5">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-end justify-between py-2 md:border-l border-white/10 md:pl-8 h-full">
+                    <span className="text-sm font-bold text-white/30 uppercase tracking-tighter">
+                      {job.period}
+                    </span>
+                    {job.link !== "#" && (
+                      <a href={job.link} target="_blank" rel="noreferrer" className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 hover:text-white transition-colors mt-auto">
+                        VISIT SITE →
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Selected Works Section */}
+          <section id="work" className="max-w-6xl mx-auto px-6 py-24 border-t border-white/5">
             <div className="flex items-end justify-between mb-16">
               <div>
                 <h2 className="text-4xl font-bold tracking-tight mb-2 text-white">
@@ -172,7 +242,6 @@ function App() {
               <ArrowDown className="text-white/30 animate-bounce" />
             </div>
 
-            {/* Standard 3-column grid layout */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {projects.map((p, i) => (
                 <ProjectCard key={i} {...p} />
@@ -202,7 +271,6 @@ function App() {
                   key={i}
                   className="rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all group overflow-hidden"
                 >
-                  {/* Hobby Image */}
                   <div className="aspect-video w-full overflow-hidden">
                     <img
                       src={hobby.image}
@@ -211,7 +279,6 @@ function App() {
                     />
                   </div>
 
-                  {/* Text Content */}
                   <div className="p-8">
                     <h3 className="text-xl font-bold text-white mb-2">
                       {hobby.name}
@@ -223,7 +290,6 @@ function App() {
             </div>
           </section>
 
-          {/* Contact Section */}
           <footer
             id="contact"
             className="max-w-6xl mx-auto px-6 py-32 border-t border-white/5"
