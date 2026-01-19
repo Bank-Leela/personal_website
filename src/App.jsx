@@ -1,33 +1,82 @@
 import React from "react";
 import ProjectCard from "./components/ProjectCard";
-import { Mail, Linkedin, Github, ArrowDown, MapPin } from "lucide-react";
+import {
+  Mail,
+  Linkedin,
+  Github,
+  ArrowDown,
+  MapPin,
+  FileText,
+} from "lucide-react";
 
 function App() {
+  const SocialLinks = () => {
+    return (
+      <div className="flex items-center gap-3">
+        {[
+          {
+            icon: Mail,
+            href: "mailto:natdanai.leelathanapipat@gmail.com",
+            label: "Gmail",
+          },
+          {
+            icon: Github,
+            href: "https://github.com/Bank-Leela",
+            label: "Github",
+          },
+          {
+            icon: Linkedin,
+            href: "https://www.linkedin.com/in/bank-leelathanapipat",
+            label: "LinkedIn",
+          },
+          {
+            icon: FileText,
+            href: "/Bank_Leela.pdf",
+            label: "Resume",
+          },
+        ].map((social, i) => (
+          <a
+            key={i}
+            href={social.href}
+            target="_blank"
+            rel="noreferrer"
+            className="w-12 h-12 flex items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 hover:text-white hover:border-blue-500/50 hover:bg-blue-500/10 transition-all duration-300"
+            title={social.label}
+          >
+            <social.icon size={20} />
+          </a>
+        ))}
+      </div>
+    );
+  };
   const experience = [
     {
       company: "IEEE",
       role: "Research Assistant",
       period: "Jul 2024 — May 2025",
-      description: "Engineered a low-budget IoT water level measurement system using ESP32 to facilitate flood mitigation. Results are officially published in the IEEE Xplore Digital Library.",
+      description:
+        "Engineered a low-budget IoT water level measurement system using ESP32 to facilitate flood mitigation. Results are officially published in the IEEE Xplore Digital Library.",
       tags: ["IoT", "ESP32", "System Design", "Research"],
-      link: "#"
+      link: "#",
     },
     {
       company: "ODDS-Thailand",
       role: "Software Engineering Intern",
       period: "Jul 2024 — Aug. 2024",
-      description: "Developed responsive UI components for a $300M financial platform. Optimized database queries for a MongoDB cluster containing 20M+ entries.",
+      description:
+        "Developed responsive UI components for a $300M financial platform. Optimized database queries for a MongoDB cluster containing 20M+ entries.",
       tags: ["React", "Tailwind CSS", "MongoDB", "Optimization"],
-      link: "#"
+      link: "#",
     },
     {
       company: "NurseMetrics",
       role: "Lead Developer",
       period: "May 2023 — Aug. 2024",
-      description: "Architected a KPI tracking web application using Google Apps Script (JavaScript) to automate data entry, reducing reporting time by 70%.",
+      description:
+        "Architected a KPI tracking web application using Google Apps Script (JavaScript) to automate data entry, reducing reporting time by 70%.",
       tags: ["JavaScript", "Automation", "Healthcare Tech"],
-      link: "#"
-    }
+      link: "#",
+    },
   ];
 
   const projects = [
@@ -35,7 +84,13 @@ function App() {
       title: "Badminton Tracker",
       description:
         "A full-stack match analytics platform. Built with a React frontend and MongoDB backend to track real-time scores and historical match performance.",
-      tags: ["MERN Stack", "API Development", "Tailwind CSS", "Data Analytics", "MongoDB"],
+      tags: [
+        "MERN Stack",
+        "API Development",
+        "Tailwind CSS",
+        "Data Analytics",
+        "MongoDB",
+      ],
       repo: "https://github.com/Bank-Leela/badminton_tracker",
       link: "#",
     },
@@ -48,8 +103,7 @@ function App() {
     },
     {
       title: "Upcoming Project",
-      description:
-        "...",
+      description: "...",
       tags: [],
       repo: "#",
       link: "#",
@@ -78,7 +132,9 @@ function App() {
   ];
 
   const scrollToExperience = () => {
-    document.getElementById("experience")?.scrollIntoView({ behavior: "smooth" });
+    document
+      .getElementById("experience")
+      ?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -99,7 +155,10 @@ function App() {
               Natdanai (Bank) Leelathanapipat
             </span>
             <div className="flex gap-8 text-sm font-medium text-white/70">
-              <a href="#experience" className="hover:text-white transition-colors">
+              <a
+                href="#experience"
+                className="hover:text-white transition-colors"
+              >
                 Experience
               </a>
               <a href="#work" className="hover:text-white transition-colors">
@@ -191,7 +250,10 @@ function App() {
 
             <div className="space-y-24">
               {experience.map((job, i) => (
-                <div key={i} className="group relative grid grid-cols-1 md:grid-cols-[1fr_auto] gap-x-12 gap-y-6">
+                <div
+                  key={i}
+                  className="group relative grid grid-cols-1 md:grid-cols-[1fr_auto] gap-x-12 gap-y-6"
+                >
                   <div className="space-y-6">
                     <div className="space-y-3">
                       <h3 className="text-4xl md:text-5xl font-black text-white group-hover:text-blue-500 transition-colors duration-500 tracking-tighter">
@@ -201,14 +263,17 @@ function App() {
                         {job.role}
                       </p>
                     </div>
-                    
+
                     <p className="max-w-3xl text-white/50 leading-relaxed text-lg">
                       {job.description}
                     </p>
 
                     <div className="flex flex-wrap gap-2">
                       {job.tags.map((tag) => (
-                        <span key={tag} className="text-[10px] font-black uppercase tracking-widest px-3 py-1 border border-white/10 text-white/40 bg-white/5">
+                        <span
+                          key={tag}
+                          className="text-[10px] font-black uppercase tracking-widest px-3 py-1 border border-white/10 text-white/40 bg-white/5"
+                        >
                           {tag}
                         </span>
                       ))}
@@ -220,7 +285,12 @@ function App() {
                       {job.period}
                     </span>
                     {job.link !== "#" && (
-                      <a href={job.link} target="_blank" rel="noreferrer" className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 hover:text-white transition-colors mt-auto">
+                      <a
+                        href={job.link}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-500 hover:text-white transition-colors mt-auto"
+                      >
                         VISIT SITE →
                       </a>
                     )}
@@ -231,7 +301,10 @@ function App() {
           </section>
 
           {/* Selected Works Section */}
-          <section id="work" className="max-w-6xl mx-auto px-6 py-24 border-t border-white/5">
+          <section
+            id="work"
+            className="max-w-6xl mx-auto px-6 py-24 border-t border-white/5"
+          >
             <div className="flex items-end justify-between mb-16">
               <div>
                 <h2 className="text-4xl font-bold tracking-tight mb-2 text-white">
