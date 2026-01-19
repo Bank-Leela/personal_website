@@ -41,7 +41,8 @@ function App() {
             href={social.href}
             target="_blank"
             rel="noreferrer"
-            className="w-12 h-12 flex items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 hover:text-white hover:border-blue-500/50 hover:bg-blue-500/10 transition-all duration-300"
+            // CHANGED: hover:border-blue-500 and hover:text-blue-500
+            className="w-12 h-12 flex items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-500/10 transition-all duration-300"
             title={social.label}
           >
             <social.icon size={20} />
