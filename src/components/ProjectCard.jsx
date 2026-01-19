@@ -20,13 +20,13 @@ const ProjectCard = ({ title, description, tags, repo, link }) => {
           </div>
         </div>
         
-        {/* REMOVED line-clamp-3 HERE */}
         <p className="text-gray-400 mb-8 leading-relaxed">
           {description}
         </p>
         
         <div className="flex flex-wrap gap-2 mt-auto">
-          {tags.map((tag) => (
+          {/* ADDED SAFETY GUARD HERE: (tags || []) */}
+          {(tags || []).map((tag) => (
             <span key={tag} className="text-[10px] font-black uppercase tracking-widest text-blue-400 bg-blue-400/5 border border-blue-400/20 px-3 py-1 rounded-full">
               {tag}
             </span>
