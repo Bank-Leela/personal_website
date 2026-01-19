@@ -96,7 +96,7 @@ function App() {
         <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/50 backdrop-blur-md">
           <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
             <span className="text-xl font-black tracking-tighter text-white">
-              PORTFOLIO.
+              Natdanai (Bank) Leelathanapipat
             </span>
             <div className="flex gap-8 text-sm font-medium text-white/70">
               <a href="#experience" className="hover:text-white transition-colors">
