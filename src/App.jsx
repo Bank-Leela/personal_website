@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 function App() {
-  // Circular Social Icons Component
+  // Circular Social Icons Component with Blue Hover Effect
   const SocialLinks = () => {
     return (
       <div className="flex items-center gap-3">
@@ -206,7 +206,6 @@ function App() {
               innovate the future of GPU development
             </p>
 
-            {/* INTEGRATED SOCIAL LINKS HERE */}
             <div className="flex flex-wrap items-center gap-6">
               <button
                 onClick={scrollToExperience}
@@ -222,9 +221,10 @@ function App() {
         <div className="h-40 bg-gradient-to-b from-transparent to-[#050505]"></div>
 
         <main className="bg-[#050505]">
+          {/* PROFESSIONAL JOURNEY - Font size increased (text-base) */}
           <section id="experience" className="max-w-6xl mx-auto px-6 py-24">
             <div className="mb-20">
-              <h2 className="text-sm uppercase tracking-[0.3em] text-white/40 mb-4 font-black">
+              <h2 className="text-base uppercase tracking-[0.4em] text-white/40 mb-4 font-black">
                 Professional Journey
               </h2>
               <div className="h-[1px] w-full bg-white/10" />
@@ -282,18 +282,16 @@ function App() {
             </div>
           </section>
 
+          {/* SELECTED WORKS - Unified Header Style */}
           <section
             id="work"
             className="max-w-6xl mx-auto px-6 py-24 border-t border-white/5"
           >
-            <div className="flex items-end justify-between mb-16 text-white">
-              <div>
-                <h2 className="text-4xl font-bold tracking-tight mb-2">
-                  Selected Works
-                </h2>
-                <div className="h-1 w-20 bg-blue-600" />
-              </div>
-              <ArrowDown className="text-white/30 animate-bounce" />
+            <div className="mb-20">
+              <h2 className="text-base uppercase tracking-[0.4em] text-white/40 mb-4 font-black">
+                Selected Works
+              </h2>
+              <div className="h-[1px] w-full bg-white/10" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -303,19 +301,16 @@ function App() {
             </div>
           </section>
 
+          {/* BEYOND THE CODE - Unified Header Style */}
           <section
             id="hobbies"
             className="max-w-6xl mx-auto px-6 py-24 border-t border-white/5"
           >
-            <div className="mb-16">
-              <h2 className="text-4xl font-bold tracking-tight mb-2 text-white">
+            <div className="mb-20">
+              <h2 className="text-base uppercase tracking-[0.4em] text-white/40 mb-4 font-black">
                 Beyond the Code
               </h2>
-              <div className="h-1 w-20 bg-blue-600" />
-              <p className="mt-6 text-white/60 max-w-xl">
-                When I'm not in the lab or debugging React, you can find me
-                exploring these interests.
-              </p>
+              <div className="h-[1px] w-full bg-white/10" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
