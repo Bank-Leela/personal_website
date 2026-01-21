@@ -455,17 +455,19 @@ function App() {
 
           <footer
             id="contact"
-            className="max-w-6xl mx-auto px-6 py-32 border-t border-white/5 text-center"
+            className="max-w-6xl mx-auto px-6 py-32 border-t border-white/5"
           >
-            <h2 className="text-5xl font-bold mb-6 text-white tracking-tighter uppercase italic">
-              Let's create something.
-            </h2>
-            <a
-              href="mailto:nleelath@uwaterloo.ca"
-              className="text-2xl text-white hover:text-blue-400 hover:underline transition-all font-bold"
-            >
-              nleelath@uwaterloo.ca
-            </a>
+            <div className="text-center">
+              <h2 className="text-5xl font-bold mb-6 text-white">
+                Let's create something.
+              </h2>
+              <a
+                href="mailto:nleelath@uwaterloo.ca"
+                className="text-2xl text-white hover:text-blue-400 hover:underline decoration-2 underline-offset-8 transition-all"
+              >
+                nleelath@uwaterloo.ca
+              </a>
+            </div>
           </footer>
         </main>
       </div>
