@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ProjectCard from "./components/ProjectCard";
+import Globe from "react-globe.gl"; 
 import {
   Mail,
   Linkedin,
@@ -7,9 +8,112 @@ import {
   ArrowDown,
   MapPin,
   FileText,
+  Globe as GlobeIcon
 } from "lucide-react";
 
 function App() {
+  // --- GLOBE FEATURE LOGIC START ---
+  const globeRef = useRef();
+
+  // Coordinates for Waterloo and Bangkok
+  const markerData = [
+    { lat: 43.4643, lng: -80.5204, label: "Waterloo, ON", timeZone: 'America/Toronto', color: "#3b82f6" },
+    { lat: 13.7563, lng: 100.5018, label: "Bangkok, TH", timeZone: 'Asia/Bangkok', color: "#3b82f6" }
+  ];
+
+  const arcsData = [{
+    startLat: 13.7563, startLng: 100.5018,
+    endLat: 43.4643, endLng: -80.5204,
+    color: ['#3b82f6', '#ffffff']
+  }];
+
+  const getFormattedTime = (tz) => {
+    return new Intl.DateTimeFormat('en-US', {
+      hour: '2-digit', minute: '2-digit', hour12: true, timeZone: tz
+    }).format(new Date());
+  };
+
+  const GlobeBox = () => {
+    const [displayTime, setDisplayTime] = useState({ 
+      label: "LOCAL TIME", 
+      time: getFormattedTime('America/Toronto'), 
+      location: "Waterloo, ON (GMT-4)" 
+    });
+
+    useEffect(() => {
+      if (globeRef.current) {
+        const controls = globeRef.current.controls();
+        controls.autoRotate = true;
+        controls.autoRotateSpeed = 0.7;
+        controls.enableZoom = false; // Disable zoom as requested
+        globeRef.current.pointOfView({ lat: 20, lng: 10, altitude: 2.2 });
+      }
+
+      const timer = setInterval(() => {
+        const tz = displayTime.location.includes("Bangkok") ? 'Asia/Bangkok' : 'America/Toronto';
+        setDisplayTime(prev => ({ ...prev, time: getFormattedTime(tz) }));
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }, [displayTime.location]);
+
+    return (
+      <div className="bg-[#0f0f0f] border border-white/5 rounded-[32px] p-8 w-full h-[520px] flex flex-col justify-between relative overflow-hidden group shadow-2xl">
+        <div className="flex justify-between items-start z-10">
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
+            {displayTime.label}
+          </span>
+          <GlobeIcon size={20} className="text-white/20 group-hover:text-blue-500 transition-colors" />
+        </div>
+
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
+          <Globe
+            ref={globeRef}
+            width={480}
+            height={480}
+            backgroundColor="rgba(0,0,0,0)"
+            globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
+            bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
+            atmosphereColor="#3b82f6"
+            atmosphereDaylightAlpha={0.1}
+            pointsData={markerData}
+            pointColor="color"
+            pointRadius={0.7}
+            onPointClick={(point) => {
+              setDisplayTime({
+                label: "SELECTED LOCATION",
+                time: getFormattedTime(point.timeZone),
+                location: point.label === "Waterloo, ON" ? "Waterloo, ON (GMT-4)" : "Bangkok, TH (GMT+7)"
+              });
+            }}
+            labelsData={markerData}
+            labelText="label"
+            labelSize={1.5}
+            labelColor={() => "#ffffff"}
+            labelDotRadius={0.4}
+            labelAltitude={0.05}
+            arcsData={arcsData}
+            arcColor="color"
+            arcDashLength={0.4}
+            arcDashGap={4}
+            arcDashAnimateTime={1500}
+            arcStroke={0.5}
+          />
+        </div>
+
+        <div className="z-10">
+          <h2 className="text-7xl font-black text-white tracking-tighter mb-2 tabular-nums">
+            {displayTime.time}
+          </h2>
+          <p className="text-sm font-bold text-white/40 uppercase tracking-wide">
+            {displayTime.location}
+          </p>
+        </div>
+      </div>
+    );
+  };
+  // --- GLOBE FEATURE LOGIC END ---
+
   // Circular Social Icons Component with Blue Hover Effect
   const SocialLinks = () => {
     return (
@@ -176,43 +280,50 @@ function App() {
           </div>
         </nav>
 
-        <header className="relative h-screen flex items-center px-6 max-w-6xl mx-auto">
-          <div className="relative z-10">
-            <div className="flex flex-wrap items-center gap-3 mb-8">
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-                <MapPin size={14} className="text-blue-500" />
-                <span className="text-white text-xs font-medium tracking-wide">
-                  Waterloo/Toronto, ON | Bangkok, TH
-                </span>
+        <header className="relative h-screen flex items-center px-6 max-w-7xl mx-auto pt-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
+            <div className="relative z-10">
+              <div className="flex flex-wrap items-center gap-3 mb-8">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+                  <MapPin size={14} className="text-blue-500" />
+                  <span className="text-white text-xs font-medium tracking-wide">
+                    Waterloo/Toronto, ON | Bangkok, TH
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                  <span className="text-white text-xs font-medium tracking-wide uppercase">
+                    Available for work 2026
+                  </span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm">
-                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                <span className="text-white text-xs font-medium tracking-wide uppercase">
-                  Available for work 2026
-                </span>
+
+              <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter mb-8 leading-[0.85]">
+                Bank Leelathanapipat
+              </h1>
+              <p className="text-xl md:text-2xl font-bold text-white mb-8 tracking-tight opacity-90">
+                Comp Eng '30 | UWaterloo
+              </p>
+
+              <p className="max-w-xl text-white/90 text-lg md:text-xl mb-10 leading-relaxed font-medium">
+                Focused on mastering VLSI design and computer architecture to
+                innovate the future of GPU development
+              </p>
+
+              <div className="flex flex-wrap items-center gap-6">
+                <button
+                  onClick={scrollToExperience}
+                  className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full font-bold transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-600/20"
+                >
+                  View Experience
+                </button>
+                <SocialLinks />
               </div>
             </div>
 
-            <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter mb-8 leading-[0.85]">
-              Bank Leelathanapipat
-            </h1>
-            <p className="text-xl md:text-2xl font-bold text-white mb-8 tracking-tight opacity-90">
-              Comp Eng '30 | UWaterloo
-            </p>
-
-            <p className="max-w-xl text-white/90 text-lg md:text-xl mb-10 leading-relaxed">
-              Focused on mastering VLSI design and computer architecture to
-              innovate the future of GPU development
-            </p>
-
-            <div className="flex flex-wrap items-center gap-6">
-              <button
-                onClick={scrollToExperience}
-                className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full font-bold transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-600/20"
-              >
-                View Experience
-              </button>
-              <SocialLinks />
+            {/* Globe Box Placement */}
+            <div className="hidden lg:block">
+              <GlobeBox />
             </div>
           </div>
         </header>
@@ -262,7 +373,7 @@ function App() {
                   </div>
 
                   <div className="flex flex-col items-end justify-between py-2 md:border-l border-white/10 md:pl-8 h-full">
-                    <span className="text-sm font-bold text-white/30 uppercase tracking-tighter">
+                    <span className="text-sm font-bold text-white/30 uppercase tracking-tighter tabular-nums">
                       {job.period}
                     </span>
                     {job.link !== "#" && (
@@ -333,7 +444,9 @@ function App() {
                     <h3 className="text-xl font-bold text-white mb-2">
                       {hobby.name}
                     </h3>
-                    <p className="text-white/50">{hobby.description}</p>
+                    <p className="text-white/50 text-sm">
+                      {hobby.description}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -342,19 +455,17 @@ function App() {
 
           <footer
             id="contact"
-            className="max-w-6xl mx-auto px-6 py-32 border-t border-white/5"
+            className="max-w-6xl mx-auto px-6 py-32 border-t border-white/5 text-center"
           >
-            <div className="text-center">
-              <h2 className="text-5xl font-bold mb-6 text-white">
-                Let's create something.
-              </h2>
-              <a
-                href="mailto:nleelath@uwaterloo.ca"
-                className="text-2xl text-white hover:text-blue-400 hover:underline decoration-2 underline-offset-8 transition-all"
-              >
-                nleelath@uwaterloo.ca
-              </a>
-            </div>
+            <h2 className="text-5xl font-bold mb-6 text-white tracking-tighter uppercase italic">
+              Let's create something.
+            </h2>
+            <a
+              href="mailto:nleelath@uwaterloo.ca"
+              className="text-2xl text-white hover:text-blue-400 hover:underline transition-all font-bold"
+            >
+              nleelath@uwaterloo.ca
+            </a>
           </footer>
         </main>
       </div>
