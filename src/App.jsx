@@ -5,7 +5,6 @@ import {
   Mail,
   Linkedin,
   Github,
-  ArrowDown,
   MapPin,
   FileText,
   Globe as GlobeIcon,
@@ -64,7 +63,7 @@ function App() {
         const controls = globeRef.current.controls();
         controls.autoRotate = true;
         controls.autoRotateSpeed = 0.7;
-        controls.enableZoom = false; // Disable zoom as requested
+        controls.enableZoom = false;
         globeRef.current.pointOfView({ lat: 20, lng: 10, altitude: 2.2 });
       }
 
@@ -79,7 +78,6 @@ function App() {
     }, [displayTime.location]);
 
     return (
-      // ✅ removed w-full so width can be controlled by the right-column wrapper
       <div className="bg-[#0f0f0f] border border-white/5 rounded-[32px] p-8 h-[520px] flex flex-col justify-between relative overflow-hidden group shadow-2xl">
         <div className="flex justify-between items-start z-10">
           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
@@ -152,21 +150,13 @@ function App() {
             href: "mailto:natdanai.leelathanapipat@gmail.com",
             label: "Gmail",
           },
-          {
-            icon: Github,
-            href: "https://github.com/Bank-Leela",
-            label: "Github",
-          },
+          { icon: Github, href: "https://github.com/Bank-Leela", label: "Github" },
           {
             icon: Linkedin,
             href: "https://www.linkedin.com/in/bank-leelathanapipat",
             label: "LinkedIn",
           },
-          {
-            icon: FileText,
-            href: "/Bank_Leela.pdf",
-            label: "Resume",
-          },
+          { icon: FileText, href: "/Bank_Leela.pdf", label: "Resume" },
         ].map((social, i) => (
           <a
             key={i}
@@ -218,30 +208,12 @@ function App() {
       title: "Badminton Tracker",
       description:
         "A full-stack match analytics platform. Built with a React frontend and MongoDB backend to track real-time scores and historical match performance.",
-      tags: [
-        "MERN Stack",
-        "API Development",
-        "Tailwind CSS",
-        "Data Analytics",
-        "MongoDB",
-      ],
+      tags: ["MERN Stack", "API Development", "Tailwind CSS", "Data Analytics", "MongoDB"],
       repo: "https://github.com/Bank-Leela/badminton_tracker",
       link: "#",
     },
-    {
-      title: "Upcoming Project",
-      description: "...",
-      tags: [],
-      repo: "#",
-      link: "#",
-    },
-    {
-      title: "Upcoming Project",
-      description: "...",
-      tags: [],
-      repo: "#",
-      link: "#",
-    },
+    { title: "Upcoming Project", description: "...", tags: [], repo: "#", link: "#" },
+    { title: "Upcoming Project", description: "...", tags: [], repo: "#", link: "#" },
   ];
 
   const hobbies = [
@@ -272,11 +244,7 @@ function App() {
   return (
     <div className="relative selection:bg-blue-500/40">
       <div className="fixed inset-0 -z-10 h-screen w-full">
-        <img
-          src="/background2.gif"
-          className="w-full h-full object-cover"
-          alt="background"
-        />
+        <img src="/background2.gif" className="w-full h-full object-cover" alt="background" />
         <div className="absolute inset-0 bg-black/30"></div>
       </div>
 
@@ -287,10 +255,7 @@ function App() {
               Natdanai (Bank) Leelathanapipat
             </span>
             <div className="flex gap-8 text-sm font-medium text-white/70">
-              <a
-                href="#experience"
-                className="hover:text-white transition-colors"
-              >
+              <a href="#experience" className="hover:text-white transition-colors">
                 Experience
               </a>
               <a href="#work" className="hover:text-white transition-colors">
@@ -306,55 +271,53 @@ function App() {
           </div>
         </nav>
 
-        {/* ✅ HERO: pushed further to edges */}
-        <header className="relative h-screen flex items-center pt-20">
-          <div className="w-full px-4 lg:px-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 items-center w-full">
-              {/* LEFT — pushed left */}
-              <div className="relative z-10 max-w-2xl pl-2 lg:pl-6">
-                <div className="flex flex-wrap items-center gap-3 mb-8">
-                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-                    <MapPin size={14} className="text-blue-500" />
-                    <span className="text-white text-xs font-medium tracking-wide">
-                      Waterloo/Toronto, ON | Bangkok, TH
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
-                    <span className="text-white text-xs font-medium tracking-wide uppercase">
-                      Available for work 2026
-                    </span>
-                  </div>
+        {/* ✅ HERO: globe column pushed to the far right */}
+        <header className="relative h-screen flex items-center px-6 pt-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
+            {/* LEFT */}
+            <div className="relative z-10 max-w-2xl">
+              <div className="flex flex-wrap items-center gap-3 mb-8">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
+                  <MapPin size={14} className="text-blue-500" />
+                  <span className="text-white text-xs font-medium tracking-wide">
+                    Waterloo/Toronto, ON | Bangkok, TH
+                  </span>
                 </div>
-
-                <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter mb-8 leading-[0.85]">
-                  Bank Leelathanapipat
-                </h1>
-                <p className="text-xl md:text-2xl font-bold text-white mb-8 tracking-tight opacity-90">
-                  Comp Eng '30 | UWaterloo
-                </p>
-
-                <p className="max-w-xl text-white/90 text-lg md:text-xl mb-10 leading-relaxed font-medium">
-                  Focused on mastering VLSI design and computer architecture to
-                  innovate the future of GPU development
-                </p>
-
-                <div className="flex flex-wrap items-center gap-6">
-                  <button
-                    onClick={scrollToExperience}
-                    className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full font-bold transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-600/20"
-                  >
-                    View Experience
-                  </button>
-                  <SocialLinks />
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm">
+                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                  <span className="text-white text-xs font-medium tracking-wide uppercase">
+                    Available for work 2026
+                  </span>
                 </div>
               </div>
 
-              {/* RIGHT — pushed right */}
-              <div className="hidden lg:flex justify-end pr-2 lg:pr-6">
-                <div className="w-[680px] max-w-full">
-                  <GlobeBox />
-                </div>
+              <h1 className="text-6xl md:text-8xl font-black text-white tracking-tighter mb-8 leading-[0.85]">
+                Bank Leelathanapipat
+              </h1>
+              <p className="text-xl md:text-2xl font-bold text-white mb-8 tracking-tight opacity-90">
+                Comp Eng '30 | UWaterloo
+              </p>
+
+              <p className="max-w-xl text-white/90 text-lg md:text-xl mb-10 leading-relaxed font-medium">
+                Focused on mastering VLSI design and computer architecture to innovate the future of GPU
+                development
+              </p>
+
+              <div className="flex flex-wrap items-center gap-6">
+                <button
+                  onClick={scrollToExperience}
+                  className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-4 rounded-full font-bold transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-600/20"
+                >
+                  View Experience
+                </button>
+                <SocialLinks />
+              </div>
+            </div>
+
+            {/* RIGHT */}
+            <div className="hidden lg:flex justify-end ml-auto pr-6">
+              <div className="w-[560px]">
+                <GlobeBox />
               </div>
             </div>
           </div>
@@ -383,14 +346,10 @@ function App() {
                       <h3 className="text-4xl md:text-5xl font-black text-white group-hover:text-blue-500 transition-colors duration-500 tracking-tighter">
                         {job.company}
                       </h3>
-                      <p className="text-xl text-white/80 font-bold tracking-tight">
-                        {job.role}
-                      </p>
+                      <p className="text-xl text-white/80 font-bold tracking-tight">{job.role}</p>
                     </div>
 
-                    <p className="max-w-3xl text-white/50 leading-relaxed text-lg">
-                      {job.description}
-                    </p>
+                    <p className="max-w-3xl text-white/50 leading-relaxed text-lg">{job.description}</p>
 
                     <div className="flex flex-wrap gap-2">
                       {job.tags.map((tag) => (
@@ -454,8 +413,7 @@ function App() {
               </h2>
               <div className="h-[1px] w-full bg-white/10 group-hover:bg-blue-500/50 transition-colors duration-300" />
               <p className="mt-6 text-white/60 max-w-xl font-bold">
-                When I'm not in the lab or debugging React, you can find me
-                exploring these interests.
+                When I'm not in the lab or debugging React, you can find me exploring these interests.
               </p>
             </div>
 
@@ -473,12 +431,8 @@ function App() {
                     />
                   </div>
                   <div className="p-8">
-                    <h3 className="text-xl font-bold text-white mb-2">
-                      {hobby.name}
-                    </h3>
-                    <p className="text-white/50 text-sm">
-                      {hobby.description}
-                    </p>
+                    <h3 className="text-xl font-bold text-white mb-2">{hobby.name}</h3>
+                    <p className="text-white/50 text-sm">{hobby.description}</p>
                   </div>
                 </div>
               ))}
@@ -490,9 +444,7 @@ function App() {
             className="max-w-6xl mx-auto px-6 py-32 border-t border-white/5"
           >
             <div className="text-center">
-              <h2 className="text-5xl font-bold mb-6 text-white">
-                Let's create something.
-              </h2>
+              <h2 className="text-5xl font-bold mb-6 text-white">Let's create something.</h2>
               <a
                 href="mailto:nleelath@uwaterloo.ca"
                 className="text-2xl text-white hover:text-blue-400 hover:underline decoration-2 underline-offset-8 transition-all"
