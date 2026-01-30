@@ -337,11 +337,10 @@ function App() {
             </div>
           </section>
 
-          {/* ✅ FOOTER RECONFIGURED: TEXT BOX LEFT, GLOBE RIGHT */}
           <footer id="contact" className="max-w-7xl mx-auto px-6 py-32 border-t border-white/5 overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              {/* LEFT SIDE: Text Side pulled further left with lg:-ml-24 */}
-              <div className="lg:-ml-24"> 
+              {/* ✅ LEFT SIDE: Text Side pulled further left with standard margins (Removed negative margin) */}
+              <div> 
                 <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter mb-4">
                   send me <br /> anything!
                 </h2>
@@ -360,7 +359,7 @@ function App() {
                 </div>
               </div>
 
-              {/* RIGHT SIDE: Globe Side shifted leftwards onto the screen by removing negative margins */}
+              {/* ✅ RIGHT SIDE: Globe Side shifted leftwards slightly to stay visible (mr-0 ensures it's on screen) */}
               <div className="flex justify-end">
                 <div className="w-full max-w-[700px] mr-0">
                   <GlobeBox />
