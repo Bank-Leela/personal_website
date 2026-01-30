@@ -77,7 +77,8 @@ function App() {
     }, [displayTime.location]);
 
     return (
-      <div className="bg-[#0f0f0f] border border-white/5 rounded-[32px] p-8 h-[520px] flex flex-col justify-between relative overflow-hidden group shadow-2xl w-full">
+      // ✅ UPDATED: Increased height to h-[640px] for a larger box
+      <div className="bg-[#0f0f0f] border border-white/5 rounded-[32px] p-8 h-[640px] flex flex-col justify-between relative overflow-hidden group shadow-2xl w-full">
         <div className="flex justify-between items-start z-10">
           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
             {displayTime.label}
@@ -91,8 +92,9 @@ function App() {
         <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
           <Globe
             ref={globeRef}
-            width={480}
-            height={480}
+            // ✅ UPDATED: Increased internal globe resolution to 600x600
+            width={600}
+            height={600}
             backgroundColor="rgba(0,0,0,0)"
             globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
             bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
@@ -236,7 +238,6 @@ function App() {
           </div>
         </nav>
 
-        {/* ✅ HERO: Simplified (Globe removed from here) */}
         <header className="relative h-screen flex items-center px-6 max-w-6xl mx-auto">
           <div className="relative z-10">
             <div className="flex flex-wrap items-center gap-3 mb-8">
@@ -283,7 +284,8 @@ function App() {
           {/* EXPERIENCE */}
           <section id="experience" className="max-w-6xl mx-auto px-6 py-24">
             <div className="mb-20 group">
-              <h2 className="text-2xl uppercase tracking-[0.4em] text-white/40 mb-4 font-black">Professional Journey</h2>
+              {/* ✅ UPDATED: Added blue hover text */}
+              <h2 className="text-2xl uppercase tracking-[0.4em] text-white/40 mb-4 font-black transition-colors duration-300 group-hover:text-blue-500">Professional Journey</h2>
               <div className="h-[1px] w-full bg-white/10 group-hover:bg-blue-500/50 transition-colors duration-300" />
             </div>
             <div className="space-y-24">
@@ -312,7 +314,8 @@ function App() {
           {/* WORKS */}
           <section id="work" className="max-w-6xl mx-auto px-6 py-24 border-t border-white/5">
             <div className="mb-20 group">
-              <h2 className="text-2xl uppercase tracking-[0.4em] text-white/40 mb-4 font-black">Selected Works</h2>
+               {/* ✅ UPDATED: Added blue hover text */}
+              <h2 className="text-2xl uppercase tracking-[0.4em] text-white/40 mb-4 font-black transition-colors duration-300 group-hover:text-blue-500">Selected Works</h2>
               <div className="h-[1px] w-full bg-white/10 group-hover:bg-blue-500/50 transition-colors duration-300" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -323,7 +326,8 @@ function App() {
           {/* HOBBIES */}
           <section id="hobbies" className="max-w-6xl mx-auto px-6 py-24 border-t border-white/5">
             <div className="mb-20 group">
-              <h2 className="text-2xl uppercase tracking-[0.4em] text-white/40 mb-4 font-black">Beyond the Code</h2>
+               {/* ✅ UPDATED: Added blue hover text */}
+              <h2 className="text-2xl uppercase tracking-[0.4em] text-white/40 mb-4 font-black transition-colors duration-300 group-hover:text-blue-500">Beyond the Code</h2>
               <div className="h-[1px] w-full bg-white/10 group-hover:bg-blue-500/50 transition-colors duration-300" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -341,10 +345,8 @@ function App() {
             </div>
           </section>
 
-          {/* ✅ UPDATED CONTACT FOOTER: New Layout with Globe */}
           <footer id="contact" className="max-w-7xl mx-auto px-6 py-32 border-t border-white/5">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              {/* LEFT SIDE: Reference style text */}
               <div>
                 <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter mb-4">
                   send me <br /> anything!
@@ -364,9 +366,9 @@ function App() {
                 </div>
               </div>
 
-              {/* RIGHT SIDE: Globe Moved Here */}
+              {/* ✅ UPDATED FOOTER GLOBE: Increased max-width and added negative margins to move right */}
               <div className="flex justify-end ml-auto">
-                <div className="w-full max-w-[560px]">
+                <div className="w-full max-w-[700px] -mr-12 lg:-mr-24">
                   <GlobeBox />
                 </div>
               </div>
