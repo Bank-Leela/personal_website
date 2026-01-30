@@ -227,8 +227,8 @@ function App() {
 
   return (
     <div className="relative selection:bg-blue-500/40">
-      {/* ✅ FIXED BACKGROUND: Changed from image to static black */}
-      <div className="fixed inset-0 -z-10 h-screen w-full bg-black"></div>
+      {/* ✅ GLOBAL BACKGROUND: Set to Dark Gray */}
+      <div className="fixed inset-0 -z-10 h-screen w-full bg-[#1a1a1a]"></div>
 
       <div className="relative z-10">
         <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/50 backdrop-blur-md">
@@ -283,9 +283,11 @@ function App() {
           </div>
         </header>
 
-        <div className="h-40 bg-gradient-to-b from-transparent to-[#050505]"></div>
+        {/* ✅ GRADIENT TRANSITION: Updated to Gray */}
+        <div className="h-40 bg-gradient-to-b from-transparent to-[#1a1a1a]"></div>
 
-        <main className="bg-[#050505]">
+        {/* ✅ MAIN CONTENT: Background set to consistent Gray */}
+        <main className="bg-[#1a1a1a]">
           <section id="experience" className="max-w-6xl mx-auto px-6 py-24">
             <div className="mb-20 group">
               <h2 className="text-2xl uppercase tracking-[0.4em] text-white/40 mb-4 font-black transition-colors duration-300 group-hover:text-blue-500">Professional Journey</h2>
@@ -331,7 +333,7 @@ function App() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {hobbies.map((hobby, i) => (
-                <div key={i} className="rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all group overflow-hidden">
+                <div key={i} className="rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all group overflow-hidden shadow-xl">
                   <div className="aspect-video w-full overflow-hidden">
                     <img src={hobby.image} alt={hobby.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" />
                   </div>
