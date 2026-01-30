@@ -11,6 +11,16 @@ import {
 } from "lucide-react";
 
 function App() {
+  // --- COPY EMAIL LOGIC ---
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyEmail = (e) => {
+    e.preventDefault();
+    navigator.clipboard.writeText("nleelath@uwaterloo.ca");
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   // --- GLOBE FEATURE LOGIC START ---
   const globeRef = useRef();
 
@@ -35,8 +45,7 @@ function App() {
     {
       startLat: 13.7563,
       startLng: 100.5018,
-      endLat: 43.4643,
-      endLng: -80.5204,
+      endLat: 43.4643, endLng: -80.5204,
       color: ["#3b82f6", "#ffffff"],
     },
   ];
@@ -339,27 +348,28 @@ function App() {
 
           <footer id="contact" className="max-w-7xl mx-auto px-6 py-32 border-t border-white/5 overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              {/* ✅ LEFT SIDE: Text Side pulled further left with standard margins (Removed negative margin) */}
               <div> 
                 <h2 className="text-6xl md:text-8xl font-black text-white tracking-tighter mb-4">
                   send me <br /> anything!
                 </h2>
                 <p className="text-xl text-white/50 mb-12 font-medium">chat? i love to meet new people.</p>
 
-                <div className="space-y-2">
+                <div className="space-y-2 relative group/copy">
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 italic">
                     QUESTIONS? HIT ME UP ↓
                   </p>
-                  <a
-                    href="mailto:nleelath@uwaterloo.ca"
-                    className="text-2xl md:text-4xl font-black text-white hover:text-blue-500 transition-colors underline decoration-blue-500/30 underline-offset-8"
+                  <button
+                    onClick={handleCopyEmail}
+                    className="text-2xl md:text-4xl font-black text-white hover:text-blue-500 transition-colors underline decoration-blue-500/30 underline-offset-8 text-left relative"
                   >
                     nleelath@uwaterloo.ca
-                  </a>
+                    <span className={`absolute -top-10 left-0 bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded transition-opacity duration-300 ${copied ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                      COPIED!
+                    </span>
+                  </button>
                 </div>
               </div>
 
-              {/* ✅ RIGHT SIDE: Globe Side shifted leftwards slightly to stay visible (mr-0 ensures it's on screen) */}
               <div className="flex justify-end">
                 <div className="w-full max-w-[700px] mr-0">
                   <GlobeBox />
