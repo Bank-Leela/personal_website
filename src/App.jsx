@@ -227,10 +227,8 @@ function App() {
 
   return (
     <div className="relative selection:bg-blue-500/40">
-      <div className="fixed inset-0 -z-10 h-screen w-full">
-        <img src="/background2.gif" className="w-full h-full object-cover" alt="background" />
-        <div className="absolute inset-0 bg-black/30"></div>
-      </div>
+      {/* ✅ FIXED BACKGROUND: Changed from image to static black */}
+      <div className="fixed inset-0 -z-10 h-screen w-full bg-black"></div>
 
       <div className="relative z-10">
         <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/50 backdrop-blur-md">
