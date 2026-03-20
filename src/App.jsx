@@ -199,8 +199,22 @@ function App() {
   ];
 
   const projects = [
-    { title: "Badminton Tracker", description: "A full-stack match analytics platform. Built with a React frontend and MongoDB backend to track real-time scores and historical match performance.", tags: ["MERN Stack", "API Development", "Tailwind CSS", "Data Analytics", "MongoDB"], repo: "https://github.com/Bank-Leela/badminton_tracker" },
-    { title: "Sentinel", description: "A hackathon-built real-time fraud detection platform that combines anomaly scoring, deterministic rules, graph-based network analysis, and an analyst workflow UI for incident triage and investigation.", tags: ["FastAPI", "Next.js", "Machine Learning", "Isolation Forest", "Graph Analysis"], repo: "https://github.com/SarveshwarSenthilKumar/Sentinel", link: "https://devpost.com/software/sentinel-128ad4" },
+    {
+      title: "Badminton Tracker",
+      description: "A full-stack match analytics platform. Built with a React frontend and MongoDB backend to track real-time scores and historical match performance.",
+      tags: ["MERN Stack", "API Development", "Tailwind CSS", "Data Analytics", "MongoDB"],
+      repo: "https://github.com/Bank-Leela/badminton_tracker",
+      placeholderLabel: "Coming Soon",
+    },
+    {
+      title: "Sentinel",
+      description: "A hackathon-built real-time fraud detection platform that combines anomaly scoring, deterministic rules, graph-based network analysis, and an analyst workflow UI for incident triage and investigation.",
+      tags: ["FastAPI", "Next.js", "Machine Learning", "Isolation Forest", "Graph Analysis"],
+      repo: "https://github.com/SarveshwarSenthilKumar/Sentinel",
+      link: "https://devpost.com/software/sentinel-128ad4",
+      image: "/sentinel.png",
+      imageAlt: "Sentinel fraud detection dashboard",
+    },
     { title: "Upcoming Project", description: "...", tags: [] },
   ];
 

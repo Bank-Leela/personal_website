@@ -2,21 +2,52 @@
 import React from 'react';
 import { ExternalLink, Github } from 'lucide-react';
 
-const ProjectCard = ({ title, description, tags, repo, link }) => {
+const ProjectCard = ({
+  title,
+  description,
+  tags,
+  repo,
+  link,
+  image,
+  imageAlt,
+  placeholderLabel,
+}) => {
   return (
     <div className="group relative bg-[#111] border border-white/10 p-8 rounded-3xl hover:border-blue-500/50 transition-all duration-500 shadow-2xl h-full flex flex-col">
       <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl" />
       
       <div className="relative z-10 flex flex-col h-full">
+        {(image || placeholderLabel) && (
+          <div className="mb-6 overflow-hidden rounded-2xl border border-white/10 bg-[#0b1220]">
+            {image ? (
+              <img
+                src={image}
+                alt={imageAlt || title}
+                className="h-48 w-full object-cover object-top"
+              />
+            ) : (
+              <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-blue-500/20 via-slate-900 to-slate-950">
+                <span className="text-sm font-black uppercase tracking-[0.3em] text-blue-200/80">
+                  {placeholderLabel}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex justify-between items-start mb-6">
           <h3 className="text-2xl font-bold text-white tracking-tight">{title}</h3>
           <div className="flex gap-3">
-            <a href={repo} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-white transition-colors">
-              <Github size={20} />
-            </a>
-            <a href={link} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-white transition-colors">
-              <ExternalLink size={20} />
-            </a>
+            {repo && (
+              <a href={repo} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                <Github size={20} />
+              </a>
+            )}
+            {link && (
+              <a href={link} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-white transition-colors">
+                <ExternalLink size={20} />
+              </a>
+            )}
           </div>
         </div>
         
