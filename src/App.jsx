@@ -8,11 +8,26 @@ import {
   MapPin,
   FileText,
   Globe as GlobeIcon,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 function App() {
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === "undefined") {
+      return "dark";
+    }
+
+    return localStorage.getItem("theme") || "dark";
+  });
+
   // --- COPY EMAIL LOGIC ---
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   const handleCopyEmail = (e) => {
     e.preventDefault();
@@ -46,14 +61,14 @@ function App() {
       lng: -80.5204,
       label: "Waterloo, ON",
       timeZone: "America/Toronto",
-      color: "#3b82f6",
+      color: "#e5484d",
     },
     {
       lat: 13.7563,
       lng: 100.5018,
       label: "Bangkok, TH",
       timeZone: "Asia/Bangkok",
-      color: "#3b82f6",
+      color: "#e5484d",
     },
   ];
 
@@ -63,7 +78,7 @@ function App() {
       startLng: 100.5018,
       endLat: 43.4643,
       endLng: -80.5204,
-      color: ["#3b82f6", "#ffffff"],
+      color: ["#e5484d", "#f3f3f3"],
     },
   ];
 
@@ -106,14 +121,14 @@ function App() {
 
     return (
       // ✅ RESPONSIVE HEIGHT: h-[400px] on mobile, h-[640px] on desktop
-      <div className="bg-[#0f0f0f] border border-white/5 rounded-[32px] p-6 md:p-8 h-[400px] md:h-[640px] flex flex-col justify-between relative overflow-hidden group shadow-2xl w-full">
+      <div className="group relative flex h-[400px] w-full flex-col justify-between overflow-hidden rounded-[32px] border border-[var(--color-border-soft)] bg-[var(--color-bg-elevated)] p-6 shadow-2xl md:h-[640px] md:p-8">
         <div className="flex justify-between items-start z-10">
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/40">
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--color-text-muted)]">
             {displayTime.label}
           </span>
           <GlobeIcon
             size={20}
-            className="text-white/20 group-hover:text-blue-500 transition-colors"
+            className="text-[var(--color-text-muted)] transition-colors group-hover:text-[var(--color-accent)]"
           />
         </div>
 
@@ -123,10 +138,14 @@ function App() {
             width={globeSize.width}
             height={globeSize.height}
             backgroundColor="rgba(0,0,0,0)"
-            globeImageUrl="//unpkg.com/three-globe/example/img/earth-dark.jpg"
+            globeImageUrl={
+              theme === "dark"
+                ? "//unpkg.com/three-globe/example/img/earth-dark.jpg"
+                : "//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+            }
             bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
-            atmosphereColor="#3b82f6"
-            atmosphereDaylightAlpha={0.1}
+            atmosphereColor="#e5484d"
+            atmosphereDaylightAlpha={theme === "dark" ? 0.1 : 0.18}
             pointsData={markerData}
             pointColor="color"
             pointRadius={0.7}
@@ -143,7 +162,7 @@ function App() {
             labelsData={markerData}
             labelText="label"
             labelSize={1.5}
-            labelColor={() => "#ffffff"}
+            labelColor={() => (theme === "dark" ? "#f3f3f3" : "#181614")}
             labelDotRadius={0.4}
             labelAltitude={0.05}
             arcsData={arcsData}
@@ -156,10 +175,10 @@ function App() {
         </div>
 
         <div className="z-10">
-          <h2 className="text-4xl md:text-7xl font-black text-white tracking-tighter mb-2 tabular-nums">
+          <h2 className="mb-2 text-4xl font-black tracking-tighter text-[var(--color-text)] tabular-nums md:text-7xl">
             {displayTime.time}
           </h2>
-          <p className="text-[10px] md:text-sm font-bold text-white/40 uppercase tracking-wide">
+          <p className="text-[10px] font-bold uppercase tracking-wide text-[var(--color-text-muted)] md:text-sm">
             {displayTime.location}
           </p>
         </div>
@@ -182,7 +201,7 @@ function App() {
             href={social.href}
             target="_blank"
             rel="noreferrer"
-            className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 hover:text-blue-500 hover:border-blue-500 hover:bg-blue-500/10 transition-all duration-300"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-pill)] text-[var(--color-text-muted)] transition-all duration-300 hover:border-[var(--color-accent-border)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)] md:h-12 md:w-12"
             title={social.label}
           >
             <social.icon size={18} />
@@ -225,58 +244,67 @@ function App() {
   ];
 
   return (
-    <div className="relative selection:bg-blue-500/40">
-      <div className="fixed inset-0 -z-10 h-screen w-full bg-black"></div>
+    <div className="relative selection:bg-[var(--color-accent-soft)]">
+      <div className="fixed inset-0 -z-10 h-screen w-full bg-[var(--color-bg)]"></div>
 
       <div className="relative z-10">
-        <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-black/50 backdrop-blur-md">
-          <div className="max-w-6xl mx-auto px-4 md:px-6 py-4 flex justify-between items-center">
+        <nav className="fixed top-0 z-50 w-full border-b border-[var(--color-border-soft)] bg-[var(--color-nav)] backdrop-blur-md">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-3 py-4 md:px-4">
             {/* ✅ RESPONSIVE NAV: Smaller text/hidden full name on very small screens */}
-            <span className="text-sm md:text-xl font-black tracking-tighter text-white">
+            <span className="text-sm font-black tracking-tighter text-[var(--color-text)] md:text-xl">
               <span className="md:hidden">Bank Leela</span>
               <span className="hidden md:inline">Bank Leelathanapipat</span>
             </span>
-            <div className="flex gap-4 md:gap-8 text-[10px] md:text-sm font-medium text-white/70">
-              <a href="#experience" className="hover:text-white transition-colors">Exp</a>
-              <a href="#work" className="hover:text-white transition-colors">Work</a>
-              <a href="#hobbies" className="hover:text-white transition-colors">Hobbies</a>
-              <a href="#contact" className="hover:text-white transition-colors">Contact</a>
+            <div className="flex items-center gap-4 text-[10px] font-medium text-[var(--color-text-muted)] md:gap-8 md:text-sm">
+              <a href="#experience" className="transition-colors hover:text-[var(--color-text)]">Experiences</a>
+              <a href="#work" className="transition-colors hover:text-[var(--color-text)]">Work</a>
+              <a href="#hobbies" className="transition-colors hover:text-[var(--color-text)]">Hobbies</a>
+              <a href="#contact" className="transition-colors hover:text-[var(--color-text)]">Contact</a>
+              <button
+                type="button"
+                onClick={() => setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"))}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-pill)] text-[var(--color-text-muted)] transition-colors hover:border-[var(--color-accent-border)] hover:text-[var(--color-accent)]"
+                aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+                title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              >
+                {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
+              </button>
             </div>
           </div>
         </nav>
 
-        <header className="relative min-h-screen flex items-center px-4 md:px-6 max-w-6xl mx-auto pt-20">
+        <header className="relative mx-auto flex min-h-screen max-w-7xl items-center px-3 pt-20 md:px-4">
           <div className="relative z-10">
             <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-8">
-              <div className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm">
-                <MapPin size={12} className="text-blue-500" />
-                <span className="text-white text-[10px] md:text-xs font-medium tracking-wide">
+              <div className="flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-pill)] px-3 py-2 backdrop-blur-sm md:px-4">
+                <MapPin size={12} className="text-[var(--color-accent)]" />
+                <span className="text-[10px] font-medium tracking-wide text-[var(--color-text)] md:text-xs">
                   Waterloo, ON | Bangkok, TH
                 </span>
               </div>
-              <div className="flex items-center gap-2 px-3 md:px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 backdrop-blur-sm">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
-                <span className="text-white text-[10px] md:text-xs font-medium tracking-wide uppercase">
+              <div className="flex items-center gap-2 rounded-full border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-3 py-2 backdrop-blur-sm md:px-4">
+                <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--color-accent)]"></div>
+                <span className="text-[10px] font-medium uppercase tracking-wide text-[var(--color-text)] md:text-xs">
                   Available for work 2026
                 </span>
               </div>
             </div>
 
-            <h1 className="text-5xl md:text-8xl font-black text-white tracking-tighter mb-8 leading-[0.9] md:leading-[0.85]">
+            <h1 className="mb-8 text-5xl font-black leading-[0.9] tracking-tighter text-[var(--color-text)] md:text-8xl md:leading-[0.85]">
               Bank Leelathanapipat
             </h1>
-            <p className="text-lg md:text-2xl font-bold text-white mb-8 tracking-tight opacity-90">
+            <p className="mb-8 text-lg font-bold tracking-tight text-[var(--color-text)] opacity-90 md:text-2xl">
               Comp Eng '30 | UWaterloo
             </p>
 
-            <p className="max-w-xl text-white/90 text-base md:text-xl mb-10 leading-relaxed font-medium">
+            <p className="mb-10 max-w-xl text-base font-medium leading-relaxed text-[var(--color-text)] opacity-90 md:text-xl">
               Focused on mastering VLSI design and computer architecture to innovate the future of GPU development
             </p>
 
             <div className="flex flex-wrap items-center gap-4 md:gap-6">
               <button
                 onClick={() => document.getElementById("experience")?.scrollIntoView({ behavior: "smooth" })}
-                className="bg-blue-600 hover:bg-blue-500 text-white px-6 md:px-8 py-3 md:py-4 rounded-full text-sm md:text-base font-bold transition-all transform hover:scale-105 active:scale-95 shadow-lg shadow-blue-600/20"
+                className="transform rounded-full bg-[var(--color-accent)] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[var(--color-shadow)] transition-all hover:scale-105 hover:brightness-110 active:scale-95 md:px-8 md:py-4 md:text-base"
               >
                 View Experience
               </button>
@@ -285,32 +313,32 @@ function App() {
           </div>
         </header>
 
-        <div className="h-40 bg-gradient-to-b from-transparent to-[#1a1a1a]"></div>
+        <div className="h-40 bg-gradient-to-b from-transparent to-[var(--color-surface)]"></div>
 
-        <main className="bg-[#1a1a1a]">
+        <main className="bg-[var(--color-surface)]">
           {/* PROFESSIONAL JOURNEY */}
-          <section id="experience" className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-24">
+          <section id="experience" className="mx-auto max-w-7xl px-3 py-12 md:px-4 md:py-24">
             <div className="mb-12 md:mb-20 group">
-              <h2 className="text-xl md:text-2xl uppercase tracking-[0.4em] text-white/40 mb-4 font-black transition-colors duration-300 group-hover:text-blue-500">Professional Journey</h2>
-              <div className="h-[1px] w-full bg-white/10 group-hover:bg-blue-500/50 transition-colors duration-300" />
+              <h2 className="mb-4 text-xl font-black uppercase tracking-[0.4em] text-[var(--color-text-muted)] transition-colors duration-300 group-hover:text-[var(--color-accent)] md:text-2xl">Professional Journey</h2>
+              <div className="h-[1px] w-full bg-[var(--color-border)] transition-colors duration-300 group-hover:bg-[var(--color-accent-border)]" />
             </div>
             <div className="space-y-16 md:y-24">
               {experience.map((job, i) => (
                 <div key={i} className="group relative grid grid-cols-1 md:grid-cols-[1fr_auto] gap-x-12 gap-y-4 md:gap-y-6">
                   <div className="space-y-4 md:space-y-6">
                     <div className="space-y-2 md:space-y-3">
-                      <h3 className="text-3xl md:text-5xl font-black text-white group-hover:text-blue-500 transition-colors duration-500 tracking-tighter">{job.company}</h3>
-                      <p className="text-lg md:text-xl text-white/80 font-bold tracking-tight">{job.role}</p>
+                      <h3 className="text-3xl font-black tracking-tighter text-[var(--color-text)] transition-colors duration-500 group-hover:text-[var(--color-accent)] md:text-5xl">{job.company}</h3>
+                      <p className="text-lg font-bold tracking-tight text-[var(--color-text)] opacity-80 md:text-xl">{job.role}</p>
                     </div>
-                    <p className="max-w-3xl text-white/50 leading-relaxed text-base md:text-lg">{job.description}</p>
+                    <p className="max-w-3xl text-base leading-relaxed text-[var(--color-text-muted)] md:text-lg">{job.description}</p>
                     <div className="flex flex-wrap gap-2">
                       {job.tags.map((tag) => (
-                        <span key={tag} className="text-[9px] md:text-[10px] font-black uppercase tracking-widest px-2 md:px-3 py-1 border border-white/10 text-white/40 bg-white/5">{tag}</span>
+                        <span key={tag} className="border border-[var(--color-border)] bg-[var(--color-pill)] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] md:px-3 md:text-[10px]">{tag}</span>
                       ))}
                     </div>
                   </div>
-                  <div className="flex flex-col items-start md:items-end justify-between py-2 md:border-l border-white/10 md:pl-8 h-full">
-                    <span className="text-xs md:text-sm font-bold text-white/30 uppercase tracking-tighter tabular-nums">{job.period}</span>
+                  <div className="flex h-full flex-col items-start justify-between py-2 md:items-end md:border-l md:border-[var(--color-border)] md:pl-8">
+                    <span className="text-xs font-bold uppercase tracking-tighter text-[var(--color-text-muted)] opacity-80 tabular-nums md:text-sm">{job.period}</span>
                   </div>
                 </div>
               ))}
@@ -318,10 +346,10 @@ function App() {
           </section>
 
           {/* SELECTED WORKS */}
-          <section id="work" className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-24 border-t border-white/5">
+          <section id="work" className="mx-auto max-w-7xl border-t border-[var(--color-border-soft)] px-3 py-12 md:px-4 md:py-24">
             <div className="mb-12 md:mb-20 group">
-              <h2 className="text-xl md:text-2xl uppercase tracking-[0.4em] text-white/40 mb-4 font-black transition-colors duration-300 group-hover:text-blue-500">Selected Works</h2>
-              <div className="h-[1px] w-full bg-white/10 group-hover:bg-blue-500/50 transition-colors duration-300" />
+              <h2 className="mb-4 text-xl font-black uppercase tracking-[0.4em] text-[var(--color-text-muted)] transition-colors duration-300 group-hover:text-[var(--color-accent)] md:text-2xl">Selected Works</h2>
+              <div className="h-[1px] w-full bg-[var(--color-border)] transition-colors duration-300 group-hover:bg-[var(--color-accent-border)]" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {projects.map((p, i) => (<ProjectCard key={i} {...p} />))}
@@ -329,20 +357,20 @@ function App() {
           </section>
 
           {/* BEYOND THE CODE */}
-          <section id="hobbies" className="max-w-6xl mx-auto px-4 md:px-6 py-12 md:py-24 border-t border-white/5">
+          <section id="hobbies" className="mx-auto max-w-7xl border-t border-[var(--color-border-soft)] px-3 py-12 md:px-4 md:py-24">
             <div className="mb-12 md:mb-20 group">
-              <h2 className="text-xl md:text-2xl uppercase tracking-[0.4em] text-white/40 mb-4 font-black transition-colors duration-300 group-hover:text-blue-500">Beyond the Code</h2>
-              <div className="h-[1px] w-full bg-white/10 group-hover:bg-blue-500/50 transition-colors duration-300" />
+              <h2 className="mb-4 text-xl font-black uppercase tracking-[0.4em] text-[var(--color-text-muted)] transition-colors duration-300 group-hover:text-[var(--color-accent)] md:text-2xl">Beyond the Code</h2>
+              <div className="h-[1px] w-full bg-[var(--color-border)] transition-colors duration-300 group-hover:bg-[var(--color-accent-border)]" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {hobbies.map((hobby, i) => (
-                <div key={i} className="rounded-2xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-all group overflow-hidden">
+                <div key={i} className="group overflow-hidden rounded-2xl border border-[var(--color-border-soft)] bg-[var(--color-pill)] transition-all hover:border-[var(--color-accent-border)] hover:bg-[var(--color-pill-strong)]">
                   <div className="aspect-video w-full overflow-hidden">
                     <img src={hobby.image} alt={hobby.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" />
                   </div>
                   <div className="p-6 md:p-8">
-                    <h3 className="text-lg md:text-xl font-bold text-white mb-2">{hobby.name}</h3>
-                    <p className="text-white/50 text-sm">{hobby.description}</p>
+                    <h3 className="mb-2 text-lg font-bold text-[var(--color-text)] md:text-xl">{hobby.name}</h3>
+                    <p className="text-sm text-[var(--color-text-muted)]">{hobby.description}</p>
                   </div>
                 </div>
               ))}
@@ -350,24 +378,24 @@ function App() {
           </section>
 
           {/* CONTACT FOOTER */}
-          <footer id="contact" className="max-w-7xl mx-auto px-4 md:px-6 py-20 md:py-32 border-t border-white/5 overflow-hidden">
+          <footer id="contact" className="mx-auto max-w-7xl overflow-hidden border-t border-[var(--color-border-soft)] px-4 py-20 md:px-6 md:py-32">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div> 
-                <h2 className="text-5xl md:text-8xl font-black text-white tracking-tighter mb-4">
+                <h2 className="mb-4 text-5xl font-black tracking-tighter text-[var(--color-text)] md:text-8xl">
                   send me <br className="hidden md:block" /> anything!
                 </h2>
-                <p className="text-base md:text-xl text-white/50 mb-8 md:mb-12 font-medium">chat? i love to meet new people.</p>
+                <p className="mb-8 text-base font-medium text-[var(--color-text-muted)] md:mb-12 md:text-xl">chat? i love to meet new people.</p>
 
                 <div className="space-y-2 relative group/copy">
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 italic">
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-muted)] italic">
                     QUESTIONS? HIT ME UP ↓
                   </p>
                   <button
                     onClick={handleCopyEmail}
-                    className="text-xl md:text-4xl font-black text-white hover:text-blue-500 transition-colors underline decoration-blue-500/30 underline-offset-8 text-left relative"
+                    className="relative text-left text-xl font-black text-[var(--color-text)] underline underline-offset-8 decoration-[var(--color-accent-border)] transition-colors hover:text-[var(--color-accent)] md:text-4xl"
                   >
                     nleelath@uwaterloo.ca
-                    <span className={`absolute -top-10 left-0 bg-blue-600 text-white text-[10px] font-black px-3 py-1 rounded transition-opacity duration-300 ${copied ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                    <span className={`absolute -top-10 left-0 rounded bg-[var(--color-accent)] px-3 py-1 text-[10px] font-black text-white transition-opacity duration-300 ${copied ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
                       COPIED!
                     </span>
                   </button>

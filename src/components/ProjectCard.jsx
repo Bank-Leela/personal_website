@@ -13,12 +13,12 @@ const ProjectCard = ({
   placeholderLabel,
 }) => {
   return (
-    <div className="group relative bg-[#111] border border-white/10 p-8 rounded-3xl hover:border-blue-500/50 transition-all duration-500 shadow-2xl h-full flex flex-col">
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl" />
+    <div className="group relative flex h-full flex-col rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-2xl transition-all duration-500 hover:border-[var(--color-accent-border)]">
+      <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[var(--color-accent-soft)] via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
       
       <div className="relative z-10 flex flex-col h-full">
         {(image || placeholderLabel) && (
-          <div className="mb-6 overflow-hidden rounded-2xl border border-white/10 bg-[#0b1220]">
+          <div className="mb-6 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)]">
             {image ? (
               <img
                 src={image}
@@ -26,8 +26,8 @@ const ProjectCard = ({
                 className="h-48 w-full object-cover object-top"
               />
             ) : (
-              <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-blue-500/20 via-slate-900 to-slate-950">
-                <span className="text-sm font-black uppercase tracking-[0.3em] text-blue-200/80">
+              <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-[var(--color-accent-soft)] via-[#201717] to-[var(--color-bg)]">
+                <span className="text-sm font-black uppercase tracking-[0.3em] text-[var(--color-text-muted)]">
                   {placeholderLabel}
                 </span>
               </div>
@@ -36,29 +36,28 @@ const ProjectCard = ({
         )}
 
         <div className="flex justify-between items-start mb-6">
-          <h3 className="text-2xl font-bold text-white tracking-tight">{title}</h3>
+          <h3 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">{title}</h3>
           <div className="flex gap-3">
             {repo && (
-              <a href={repo} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-white transition-colors">
+              <a href={repo} target="_blank" rel="noreferrer" className="text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]">
                 <Github size={20} />
               </a>
             )}
             {link && (
-              <a href={link} target="_blank" rel="noreferrer" className="text-gray-400 hover:text-white transition-colors">
+              <a href={link} target="_blank" rel="noreferrer" className="text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]">
                 <ExternalLink size={20} />
               </a>
             )}
           </div>
         </div>
         
-        <p className="text-gray-400 mb-8 leading-relaxed">
+        <p className="mb-8 leading-relaxed text-[var(--color-text-muted)]">
           {description}
         </p>
         
         <div className="flex flex-wrap gap-2 mt-auto">
-          {/* ADDED SAFETY GUARD HERE: (tags || []) */}
           {(tags || []).map((tag) => (
-            <span key={tag} className="text-[10px] font-black uppercase tracking-widest text-blue-400 bg-blue-400/5 border border-blue-400/20 px-3 py-1 rounded-full">
+            <span key={tag} className="rounded-full border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--color-tag-text)]">
               {tag}
             </span>
           ))}

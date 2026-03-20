@@ -2,12 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-bg: #111111;
+  --color-bg-elevated: #171717;
+  --color-surface: #1b1b1b;
+  --color-surface-strong: #242424;
+  --color-text: #f3f3f3;
+  --color-text-muted: #9a9a9a;
+  --color-accent: #e5484d;
+  --color-accent-soft: rgba(229, 72, 77, 0.12);
+  --color-accent-border: rgba(229, 72, 77, 0.28);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-soft: rgba(255, 255, 255, 0.05);
+  --color-nav: rgba(17, 17, 17, 0.72);
+  --color-pill: rgba(255, 255, 255, 0.05);
+  --color-pill-strong: rgba(255, 255, 255, 0.08);
+  --color-tag-text: #f0b2b4;
+  --color-selection: rgba(229, 72, 77, 0.18);
+  --color-shadow: rgba(229, 72, 77, 0.2);
+  --color-bg-gradient-start: #141414;
+  --color-bg-gradient-mid: #111111;
+  --color-bg-gradient-end: #171717;
+  --color-radial: rgba(229, 72, 77, 0.08);
+}
+
+:root[data-theme="light"] {
+  --color-bg: #f4efe8;
+  --color-bg-elevated: #fbf7f1;
+  --color-surface: #efe7dc;
+  --color-surface-strong: #e4d7c8;
+  --color-text: #181614;
+  --color-text-muted: #6b6259;
+  --color-accent: #c84f46;
+  --color-accent-soft: rgba(200, 79, 70, 0.12);
+  --color-accent-border: rgba(200, 79, 70, 0.28);
+  --color-border: rgba(24, 22, 20, 0.12);
+  --color-border-soft: rgba(24, 22, 20, 0.08);
+  --color-nav: rgba(244, 239, 232, 0.78);
+  --color-pill: rgba(24, 22, 20, 0.04);
+  --color-pill-strong: rgba(24, 22, 20, 0.07);
+  --color-tag-text: #8f3d37;
+  --color-selection: rgba(200, 79, 70, 0.16);
+  --color-shadow: rgba(200, 79, 70, 0.16);
+  --color-bg-gradient-start: #fbf7f1;
+  --color-bg-gradient-mid: #f4efe8;
+  --color-bg-gradient-end: #efe7dc;
+  --color-radial: rgba(200, 79, 70, 0.07);
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
+  background:
+    radial-gradient(circle at top right, var(--color-radial), transparent 28%),
+    linear-gradient(180deg, var(--color-bg-gradient-start) 0%, var(--color-bg-gradient-mid) 30%, var(--color-bg-gradient-end) 100%);
+  color: var(--color-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background 250ms ease, color 250ms ease;
+}
+
+a {
+  color: inherit;
 }
