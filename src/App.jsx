@@ -132,7 +132,17 @@ function App() {
           />
         </div>
 
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-auto">
+        <div
+          className="absolute inset-0 flex items-center justify-center pointer-events-auto"
+          style={
+            theme === "light"
+              ? {
+                  filter:
+                    "sepia(0.58) saturate(0.42) hue-rotate(-12deg) brightness(1.08) contrast(0.9)",
+                }
+              : undefined
+          }
+        >
           <Globe
             ref={globeRef}
             width={globeSize.width}
@@ -162,7 +172,7 @@ function App() {
             labelsData={markerData}
             labelText="label"
             labelSize={1.5}
-            labelColor={() => (theme === "dark" ? "#f3f3f3" : "#181614")}
+            labelColor={() => "#f3f3f3"}
             labelDotRadius={0.4}
             labelAltitude={0.05}
             arcsData={arcsData}
@@ -194,6 +204,7 @@ function App() {
           { icon: Mail, href: "mailto:natdanai.leelathanapipat@gmail.com", label: "Gmail" },
           { icon: Github, href: "https://github.com/Bank-Leela", label: "Github" },
           { icon: Linkedin, href: "https://www.linkedin.com/in/bank-leelathanapipat", label: "LinkedIn" },
+          { mask: "/devpost.svg", href: "https://devpost.com/natdanai-leelathanapipat?ref_content=user-portfolio&ref_feature=portfolio&ref_medium=global-nav", label: "Devpost" },
           { icon: FileText, href: "/Bank_Leela.pdf", label: "Resume" },
         ].map((social, i) => (
           <a
@@ -204,7 +215,24 @@ function App() {
             className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-pill)] text-[var(--color-text-muted)] transition-all duration-300 hover:border-[var(--color-accent-border)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)] md:h-12 md:w-12"
             title={social.label}
           >
-            <social.icon size={18} />
+            {social.icon ? (
+              <social.icon size={18} />
+            ) : (
+              <span
+                className="h-[18px] w-[18px] bg-current"
+                style={{
+                  WebkitMaskImage: `url(${social.mask})`,
+                  maskImage: `url(${social.mask})`,
+                  WebkitMaskRepeat: "no-repeat",
+                  maskRepeat: "no-repeat",
+                  WebkitMaskPosition: "center",
+                  maskPosition: "center",
+                  WebkitMaskSize: "contain",
+                  maskSize: "contain",
+                }}
+                aria-hidden="true"
+              />
+            )}
           </a>
         ))}
       </div>
@@ -221,14 +249,14 @@ function App() {
     {
       title: "Badminton Tracker",
       description: "A full-stack match analytics platform. Built with a React frontend and MongoDB backend to track real-time scores and historical match performance.",
-      tags: ["MERN Stack", "API Development", "Tailwind CSS", "Data Analytics", "MongoDB"],
+      tags: ["MERN Stack", "TypeScript", "API Development", "Tailwind CSS", "Data Analytics", "MongoDB"],
       repo: "https://github.com/Bank-Leela/badminton_tracker",
       placeholderLabel: "Coming Soon",
     },
     {
       title: "Sentinel",
       description: "A hackathon-built real-time fraud detection platform that combines anomaly scoring, deterministic rules, graph-based network analysis, and an analyst workflow UI for incident triage and investigation.",
-      tags: ["FastAPI", "Next.js", "Machine Learning", "Isolation Forest", "Graph Analysis"],
+      tags: ["Python", "FastAPI", "Next.js", "Machine Learning", "Isolation Forest", "Graph Analysis"],
       repo: "https://github.com/SarveshwarSenthilKumar/Sentinel",
       link: "https://devpost.com/software/sentinel-128ad4",
       image: "/sentinel.png",
