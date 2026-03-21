@@ -13,6 +13,9 @@ import {
 } from "lucide-react";
 
 function App() {
+  const headerRef = useRef(null);
+  const [heroGlow, setHeroGlow] = useState({ x: 50, y: 50, active: false });
+  const [activeSection, setActiveSection] = useState(null);
   const [theme, setTheme] = useState(() => {
     if (typeof window === "undefined") {
       return "dark";
@@ -28,6 +31,33 @@ function App() {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem("theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    const sectionIds = ["experience", "work", "hobbies", "contact"];
+    const sectionElements = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter(Boolean);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleSections = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+        if (visibleSections.length > 0) {
+          setActiveSection(visibleSections[0].target.id);
+        }
+      },
+      {
+        rootMargin: "-25% 0px -55% 0px",
+        threshold: [0.15, 0.3, 0.5, 0.75],
+      }
+    );
+
+    sectionElements.forEach((section) => observer.observe(section));
+
+    return () => observer.disconnect();
+  }, []);
 
   const handleCopyEmail = (e) => {
     e.preventDefault();
@@ -271,6 +301,28 @@ function App() {
     { name: "Gaming", image: "minecraft.avif", description: "Strategy and teamwork focused. I enjoy Valorant, Minecraft, and co-op horror like Phasmophobia and Devour." },
   ];
 
+  const navItems = [
+    { id: "experience", label: "Experiences" },
+    { id: "work", label: "Work" },
+    { id: "hobbies", label: "Hobbies" },
+    { id: "contact", label: "Contact" },
+  ];
+
+  const handleHeroMouseMove = (event) => {
+    if (!headerRef.current) {
+      return;
+    }
+
+    const bounds = headerRef.current.getBoundingClientRect();
+    const x = ((event.clientX - bounds.left) / bounds.width) * 100;
+    const y = ((event.clientY - bounds.top) / bounds.height) * 100;
+    setHeroGlow({ x, y, active: true });
+  };
+
+  const handleHeroMouseLeave = () => {
+    setHeroGlow((current) => ({ ...current, active: false }));
+  };
+
   return (
     <div className="relative selection:bg-[var(--color-accent-soft)]">
       <div className="fixed inset-0 -z-10 h-screen w-full bg-[var(--color-bg)]"></div>
@@ -284,10 +336,19 @@ function App() {
               <span className="hidden md:inline">Bank Leelathanapipat</span>
             </span>
             <div className="flex items-center gap-4 text-[10px] font-medium text-[var(--color-text-muted)] md:gap-8 md:text-sm">
-              <a href="#experience" className="transition-colors hover:text-[var(--color-text)]">Experiences</a>
-              <a href="#work" className="transition-colors hover:text-[var(--color-text)]">Work</a>
-              <a href="#hobbies" className="transition-colors hover:text-[var(--color-text)]">Hobbies</a>
-              <a href="#contact" className="transition-colors hover:text-[var(--color-text)]">Contact</a>
+              {navItems.map((item) => (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  className={`relative transition-colors after:absolute after:left-0 after:top-[calc(100%+10px)] after:h-[2px] after:w-full after:origin-left after:rounded-full after:bg-[var(--color-accent)] after:transition-transform after:duration-300 ${
+                    activeSection === item.id
+                      ? "text-[var(--color-text)] after:scale-x-100"
+                      : "hover:text-[var(--color-text)] after:scale-x-0"
+                  }`}
+                >
+                  {item.label}
+                </a>
+              ))}
               <button
                 type="button"
                 onClick={() => setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"))}
@@ -301,7 +362,23 @@ function App() {
           </div>
         </nav>
 
-        <header className="relative mx-auto flex min-h-screen max-w-7xl items-center px-3 pt-20 md:px-4">
+        <header
+          ref={headerRef}
+          className="relative mx-auto flex min-h-screen max-w-7xl items-center overflow-hidden px-3 pt-20 md:px-4"
+          onMouseMove={handleHeroMouseMove}
+          onMouseLeave={handleHeroMouseLeave}
+        >
+          <div
+            className={`pointer-events-none absolute inset-0 transition-opacity duration-300 ${
+              heroGlow.active ? "opacity-100" : "opacity-0"
+            }`}
+            style={{
+              background: `radial-gradient(circle at ${heroGlow.x}% ${heroGlow.y}%, var(--color-accent-soft), transparent 20%)`,
+            }}
+          />
+          <div className="pointer-events-none absolute -left-24 top-28 h-72 w-72 rounded-full bg-[var(--color-accent-soft)] blur-3xl opacity-40" />
+          <div className="pointer-events-none absolute right-0 top-16 h-64 w-64 rounded-full bg-[var(--color-accent-soft)] blur-3xl opacity-15" />
+
           <div className="relative z-10">
             <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-8">
               <div className="flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-pill)] px-3 py-2 backdrop-blur-sm md:px-4">
@@ -318,7 +395,7 @@ function App() {
               </div>
             </div>
 
-            <h1 className="mb-8 text-5xl font-black leading-[0.9] tracking-tighter text-[var(--color-text)] md:text-8xl md:leading-[0.85]">
+            <h1 className="mb-8 text-5xl font-black leading-[0.9] tracking-tighter text-[var(--color-text)] transition-transform duration-200 md:text-8xl md:leading-[0.85]">
               Bank Leelathanapipat
             </h1>
             <p className="mb-8 text-lg font-bold tracking-tight text-[var(--color-text)] opacity-90 md:text-2xl">
