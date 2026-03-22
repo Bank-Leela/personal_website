@@ -5,9 +5,14 @@ import { ExternalLink, Github } from 'lucide-react';
 const ProjectCard = ({
   title,
   description,
+  problem,
+  built,
+  highlight,
   tags,
   repo,
+  repoLabel,
   link,
+  linkLabel,
   image,
   imageAlt,
   placeholderLabel,
@@ -82,9 +87,44 @@ const ProjectCard = ({
           </div>
         </div>
         
-        <p className="mb-8 leading-relaxed text-[var(--color-text-muted)]">
-          {description}
-        </p>
+        <div className="mb-8 space-y-4">
+          <p className="leading-relaxed text-[var(--color-text-muted)]">
+            {description}
+          </p>
+
+          {problem && (
+            <div className="space-y-1">
+              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--color-text-muted)] opacity-80">
+                Problem
+              </p>
+              <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">
+                {problem}
+              </p>
+            </div>
+          )}
+
+          {built && (
+            <div className="space-y-1">
+              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--color-text-muted)] opacity-80">
+                What I Built
+              </p>
+              <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">
+                {built}
+              </p>
+            </div>
+          )}
+
+          {highlight && (
+            <div className="rounded-2xl border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-4 py-3">
+              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--color-tag-text)]">
+                Technical Highlight
+              </p>
+              <p className="mt-2 text-sm font-medium leading-relaxed text-[var(--color-text)]">
+                {highlight}
+              </p>
+            </div>
+          )}
+        </div>
         
         <div className="mt-auto flex flex-wrap gap-2">
           {(tags || []).map((tag) => (
@@ -108,7 +148,7 @@ const ProjectCard = ({
                   className="inline-flex translate-y-2 items-center gap-2 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 hover:text-[var(--color-text)]"
                 >
                   <Github size={16} />
-                  Source
+                  {repoLabel || "Source"}
                 </a>
               )}
               {link && (
@@ -119,7 +159,7 @@ const ProjectCard = ({
                   className="inline-flex translate-y-2 items-center gap-2 opacity-0 transition-all duration-300 delay-75 group-hover:translate-y-0 group-hover:opacity-100 hover:text-[var(--color-text)]"
                 >
                   <ExternalLink size={16} />
-                  Live
+                  {linkLabel || "Live Demo"}
                 </a>
               )}
             </div>

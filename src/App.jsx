@@ -307,21 +307,34 @@ function App() {
   const projects = [
     {
       title: "Badminton Tracker",
-      description: "A full-stack match analytics platform. Built with a React frontend and MongoDB backend to track real-time scores and historical match performance.",
+      description: "A full-stack match analytics platform for competitive players who want more than a running score.",
+      problem: "Most casual score trackers stop at points. I wanted a tool that could also capture match history and make performance trends easier to analyze over time.",
+      built: "I built the frontend and backend flow for real-time scorekeeping, match history storage, and an interface that makes past performance easy to review.",
+      highlight: "Designed the stack around live updates plus persistent analytics, balancing responsive match-day interactions with longer-term data tracking.",
       tags: ["MERN Stack", "TypeScript", "API Development", "Tailwind CSS", "Data Analytics", "MongoDB"],
       repo: "https://github.com/Bank-Leela/badminton_tracker",
+      repoLabel: "Source",
       placeholderLabel: "Coming Soon",
     },
     {
       title: "Sentinel",
-      description: "A hackathon-built real-time fraud detection platform that combines anomaly scoring, deterministic rules, graph-based network analysis, and an analyst workflow UI for incident triage and investigation.",
+      description: "A hackathon-built fraud detection platform designed to help analysts investigate suspicious behavior beyond isolated transactions.",
+      problem: "Fraud tools often surface alerts without enough context. We wanted a system that could help analysts understand connected activity, not just single anomalous events.",
+      built: "I contributed to a workflow that combines anomaly scoring, rules, graph-based investigation, and a UI for triage so teams can move from alert to explanation faster.",
+      highlight: "The main challenge was combining multiple detection strategies into one analyst-friendly experience without losing clarity during a short hackathon build window.",
       tags: ["Python", "FastAPI", "Next.js", "Machine Learning", "Isolation Forest", "Graph Analysis"],
       repo: "https://github.com/SarveshwarSenthilKumar/Sentinel",
+      repoLabel: "Source",
       link: "https://devpost.com/software/sentinel-128ad4",
+      linkLabel: "Case Study",
       image: "/sentinel.png",
       imageAlt: "Sentinel fraud detection dashboard",
     },
-    { title: "Upcoming Project", description: "...", tags: [] },
+    {
+      title: "Upcoming Project",
+      description: "Coming soon...",
+      tags: [],
+    },
   ];
 
   const hobbies = [
