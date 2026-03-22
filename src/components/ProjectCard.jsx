@@ -72,7 +72,7 @@ const ProjectCard = ({
         )}
 
         <div className="flex justify-between items-start mb-6">
-          <h3 className="text-2xl font-bold tracking-tight text-[var(--color-text)]">{title}</h3>
+          <h3 className="font-display text-2xl font-bold tracking-tight text-[var(--color-text)]">{title}</h3>
           <div className="flex gap-3 opacity-75 transition-all duration-300 group-hover:translate-x-0.5 group-hover:opacity-100">
             {repo && (
               <a href={repo} target="_blank" rel="noreferrer" className="text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]">
