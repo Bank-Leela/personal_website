@@ -573,9 +573,101 @@ function App() {
               <h3 className="font-display mt-4 text-2xl font-bold text-[var(--color-text)] md:text-3xl">
                 Music
               </h3>
-              <p className="mt-4 max-w-4xl text-sm leading-8 text-[var(--color-text-muted)] md:text-base">
-                Music is usually part of how I focus, reset, and think through things outside of code. I like listening while studying, building projects, or just slowing down after a long day. Some songs I keep coming back to are <span className="text-[var(--color-text)]">SAY YES</span>, <span className="text-[var(--color-text)]">Sparkle</span>, and <span className="text-[var(--color-text)]">Comedy</span>.
+              <p className="mt-4 text-sm leading-8 text-[var(--color-text-muted)] md:text-base">
+                Music is a big part of how I focus, reset, and unwind outside of code. My taste moves across a few different genres, especially <span className="text-[var(--color-text)]">Thai-pop</span>, <span className="text-[var(--color-text)]">Japanese-pop</span>, <span className="text-[var(--color-text)]">city-pop</span>, and <span className="text-[var(--color-text)]">hip-hop</span>. Depending on the mood, I like having different sounds on while studying, building projects, or just slowing down after a long day.
               </p>
+
+              <div className="mt-8 space-y-4">
+                {[
+                  {
+                    genre: "Thai-pop",
+                    note: "I like Thai-pop for its melodic hooks and the mix of polished production with a more emotional feel.",
+                    embeds: [
+                      {
+                        title: "Thai-pop track preview",
+                        src: "https://open.spotify.com/embed/track/34XtsYtOE2XUlgF8Iv2WUz?utm_source=generator&theme=0",
+                      },
+                      {
+                        title: "Thai-pop artist preview",
+                        src: "https://open.spotify.com/embed/artist/5pxvW2nJ0a77b9oX24Unwi?utm_source=generator&theme=0",
+                      },
+                    ],
+                  },
+                  {
+                    genre: "Japanese-pop",
+                    note: "Japanese-pop is one of the genres I come back to the most, especially songs tied to anime, films, and strong storytelling.",
+                    embeds: [
+                      {
+                        title: "Japanese-pop track preview",
+                        src: "https://open.spotify.com/embed/track/1FOhzA4qQiyVnzVYt1KcgN?utm_source=generator&theme=0",
+                      },
+                      {
+                        title: "Japanese-pop artist preview",
+                        src: "https://open.spotify.com/embed/artist/1EowJ1WwkMzkCkRomFhui7?utm_source=generator&theme=0",
+                      },
+                    ],
+                  },
+                  {
+                    genre: "City-pop",
+                    note: "City-pop is what I usually reach for when I want something smoother, more laid-back, and easy to have on in the background.",
+                    embeds: [
+                      {
+                        title: "City-pop track preview",
+                        src: "https://open.spotify.com/embed/track/0JUWF44gfMszGNhjCF7Ufs?utm_source=generator&theme=0",
+                      },
+                      {
+                        title: "City-pop artist preview",
+                        src: "https://open.spotify.com/embed/artist/0xGtOrmB2hnrNRLG3vhpSo?utm_source=generator&theme=0",
+                      },
+                    ],
+                  },
+                  {
+                    genre: "Hip-hop",
+                    note: "Hip-hop gives me a different kind of energy and rhythm, especially when I want something more driving while working through ideas.",
+                    embeds: [
+                      {
+                        title: "Hip-hop track preview",
+                        src: "https://open.spotify.com/embed/track/0y9uTzK9cNKSAEHnpeRG8C?utm_source=generator&theme=0",
+                      },
+                      {
+                        title: "Hip-hop artist preview",
+                        src: "https://open.spotify.com/embed/artist/2YZyLoL8N0Wb9xBt1NhZWg?utm_source=generator&theme=0",
+                      },
+                    ],
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.genre}
+                    className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-5 transition-colors duration-300 hover:border-[var(--color-accent-border)] md:px-6 md:py-6"
+                  >
+                    <p className="font-display text-lg font-bold text-[var(--color-text)] md:text-xl">
+                      {item.genre}
+                    </p>
+                    <div className="mt-3">
+                      <p className="text-sm leading-7 text-[var(--color-text-muted)] md:text-base">
+                        {item.note}
+                      </p>
+                      {item.embeds && (
+                        <div className="mt-5 grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+                          {item.embeds.map((embed) => (
+                            <iframe
+                              key={embed.src}
+                              title={embed.title}
+                              src={embed.src}
+                              width="100%"
+                              height="152"
+                              className="w-full rounded-xl"
+                              frameBorder="0"
+                              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                              loading="lazy"
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </section>
 
@@ -586,7 +678,28 @@ function App() {
                 <h2 className="font-display mb-4 text-5xl font-black tracking-tighter text-[var(--color-text)] md:text-8xl">
                   send me <br className="hidden md:block" /> anything!
                 </h2>
-                <p className="mb-8 text-base font-medium text-[var(--color-text-muted)] md:mb-12 md:text-xl">chat? i love to meet new people.</p>
+                <p className="mb-8 max-w-2xl text-base font-medium leading-relaxed text-[var(--color-text-muted)] md:mb-12 md:text-xl">
+                  Whether it&apos;s a research opportunity, a project idea, or just a conversation about hardware and systems, I&apos;d love to hear from you.
+                </p>
+
+                <div className="mb-8 flex flex-wrap gap-3 md:mb-10">
+                  <a
+                    href="/Bank_Leela.pdf"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-pill)] px-5 py-2.5 text-sm font-semibold text-[var(--color-text)] transition-all duration-300 hover:border-[var(--color-accent-border)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)]"
+                  >
+                    View Resume
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/in/bank-leelathanapipat"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-pill)] px-5 py-2.5 text-sm font-semibold text-[var(--color-text)] transition-all duration-300 hover:border-[var(--color-accent-border)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)]"
+                  >
+                    LinkedIn
+                  </a>
+                </div>
 
                 <div className="space-y-2 relative group/copy">
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-muted)] italic">
