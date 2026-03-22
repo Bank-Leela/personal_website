@@ -34,29 +34,58 @@ function App() {
 
   useEffect(() => {
     const sectionIds = ["experience", "work", "hobbies", "contact"];
-    const sectionElements = sectionIds
-      .map((id) => document.getElementById(id))
-      .filter(Boolean);
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visibleSections = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+    const updateActiveSection = () => {
+      const navOffset = 120;
+      const scrollPosition = window.scrollY + navOffset;
+      const sections = sectionIds
+        .map((id) => document.getElementById(id))
+        .filter(Boolean);
 
-        if (visibleSections.length > 0) {
-          setActiveSection(visibleSections[0].target.id);
-        }
-      },
-      {
-        rootMargin: "-25% 0px -55% 0px",
-        threshold: [0.15, 0.3, 0.5, 0.75],
+      if (sections.length === 0) {
+        return;
       }
-    );
 
-    sectionElements.forEach((section) => observer.observe(section));
+      const firstSectionTop = sections[0].offsetTop;
 
-    return () => observer.disconnect();
+      if (scrollPosition < firstSectionTop) {
+        setActiveSection(null);
+        return;
+      }
+
+      let currentSection = sections[0].id;
+
+      sections.forEach((section) => {
+        if (scrollPosition >= section.offsetTop) {
+          currentSection = section.id;
+        }
+      });
+
+      setActiveSection(currentSection);
+    };
+
+    updateActiveSection();
+    window.addEventListener("scroll", updateActiveSection, { passive: true });
+    window.addEventListener("resize", updateActiveSection);
+
+    return () => {
+      window.removeEventListener("scroll", updateActiveSection);
+      window.removeEventListener("resize", updateActiveSection);
+    };
+  }, []);
+
+  useEffect(() => {
+    const syncHashSection = () => {
+      const hash = window.location.hash.replace("#", "");
+      if (hash) {
+        setActiveSection(hash);
+      }
+    };
+
+    syncHashSection();
+    window.addEventListener("hashchange", syncHashSection);
+
+    return () => window.removeEventListener("hashchange", syncHashSection);
   }, []);
 
   const handleCopyEmail = (e) => {
@@ -340,10 +369,11 @@ function App() {
                 <a
                   key={item.id}
                   href={`#${item.id}`}
-                  className={`relative transition-colors after:absolute after:left-0 after:top-[calc(100%+10px)] after:h-[2px] after:w-full after:origin-left after:rounded-full after:bg-[var(--color-accent)] after:transition-transform after:duration-300 ${
+                  onClick={() => setActiveSection(item.id)}
+                  className={`relative pb-2 transition-colors after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-left after:rounded-full after:bg-[var(--color-accent)] after:transition-transform after:duration-300 ${
                     activeSection === item.id
                       ? "text-[var(--color-text)] after:scale-x-100"
-                      : "hover:text-[var(--color-text)] after:scale-x-0"
+                      : "hover:text-[var(--color-text)] after:scale-x-0 hover:after:scale-x-100"
                   }`}
                 >
                   {item.label}
