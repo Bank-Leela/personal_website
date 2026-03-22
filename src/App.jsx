@@ -394,7 +394,7 @@ function App() {
             <div className="absolute inset-0 rounded-full border border-[var(--color-accent-border)]" />
             <div className="absolute inset-2 rounded-full border-2 border-transparent border-t-[var(--color-accent)] border-r-[var(--color-accent)] animate-spin" />
             <div className="absolute inset-[18px] rounded-full bg-[var(--color-accent-soft)] blur-md" />
-            <span className="relative text-2xl font-black tracking-tight text-[var(--color-text)]">
+            <span className="font-display relative text-2xl font-black tracking-tight text-[var(--color-text)]">
               B
             </span>
           </div>
@@ -415,7 +415,7 @@ function App() {
         <nav className="fixed top-0 z-50 w-full border-b border-[var(--color-border-soft)] bg-[var(--color-nav)] backdrop-blur-md">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-3 py-4 md:px-4">
             {/* ✅ RESPONSIVE NAV: Smaller text/hidden full name on very small screens */}
-            <span className="text-sm font-black tracking-tighter text-[var(--color-text)] md:text-xl">
+            <span className="font-display text-sm font-black tracking-tighter text-[var(--color-text)] md:text-xl">
               <span className="md:hidden">Bank Leela</span>
               <span className="hidden md:inline">Bank Leelathanapipat</span>
             </span>
@@ -480,7 +480,7 @@ function App() {
               </div>
             </div>
 
-            <h1 className="mb-8 text-5xl font-black leading-[0.9] tracking-tighter text-[var(--color-text)] transition-transform duration-200 md:text-8xl md:leading-[0.85]">
+            <h1 className="font-display mb-8 text-5xl font-black leading-[0.9] tracking-tighter text-[var(--color-text)] transition-transform duration-200 md:text-8xl md:leading-[0.85]">
               Bank Leelathanapipat
             </h1>
             <p className="mb-8 text-lg font-bold tracking-tight text-[var(--color-text)] opacity-90 md:text-2xl">
@@ -509,7 +509,7 @@ function App() {
           {/* PROFESSIONAL JOURNEY */}
           <section id="experience" className="mx-auto max-w-7xl px-3 py-12 md:px-4 md:py-24">
             <div className="mb-12 md:mb-20 group">
-              <h2 className="mb-4 text-xl font-black uppercase tracking-[0.4em] text-[var(--color-text-muted)] transition-colors duration-300 group-hover:text-[var(--color-accent)] md:text-2xl">Professional Journey</h2>
+              <h2 className="font-display mb-4 text-xl font-black uppercase tracking-[0.4em] text-[var(--color-text-muted)] transition-colors duration-300 group-hover:text-[var(--color-accent)] md:text-2xl">Professional Journey</h2>
               <div className="h-[1px] w-full bg-[var(--color-border)] transition-colors duration-300 group-hover:bg-[var(--color-accent-border)]" />
             </div>
             <div className="space-y-16 md:y-24">
@@ -517,7 +517,7 @@ function App() {
                 <div key={i} className="group relative grid grid-cols-1 md:grid-cols-[1fr_auto] gap-x-12 gap-y-4 md:gap-y-6">
                   <div className="space-y-4 md:space-y-6">
                     <div className="space-y-2 md:space-y-3">
-                      <h3 className="text-3xl font-black tracking-tighter text-[var(--color-text)] transition-colors duration-500 group-hover:text-[var(--color-accent)] md:text-5xl">{job.company}</h3>
+                      <h3 className="font-display text-3xl font-black tracking-tighter text-[var(--color-text)] transition-colors duration-500 group-hover:text-[var(--color-accent)] md:text-5xl">{job.company}</h3>
                       <p className="text-lg font-bold tracking-tight text-[var(--color-text)] opacity-80 md:text-xl">{job.role}</p>
                     </div>
                     <p className="max-w-3xl text-base leading-relaxed text-[var(--color-text-muted)] md:text-lg">{job.description}</p>
@@ -538,7 +538,7 @@ function App() {
           {/* SELECTED WORKS */}
           <section id="work" className="mx-auto max-w-7xl border-t border-[var(--color-border-soft)] px-3 py-12 md:px-4 md:py-24">
             <div className="mb-12 md:mb-20 group">
-              <h2 className="mb-4 text-xl font-black uppercase tracking-[0.4em] text-[var(--color-text-muted)] transition-colors duration-300 group-hover:text-[var(--color-accent)] md:text-2xl">Selected Works</h2>
+              <h2 className="font-display mb-4 text-xl font-black uppercase tracking-[0.4em] text-[var(--color-text-muted)] transition-colors duration-300 group-hover:text-[var(--color-accent)] md:text-2xl">Selected Works</h2>
               <div className="h-[1px] w-full bg-[var(--color-border)] transition-colors duration-300 group-hover:bg-[var(--color-accent-border)]" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
@@ -549,21 +549,33 @@ function App() {
           {/* BEYOND THE CODE */}
           <section id="hobbies" className="mx-auto max-w-7xl border-t border-[var(--color-border-soft)] px-3 py-12 md:px-4 md:py-24">
             <div className="mb-12 md:mb-20 group">
-              <h2 className="mb-4 text-xl font-black uppercase tracking-[0.4em] text-[var(--color-text-muted)] transition-colors duration-300 group-hover:text-[var(--color-accent)] md:text-2xl">Beyond the Code</h2>
+              <h2 className="font-display mb-4 text-xl font-black uppercase tracking-[0.4em] text-[var(--color-text-muted)] transition-colors duration-300 group-hover:text-[var(--color-accent)] md:text-2xl">Beyond the Code</h2>
               <div className="h-[1px] w-full bg-[var(--color-border)] transition-colors duration-300 group-hover:bg-[var(--color-accent-border)]" />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
               {hobbies.map((hobby, i) => (
                 <div key={i} className="group overflow-hidden rounded-2xl border border-[var(--color-border-soft)] bg-[var(--color-pill)] transition-all hover:border-[var(--color-accent-border)] hover:bg-[var(--color-pill-strong)]">
                   <div className="aspect-video w-full overflow-hidden">
                     <img src={hobby.image} alt={hobby.name} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" />
                   </div>
                   <div className="p-6 md:p-8">
-                    <h3 className="mb-2 text-lg font-bold text-[var(--color-text)] md:text-xl">{hobby.name}</h3>
+                    <h3 className="font-display mb-2 text-lg font-bold text-[var(--color-text)] md:text-xl">{hobby.name}</h3>
                     <p className="text-sm text-[var(--color-text-muted)]">{hobby.description}</p>
                   </div>
                 </div>
               ))}
+            </div>
+
+            <div className="mt-10 rounded-2xl border border-[var(--color-border-soft)] bg-[var(--color-pill)] p-6 md:p-8">
+              <p className="text-[10px] font-black uppercase tracking-[0.35em] text-[var(--color-text-muted)]">
+                On Repeat
+              </p>
+              <h3 className="font-display mt-4 text-2xl font-bold text-[var(--color-text)] md:text-3xl">
+                Music
+              </h3>
+              <p className="mt-4 max-w-4xl text-sm leading-8 text-[var(--color-text-muted)] md:text-base">
+                Music is usually part of how I focus, reset, and think through things outside of code. I like listening while studying, building projects, or just slowing down after a long day. Some songs I keep coming back to are <span className="text-[var(--color-text)]">SAY YES</span>, <span className="text-[var(--color-text)]">Sparkle</span>, and <span className="text-[var(--color-text)]">Comedy</span>.
+              </p>
             </div>
           </section>
 
@@ -571,7 +583,7 @@ function App() {
           <footer id="contact" className="mx-auto max-w-7xl overflow-hidden border-t border-[var(--color-border-soft)] px-4 py-20 md:px-6 md:py-32">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div> 
-                <h2 className="mb-4 text-5xl font-black tracking-tighter text-[var(--color-text)] md:text-8xl">
+                <h2 className="font-display mb-4 text-5xl font-black tracking-tighter text-[var(--color-text)] md:text-8xl">
                   send me <br className="hidden md:block" /> anything!
                 </h2>
                 <p className="mb-8 text-base font-medium text-[var(--color-text-muted)] md:mb-12 md:text-xl">chat? i love to meet new people.</p>
