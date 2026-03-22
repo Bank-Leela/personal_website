@@ -16,6 +16,7 @@ function App() {
   const headerRef = useRef(null);
   const [heroGlow, setHeroGlow] = useState({ x: 50, y: 50, active: false });
   const [activeSection, setActiveSection] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [theme, setTheme] = useState(() => {
     if (typeof window === "undefined") {
       return "dark";
@@ -31,6 +32,22 @@ function App() {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem("theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    const minimumLoad = window.setTimeout(() => {
+      setIsLoading(false);
+    }, 1400);
+
+    return () => window.clearTimeout(minimumLoad);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = isLoading ? "hidden" : "";
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isLoading]);
 
   useEffect(() => {
     const sectionIds = ["experience", "work", "hobbies", "contact"];
@@ -367,6 +384,31 @@ function App() {
 
   return (
     <div className="relative selection:bg-[var(--color-accent-soft)]">
+      <div
+        className={`pointer-events-none fixed inset-0 z-[100] flex items-center justify-center bg-[var(--color-bg)] transition-opacity duration-700 ${
+          isLoading ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative flex h-20 w-20 items-center justify-center">
+            <div className="absolute inset-0 rounded-full border border-[var(--color-accent-border)]" />
+            <div className="absolute inset-2 rounded-full border-2 border-transparent border-t-[var(--color-accent)] border-r-[var(--color-accent)] animate-spin" />
+            <div className="absolute inset-[18px] rounded-full bg-[var(--color-accent-soft)] blur-md" />
+            <span className="relative text-2xl font-black tracking-tight text-[var(--color-text)]">
+              B
+            </span>
+          </div>
+          <div className="text-center">
+            <p className="text-xs font-black uppercase tracking-[0.45em] text-[var(--color-text-muted)]">
+              Loading Portfolio
+            </p>
+            <p className="mt-3 text-lg font-semibold tracking-tight text-[var(--color-text)]">
+              Bank Leelathanapipat
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="fixed inset-0 -z-10 h-screen w-full bg-[var(--color-bg)]"></div>
 
       <div className="relative z-10">
