@@ -316,8 +316,8 @@ function App() {
   };
 
   const experience = [
-    { company: "IEEE", role: "Research Assistant", period: "Jul 2024 — May 2025", description: "Engineered a low-budget IoT water level measurement system using ESP32 to facilitate flood mitigation. Results are officially published in the IEEE Xplore Digital Library.", tags: ["IoT", "ESP32", "System Design", "Research"] },
-    { company: "ODDS-Thailand", role: "Software Engineering Intern", period: "Jul 2024 — Aug. 2024", description: "Developed responsive UI components for a $300M financial platform. Optimized database queries for a MongoDB cluster containing 20M+ entries.", tags: ["React", "Tailwind CSS", "MongoDB", "Optimization"] },
+    { company: "IEEE", companyUrl: "https://ieeexplore.ieee.org/abstract/document/10811073", role: "Research Assistant", period: "Jul 2024 — May 2025", description: "Engineered a low-budget IoT water level measurement system using ESP32 to facilitate flood mitigation. Results are officially published in the IEEE Xplore Digital Library.", tags: ["IoT", "ESP32", "System Design", "Research"] },
+    { company: "ODDS-Thailand", companyUrl: "https://odds.team/", role: "Software Engineering Intern", period: "Jul 2024 — Aug. 2024", description: "Developed responsive UI components for a $300M financial platform. Optimized database queries for a MongoDB cluster containing 20M+ entries.", tags: ["React", "Tailwind CSS", "MongoDB", "Optimization"] },
     { company: "NurseMetrics", role: "Lead Developer", period: "May 2023 — Aug. 2024", description: "Architected a KPI tracking web application using Google Apps Script (JavaScript) to automate data entry, reducing reporting time by 70%.", tags: ["JavaScript", "Automation", "Healthcare Tech"] },
   ];
 
@@ -449,7 +449,7 @@ function App() {
 
         <header
           ref={headerRef}
-          className="relative mx-auto flex min-h-screen max-w-7xl items-center overflow-hidden px-3 pt-20 md:px-4"
+          className="relative flex min-h-screen w-full items-center overflow-hidden pt-20"
           onMouseMove={handleHeroMouseMove}
           onMouseLeave={handleHeroMouseLeave}
         >
@@ -464,7 +464,7 @@ function App() {
           <div className="pointer-events-none absolute -left-24 top-28 h-72 w-72 rounded-full bg-[var(--color-accent-soft)] blur-3xl opacity-40" />
           <div className="pointer-events-none absolute right-0 top-16 h-64 w-64 rounded-full bg-[var(--color-accent-soft)] blur-3xl opacity-15" />
 
-          <div className="relative z-10">
+          <div className="relative z-10 mx-auto w-full max-w-7xl px-3 md:px-4">
             <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-8">
               <div className="flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-pill)] px-3 py-2 backdrop-blur-sm md:px-4">
                 <MapPin size={12} className="text-[var(--color-accent)]" />
@@ -517,7 +517,20 @@ function App() {
                 <div key={i} className="group relative grid grid-cols-1 md:grid-cols-[1fr_auto] gap-x-12 gap-y-4 md:gap-y-6">
                   <div className="space-y-4 md:space-y-6">
                     <div className="space-y-2 md:space-y-3">
-                      <h3 className="font-display text-3xl font-black tracking-tighter text-[var(--color-text)] transition-colors duration-500 group-hover:text-[var(--color-accent)] md:text-5xl">{job.company}</h3>
+                      {job.companyUrl ? (
+                        <a
+                          href={job.companyUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="font-display text-3xl font-black tracking-tighter text-[var(--color-text)] transition-colors duration-500 group-hover:text-[var(--color-accent)] hover:text-[var(--color-accent)] md:text-5xl"
+                        >
+                          {job.company}
+                        </a>
+                      ) : (
+                        <h3 className="font-display text-3xl font-black tracking-tighter text-[var(--color-text)] transition-colors duration-500 group-hover:text-[var(--color-accent)] md:text-5xl">
+                          {job.company}
+                        </h3>
+                      )}
                       <p className="text-lg font-bold tracking-tight text-[var(--color-text)] opacity-80 md:text-xl">{job.role}</p>
                     </div>
                     <p className="max-w-3xl text-base leading-relaxed text-[var(--color-text-muted)] md:text-lg">{job.description}</p>
