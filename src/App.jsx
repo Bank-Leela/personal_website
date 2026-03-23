@@ -425,7 +425,7 @@ function App() {
                   key={item.id}
                   href={`#${item.id}`}
                   onClick={() => setActiveSection(item.id)}
-                  className={`relative pb-2 transition-colors after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-left after:rounded-full after:bg-[var(--color-accent)] after:transition-transform after:duration-300 ${
+                  className={`relative inline-flex h-9 items-center pb-1 transition-colors after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-left after:rounded-full after:bg-[var(--color-accent)] after:transition-transform after:duration-300 ${
                     activeSection === item.id
                       ? "text-[var(--color-text)] after:scale-x-100"
                       : "hover:text-[var(--color-text)] after:scale-x-0 hover:after:scale-x-100"
