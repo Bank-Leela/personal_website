@@ -4,11 +4,11 @@ import ScrollProgress from "./components/ScrollProgress";
 import Reveal from "./components/Reveal";
 import StatsBand from "./components/StatsBand";
 import ExperienceTimeline from "./components/ExperienceTimeline";
-import HeroCircuit from "./components/HeroCircuit";
 import MusicShelf from "./components/MusicShelf";
 import EasterEgg from "./components/EasterEgg";
 import Loader, { introAlreadySeen } from "./components/Loader";
 import useActiveSection from "./hooks/useActiveSection";
+import SmoothScroll from "./lib/SmoothScroll";
 import usePrefersReducedMotion from "./hooks/usePrefersReducedMotion";
 import { Mail, Linkedin, Github, FileText, Moon, Sun, Check, Copy } from "lucide-react";
 
@@ -280,6 +280,7 @@ function App() {
 
   return (
     <div className="relative">
+      <SmoothScroll />
       <ScrollProgress />
       <EasterEgg />
 
@@ -309,7 +310,7 @@ function App() {
 
       <div className="relative z-10">
         <nav className="fixed top-0 z-50 w-full border-b border-[var(--color-border-soft)] bg-[var(--color-nav)] backdrop-blur-md">
-          <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 md:h-[72px] md:px-6">
+          <div className="mx-auto flex h-16 max-w-[1520px] items-center justify-between gap-4 px-4 md:h-[72px] md:px-6">
             <a
               href="#top"
               className="font-display shrink-0 text-base font-black tracking-tight text-[var(--color-text)] md:text-lg"
@@ -363,8 +364,8 @@ function App() {
             className="pointer-glow pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-data-[glow=on]/hero:opacity-100"
           />
 
-          <div className="hero-recede relative z-10 mx-auto grid w-full max-w-7xl items-center gap-8 px-4 md:gap-10 md:px-6 lg:grid-cols-12 lg:gap-14">
-            <div className="lg:col-span-7">
+          <div className="hero-recede relative z-10 mx-auto w-full max-w-[1520px] px-4 md:px-6">
+            <div>
               <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-3 md:mb-8">
                 <span className="text-sm font-semibold tracking-tight text-[var(--color-text-muted)]">
                   Bank Leelathanapipat
@@ -382,13 +383,14 @@ function App() {
                   from `sm` up: on a 360px screen it would squeeze the headline
                   into a column narrower than the viewport and add a fourth
                   line, which is a font-scale error rather than a copy problem. */}
-              <h1 className="font-display mb-5 text-[clamp(1.9rem,8vw,2.6rem)] font-black leading-[1.05] tracking-tight text-[var(--color-text)] sm:max-w-[16ch] sm:text-6xl md:mb-7 lg:text-[4.1rem]">
-                Building the silicon that runs the models.
+              <h1 className="font-display mb-5 text-balance text-[clamp(1.9rem,8vw,2.6rem)] font-black leading-[1.02] tracking-tight text-[var(--color-text)] sm:max-w-[15ch] sm:text-7xl md:mb-7 lg:text-[5.4rem]">
+                Full-stack software, published research.
               </h1>
 
-              <p className="mb-8 max-w-[52ch] text-lg leading-relaxed md:mb-10 text-[var(--color-text-muted)] md:text-xl">
-                Computer Engineering &rsquo;30 at Waterloo. IEEE-published IoT research, and a
-                growing obsession with computer architecture.
+              <p className="mb-8 max-w-[54ch] text-lg leading-relaxed md:mb-10 text-[var(--color-text-muted)] md:text-[1.35rem]">
+                Computer Engineering &rsquo;30 at Waterloo. Software engineering{" "}
+                <span className="whitespace-nowrap">co-op</span>, IEEE-published IoT work, and
+                projects from match analytics to fraud detection.
               </p>
 
               <div className="flex flex-wrap items-center gap-4 md:gap-6">
@@ -399,22 +401,6 @@ function App() {
                   View experience
                 </a>
                 <SocialLinks />
-              </div>
-            </div>
-
-            {/* Die plot. Short band under the copy on phones, full-height
-                right column from lg up. */}
-            <div className="lg:col-span-5">
-              <div className="relative h-[160px] w-full overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] shadow-[var(--shadow-card)] sm:h-[280px] lg:h-[460px]">
-                <HeroCircuit theme={theme} />
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0"
-                  style={{
-                    background:
-                      "radial-gradient(ellipse at center, transparent 35%, var(--color-bg-elevated) 100%)",
-                  }}
-                />
               </div>
             </div>
           </div>
@@ -431,7 +417,7 @@ function App() {
               without ever holding any content. It also gives this section a
               layout family nothing else on the page uses.
           ------------------------------------------------------------- */}
-          <section id="experience" className="mx-auto max-w-7xl px-4 py-16 md:px-6 md:py-24">
+          <section id="experience" className="mx-auto max-w-[1520px] px-4 py-16 md:px-6 md:py-24">
             <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
               <div className="lg:col-span-4">
                 <div className="lg:sticky lg:top-28">
@@ -458,7 +444,7 @@ function App() {
           ------------------------------------------------------------- */}
           <section
             id="work"
-            className="mx-auto max-w-7xl border-t border-[var(--color-border-soft)] px-4 py-16 md:px-6 md:py-24"
+            className="mx-auto max-w-[1520px] border-t border-[var(--color-border-soft)] px-4 py-16 md:px-6 md:py-24"
           >
             <SectionHeading>Things I have built</SectionHeading>
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
@@ -476,7 +462,7 @@ function App() {
           ------------------------------------------------------------- */}
           <section
             id="hobbies"
-            className="mx-auto max-w-7xl border-t border-[var(--color-border-soft)] px-4 py-16 md:px-6 md:py-24"
+            className="mx-auto max-w-[1520px] border-t border-[var(--color-border-soft)] px-4 py-16 md:px-6 md:py-24"
           >
             <SectionHeading>Outside the lab</SectionHeading>
 
@@ -548,7 +534,7 @@ function App() {
           ------------------------------------------------------------- */}
           <footer
             id="contact"
-            className="mx-auto max-w-7xl overflow-hidden border-t border-[var(--color-border-soft)] px-4 py-20 md:px-6 md:py-28"
+            className="mx-auto max-w-[1520px] overflow-hidden border-t border-[var(--color-border-soft)] px-4 py-20 md:px-6 md:py-28"
           >
             <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16">
               <Reveal>
