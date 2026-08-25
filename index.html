@@ -3,15 +3,116 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#100d0c" />
+
+    <!--
+      Resolve the theme before first paint. Without this the document renders
+      one frame of the default palette and then swaps, which reads as a flash.
+      Falls back to the OS preference when the visitor has no stored choice.
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          var theme =
+            stored ||
+            (window.matchMedia("(prefers-color-scheme: light)").matches
+              ? "light"
+              : "dark");
+          document.documentElement.dataset.theme = theme;
+          document
+            .querySelector('meta[name="theme-color"]')
+            .setAttribute("content", theme === "light" ? "#eae3d8" : "#100d0c");
+        } catch (e) {
+          document.documentElement.dataset.theme = "dark";
+        }
+      })();
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      Fonts load without blocking the first paint: the stylesheet is fetched as
+      `media="print"` (non-render-blocking) and promoted to `all` once it lands.
+      `display=swap` means text is readable in the fallback stack meanwhile.
+    -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap"
-      rel="stylesheet"
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800;900&display=swap"
     />
-    <link rel="icon" type="image/png" href="/icon.png" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800;900&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800;900&display=swap"
+      />
+    </noscript>
 
-    <title>Bank Leelathanapipat</title>
+    <link rel="icon" type="image/png" href="/icon.png" />
+    <link rel="apple-touch-icon" href="/icon.png" />
+    <link rel="canonical" href="https://www.bankleela.com/" />
+
+    <title>Bank Leelathanapipat | Computer Engineering @ UWaterloo</title>
+    <meta
+      name="description"
+      content="Bank Leelathanapipat, Computer Engineering '30 at the University of Waterloo. Focused on VLSI design and computer architecture, with IEEE-published IoT research, full-stack engineering, and machine learning projects."
+    />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bank Leelathanapipat" />
+    <meta property="og:title" content="Bank Leelathanapipat | Computer Engineering @ UWaterloo" />
+    <meta
+      property="og:description"
+      content="Computer Engineering '30 at the University of Waterloo, focused on VLSI design and computer architecture. IEEE-published IoT research, full-stack, and ML projects."
+    />
+    <meta property="og:url" content="https://www.bankleela.com/" />
+    <meta property="og:image" content="https://www.bankleela.com/icon.png" />
+    <meta property="og:image:alt" content="Bank Leelathanapipat portfolio" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Bank Leelathanapipat | Computer Engineering @ UWaterloo" />
+    <meta
+      name="twitter:description"
+      content="Computer Engineering '30 at the University of Waterloo, focused on VLSI design and computer architecture."
+    />
+    <meta name="twitter:image" content="https://www.bankleela.com/icon.png" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Bank Leelathanapipat",
+        "alternateName": "Natdanai Leelathanapipat",
+        "url": "https://www.bankleela.com/",
+        "image": "https://www.bankleela.com/icon.png",
+        "jobTitle": "Computer Engineering Student",
+        "email": "mailto:nleelath@uwaterloo.ca",
+        "alumniOf": {
+          "@type": "CollegeOrUniversity",
+          "name": "University of Waterloo"
+        },
+        "knowsAbout": [
+          "VLSI Design",
+          "Computer Architecture",
+          "GPU Development",
+          "IoT",
+          "Full-Stack Development"
+        ],
+        "sameAs": [
+          "https://github.com/Bank-Leela",
+          "https://www.linkedin.com/in/bank-leelathanapipat",
+          "https://devpost.com/natdanai-leelathanapipat"
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

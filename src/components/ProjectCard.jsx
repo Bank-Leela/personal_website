@@ -1,7 +1,15 @@
-// src/components/ProjectCard.jsx
-import React, { useState } from 'react';
-import { ExternalLink, Github } from 'lucide-react';
+import { useRef } from "react";
+import { ExternalLink, Github, Cpu } from "lucide-react";
+import usePrefersReducedMotion from "../hooks/usePrefersReducedMotion";
 
+const MAX_TILT = 4; // degrees
+
+/**
+ * A single project. Tilt and glow follow the cursor by writing CSS custom
+ * properties straight onto the node through a ref, so tracking costs one style
+ * mutation per pointer event instead of re-rendering the card (and every
+ * sibling in the grid) on every frame.
+ */
 const ProjectCard = ({
   title,
   description,
@@ -17,53 +25,64 @@ const ProjectCard = ({
   imageAlt,
   placeholderLabel,
 }) => {
-  const [pointer, setPointer] = useState({ x: 50, y: 50, active: false });
+  const cardRef = useRef(null);
+  const reduceMotion = usePrefersReducedMotion();
 
   const handlePointerMove = (event) => {
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - bounds.left) / bounds.width) * 100;
-    const y = ((event.clientY - bounds.top) / bounds.height) * 100;
-    setPointer({ x, y, active: true });
+    const node = cardRef.current;
+    if (!node || reduceMotion) return;
+    const bounds = node.getBoundingClientRect();
+    const x = (event.clientX - bounds.left) / bounds.width;
+    const y = (event.clientY - bounds.top) / bounds.height;
+    node.dataset.tracking = "true";
+    node.style.setProperty("--px", `${x * 100}%`);
+    node.style.setProperty("--py", `${y * 100}%`);
+    node.style.setProperty("--tilt-x", `${(y - 0.5) * -2 * MAX_TILT}deg`);
+    node.style.setProperty("--tilt-y", `${(x - 0.5) * 2 * MAX_TILT}deg`);
+    node.style.setProperty("--lift", "-6px");
   };
 
   const handlePointerLeave = () => {
-    setPointer({ x: 50, y: 50, active: false });
+    const node = cardRef.current;
+    if (!node) return;
+    node.dataset.tracking = "false";
+    node.style.setProperty("--tilt-x", "0deg");
+    node.style.setProperty("--tilt-y", "0deg");
+    node.style.setProperty("--lift", "0px");
   };
 
-  const rotateX = ((pointer.y - 50) / 50) * -5;
-  const rotateY = ((pointer.x - 50) / 50) * 5;
-
   return (
-    <div
-      className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-2xl transition-all duration-500 hover:border-[var(--color-accent-border)]"
-      onMouseMove={handlePointerMove}
-      onMouseLeave={handlePointerLeave}
-      style={{
-        transform: pointer.active
-          ? `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px)`
-          : "perspective(1200px) rotateX(0deg) rotateY(0deg) translateY(0px)",
-      }}
+    <article
+      ref={cardRef}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={handlePointerLeave}
+      className="pointer-surface group relative flex h-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-6 shadow-[var(--shadow-card)] duration-500 hover:border-[var(--color-accent-border)] md:p-8"
     >
-      <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[var(--color-accent-soft)] via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
       <div
-        className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-        style={{
-          background: `radial-gradient(circle at ${pointer.x}% ${pointer.y}%, var(--color-accent-soft), transparent 34%)`,
-        }}
+        aria-hidden="true"
+        className="pointer-glow absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
       />
 
-      <div className="relative z-10 flex flex-col h-full">
+      <div className="relative z-10 flex h-full flex-col">
         {(image || placeholderLabel) && (
-          <div className="mb-6 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)]">
+          <div className="mb-6 overflow-hidden rounded-[var(--radius-media)] border border-[var(--color-border)] bg-[var(--color-surface)]">
             {image ? (
+              // Screenshots arrive in whatever palette their own product used.
+              // Holding them at reduced saturation at rest keeps the page on a
+              // single accent, and restoring full colour on hover rewards the
+              // person who is actually looking at the project.
               <img
                 src={image}
                 alt={imageAlt || title}
-                className="h-48 w-full object-cover object-top transition-transform duration-700 group-hover:scale-[1.04]"
+                loading="lazy"
+                decoding="async"
+                width="1000"
+                height="560"
+                className="h-52 w-full object-cover object-top saturate-[0.35] transition-all duration-700 group-hover:scale-[1.03] group-hover:saturate-100 md:h-56"
               />
             ) : (
-              <div className="flex h-48 w-full items-center justify-center bg-gradient-to-br from-[var(--color-accent-soft)] via-[#201717] to-[var(--color-bg)] transition-transform duration-700 group-hover:scale-[1.03]">
-                <span className="text-sm font-black uppercase tracking-[0.3em] text-[var(--color-text-muted)]">
+              <div className="flex h-52 w-full items-center justify-center bg-gradient-to-br from-[var(--color-accent-soft)] via-[var(--color-surface)] to-[var(--color-bg)] md:h-56">
+                <span className="rounded-[var(--radius-pill)] border border-[var(--color-border)] px-4 py-1.5 text-xs font-semibold text-[var(--color-text-muted)]">
                   {placeholderLabel}
                 </span>
               </div>
@@ -71,102 +90,100 @@ const ProjectCard = ({
           </div>
         )}
 
-        <div className="flex justify-between items-start mb-6">
-          <h3 className="font-display text-2xl font-bold tracking-tight text-[var(--color-text)]">{title}</h3>
-          <div className="flex gap-3 opacity-75 transition-all duration-300 group-hover:translate-x-0.5 group-hover:opacity-100">
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <h3 className="font-display text-2xl font-bold tracking-tight text-[var(--color-text)] md:text-3xl">
+            {title}
+          </h3>
+          <div className="flex shrink-0 gap-3 pt-1">
             {repo && (
-              <a href={repo} target="_blank" rel="noreferrer" className="text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]">
-                <Github size={20} />
+              <a
+                href={repo}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${title} ${repoLabel || "source code"}`}
+                className="text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-accent-text)]"
+              >
+                <Github size={20} aria-hidden="true" />
               </a>
             )}
             {link && (
-              <a href={link} target="_blank" rel="noreferrer" className="text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-text)]">
-                <ExternalLink size={20} />
+              <a
+                href={link}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${title} ${linkLabel || "case study"}`}
+                className="text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-accent-text)]"
+              >
+                <ExternalLink size={20} aria-hidden="true" />
               </a>
             )}
           </div>
         </div>
-        
+
         <div className="mb-8 space-y-4">
-          <p className="leading-relaxed text-[var(--color-text-muted)]">
-            {description}
-          </p>
-
+          <p className="leading-relaxed text-[var(--color-text)] opacity-90">{description}</p>
           {problem && (
-            <div className="space-y-1">
-              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--color-text-muted)] opacity-80">
-                Problem
-              </p>
-              <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">
-                {problem}
-              </p>
-            </div>
+            <p className="text-sm leading-relaxed text-[var(--color-text-muted)] md:text-base">
+              {problem}
+            </p>
           )}
-
           {built && (
-            <div className="space-y-1">
-              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--color-text-muted)] opacity-80">
-                What I Built
-              </p>
-              <p className="text-sm leading-relaxed text-[var(--color-text-muted)]">
-                {built}
-              </p>
-            </div>
+            <p className="text-sm leading-relaxed text-[var(--color-text-muted)] md:text-base">
+              {built}
+            </p>
           )}
 
           {highlight && (
-            <div className="rounded-2xl border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-4 py-3">
-              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--color-tag-text)]">
-                Technical Highlight
-              </p>
-              <p className="mt-2 text-sm font-medium leading-relaxed text-[var(--color-text)]">
-                {highlight}
-              </p>
+            <div className="flex gap-3 rounded-[var(--radius-media)] border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-4 py-3">
+              <Cpu
+                size={18}
+                aria-hidden="true"
+                className="mt-0.5 shrink-0 text-[var(--color-accent)]"
+              />
+              <p className="text-sm leading-relaxed text-[var(--color-text)]">{highlight}</p>
             </div>
           )}
         </div>
-        
+
         <div className="mt-auto flex flex-wrap gap-2">
           {(tags || []).map((tag) => (
-            <span key={tag} className="rounded-full border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--color-tag-text)]">
+            <span
+              key={tag}
+              className="rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-[var(--color-pill)] px-3 py-1 text-xs font-medium text-[var(--color-text-muted)]"
+            >
               {tag}
             </span>
           ))}
         </div>
 
         {(repo || link) && (
-          <div className="mt-8 flex items-center justify-between border-t border-[var(--color-border-soft)] pt-5 text-sm text-[var(--color-text-muted)]">
-            <span className="translate-y-2 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
-              hover to inspect
-            </span>
-            <div className="flex items-center gap-4">
-              {repo && (
-                <a
-                  href={repo}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex translate-y-2 items-center gap-2 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 hover:text-[var(--color-text)]"
-                >
-                  <Github size={16} />
-                  {repoLabel || "Source"}
-                </a>
-              )}
-              {link && (
-                <a
-                  href={link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex translate-y-2 items-center gap-2 opacity-0 transition-all duration-300 delay-75 group-hover:translate-y-0 group-hover:opacity-100 hover:text-[var(--color-text)]"
-                >
-                  <ExternalLink size={16} />
-                  {linkLabel || "Live Demo"}
-                </a>
-              )}
-            </div>
+          <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-[var(--color-border-soft)] pt-5 text-sm font-semibold">
+            {repo && (
+              <a
+                href={repo}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-accent-text)]"
+              >
+                <Github size={16} aria-hidden="true" />
+                {repoLabel || "Source"}
+              </a>
+            )}
+            {link && (
+              <a
+                href={link}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 text-[var(--color-text-muted)] transition-colors hover:text-[var(--color-accent-text)]"
+              >
+                <ExternalLink size={16} aria-hidden="true" />
+                {linkLabel || "Case study"}
+              </a>
+            )}
           </div>
         )}
       </div>
-    </div>
+    </article>
   );
 };
 
