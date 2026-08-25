@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bank Leelathanapipat | Computer Engineering @ UWaterloo</title>
+
+    <!-- Self-contained static snapshot of the React/Vite/Tailwind portfolio, for design iteration.
+         Interactive bits (circuit canvas, lazy globe, scroll-reveal, typewriter, easter egg) are
+         shown in their static/final state. Toggle dark/light with the nav button. -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        color-scheme: dark;
+        --color-bg: #100d0c;
+        --color-bg-elevated: #191512;
+        --color-surface: #1d1815;
+        --color-surface-strong: #2c2420;
+        --color-text: #f6f1ec;
+        --color-text-muted: #a59d97;
+        --color-accent: #e5484d;
+        --color-accent-solid: #d83a3f;
+        --color-accent-soft: rgba(229, 72, 77, 0.14);
+        --color-accent-border: rgba(229, 72, 77, 0.32);
+        --color-border: rgba(255, 246, 240, 0.1);
+        --color-border-soft: rgba(255, 246, 240, 0.05);
+        --color-nav: rgba(16, 13, 12, 0.72);
+        --color-pill: rgba(255, 246, 240, 0.05);
+        --color-pill-strong: rgba(255, 246, 240, 0.08);
+        --color-tag-text: #f4b6ad;
+        --color-selection: rgba(229, 72, 77, 0.18);
+        --color-shadow: rgba(229, 72, 77, 0.2);
+        --color-bg-gradient-start: #161210;
+        --color-bg-gradient-mid: #100d0c;
+        --color-bg-gradient-end: #191512;
+        --color-radial: rgba(229, 72, 77, 0.08);
+      }
+
+      :root[data-theme="light"] {
+        color-scheme: light;
+        --color-bg: #eae3d8;
+        --color-bg-elevated: #f7f1e8;
+        --color-surface: #e0d6c8;
+        --color-surface-strong: #d4c7b5;
+        --color-text: #171411;
+        --color-text-muted: #534c45;
+        --color-accent: #c84f46;
+        --color-accent-solid: #c84f46;
+        --color-accent-soft: rgba(200, 79, 70, 0.12);
+        --color-accent-border: rgba(200, 79, 70, 0.28);
+        --color-border: rgba(23, 20, 17, 0.14);
+        --color-border-soft: rgba(23, 20, 17, 0.1);
+        --color-nav: rgba(234, 227, 216, 0.84);
+        --color-pill: rgba(23, 20, 17, 0.05);
+        --color-pill-strong: rgba(23, 20, 17, 0.09);
+        --color-tag-text: #7d342f;
+        --color-selection: rgba(200, 79, 70, 0.16);
+        --color-shadow: rgba(200, 79, 70, 0.16);
+        --color-bg-gradient-start: #f3ebe0;
+        --color-bg-gradient-mid: #eae3d8;
+        --color-bg-gradient-end: #e0d6c8;
+        --color-radial: rgba(200, 79, 70, 0.07);
+      }
+
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 6rem;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Manrope", sans-serif;
+        background:
+          radial-gradient(circle at top right, var(--color-radial), transparent 28%),
+          linear-gradient(
+            180deg,
+            var(--color-bg-gradient-start) 0%,
+            var(--color-bg-gradient-mid) 30%,
+            var(--color-bg-gradient-end) 100%
+          );
+        color: var(--color-text);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        transition: background 250ms ease, color 250ms ease;
+      }
+
+      a { color: inherit; }
+
+      a:focus-visible,
+      button:focus-visible {
+        outline: 2px solid var(--color-accent);
+        outline-offset: 2px;
+      }
+
+      .font-display { font-family: "Sora", sans-serif; }
+
+      @keyframes caret-blink {
+        0%, 49% { opacity: 1; }
+        50%, 100% { opacity: 0; }
+      }
+      .caret-blink { animation: caret-blink 1s steps(1) infinite; }
+
+      @keyframes shuttle-bob {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+      }
+      .shuttle-bob { animation: shuttle-bob 2.2s ease-in-out infinite; }
+
+      ::selection { background: var(--color-selection); }
+
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+        *, *::before, *::after {
+          animation-duration: 0.001ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.001ms !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body class="selection:bg-[var(--color-accent-soft)]">
+    <div class="fixed inset-0 -z-10 h-screen w-full bg-[var(--color-bg)]"></div>
+
+    <div class="relative z-10">
+      <!-- NAV -->
+      <nav class="fixed top-0 z-50 w-full border-b border-[var(--color-border-soft)] bg-[var(--color-nav)] backdrop-blur-md">
+        <div class="mx-auto flex max-w-7xl items-center justify-between px-3 py-4 md:px-4">
+          <span class="font-display text-sm font-black tracking-tighter text-[var(--color-text)] md:text-xl">
+            Bank Leelathanapipat
+          </span>
+          <div class="flex items-center gap-4 text-[10px] font-medium text-[var(--color-text-muted)] md:gap-8 md:text-sm">
+            <a href="#experience" class="hover:text-[var(--color-text)]">Experience</a>
+            <a href="#work" class="hover:text-[var(--color-text)]">Work</a>
+            <a href="#hobbies" class="hover:text-[var(--color-text)]">Hobbies</a>
+            <a href="#contact" class="hover:text-[var(--color-text)]">Contact</a>
+            <button
+              type="button"
+              onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light'"
+              class="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-pill)] text-[var(--color-text-muted)] transition-all hover:border-[var(--color-accent-border)] hover:text-[var(--color-accent)] active:scale-95 md:h-9 md:w-9"
+              aria-label="Toggle theme"
+              title="Toggle dark / light"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- HERO -->
+      <header class="relative flex min-h-screen w-full items-center overflow-hidden pt-20">
+        <div class="pointer-events-none absolute -left-24 top-28 h-72 w-72 rounded-full bg-[var(--color-accent-soft)] blur-3xl opacity-40"></div>
+        <div class="pointer-events-none absolute right-0 top-16 h-64 w-64 rounded-full bg-[var(--color-accent-soft)] blur-3xl opacity-15"></div>
+
+        <div class="relative z-10 mx-auto w-full max-w-7xl px-3 md:px-4">
+          <div class="mb-8 flex flex-wrap items-center gap-2 md:gap-3">
+            <div class="flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-pill)] px-3 py-2 backdrop-blur-sm md:px-4">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              <span class="text-[10px] font-medium tracking-wide text-[var(--color-text)] md:text-xs">Waterloo, ON | Bangkok, TH</span>
+            </div>
+            <div class="flex items-center gap-2 rounded-full border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-3 py-2 backdrop-blur-sm md:px-4">
+              <div class="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--color-accent)]"></div>
+              <span class="text-[10px] font-medium uppercase tracking-wide text-[var(--color-text)] md:text-xs">Available for co-op 2026</span>
+            </div>
+          </div>
+
+          <h1 class="font-display mb-8 text-5xl font-black leading-[0.9] tracking-tighter text-[var(--color-text)] md:text-8xl md:leading-[0.85]">
+            Bank Leelathanapipat
+          </h1>
+          <p class="mb-8 text-lg font-bold tracking-tight text-[var(--color-text)] opacity-90 md:text-2xl">
+            Comp Eng '30 | UWaterloo
+          </p>
+          <p class="mb-6 max-w-xl text-base font-medium leading-relaxed text-[var(--color-text)] opacity-90 md:text-xl">
+            Focused on mastering VLSI design and computer architecture to innovate the future of GPU development.
+          </p>
+          <p class="mb-10 text-base font-medium tracking-tight text-[var(--color-text-muted)] md:text-lg">
+            Building toward
+            <span class="font-bold text-[var(--color-accent)]">computer architecture</span><span class="caret-blink text-[var(--color-accent)]">▮</span>
+          </p>
+
+          <div class="flex flex-wrap items-center gap-4 md:gap-6">
+            <button class="transform rounded-full bg-[var(--color-accent-solid)] px-6 py-3 text-sm font-bold text-white shadow-lg shadow-[var(--color-shadow)] transition-all hover:scale-105 hover:brightness-110 active:scale-95 md:px-8 md:py-4 md:text-base">
+              View Experience
+            </button>
+            <div class="flex items-center gap-3">
+              <a href="#" class="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-pill)] text-[var(--color-text-muted)] transition-all hover:border-[var(--color-accent-border)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)] md:h-12 md:w-12" title="Email">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M22 7l-10 6L2 7"></path></svg>
+              </a>
+              <a href="#" class="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-pill)] text-[var(--color-text-muted)] transition-all hover:border-[var(--color-accent-border)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)] md:h-12 md:w-12" title="GitHub">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.53 2.36 1.09 2.94.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.56 9.56 0 015 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.69-4.57 4.94.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0012 2z"></path></svg>
+              </a>
+              <a href="#" class="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-pill)] text-[var(--color-text-muted)] transition-all hover:border-[var(--color-accent-border)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)] md:h-12 md:w-12" title="LinkedIn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5A2.5 2.5 0 002.5 6a2.5 2.5 0 005 0 2.5 2.5 0 00-2.52-2.5zM3 8.98h4v12H3zM9 8.98h3.8v1.64h.05c.53-1 1.83-2.06 3.77-2.06 4.03 0 4.78 2.65 4.78 6.1v6.32h-4v-5.6c0-1.34-.02-3.06-1.86-3.06-1.87 0-2.16 1.46-2.16 2.96v5.7H9z"></path></svg>
+              </a>
+              <a href="#" class="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-pill)] text-[var(--color-text-muted)] transition-all hover:border-[var(--color-accent-border)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)] md:h-12 md:w-12" title="Resume">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"></path></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div class="h-40 bg-gradient-to-b from-transparent to-[var(--color-surface)]"></div>
+
+      <main class="bg-[var(--color-surface)]">
+        <!-- EXPERIENCE -->
+        <section id="experience" class="mx-auto max-w-7xl px-3 py-12 md:px-4 md:py-24">
+          <div class="group mb-12 md:mb-20">
+            <h2 class="font-display mb-4 text-xl font-black uppercase tracking-[0.4em] text-[var(--color-text-muted)] transition-colors duration-300 group-hover:text-[var(--color-accent)] md:text-2xl">Professional Journey</h2>
+            <div class="h-px w-full bg-[var(--color-border)] transition-colors duration-300 group-hover:bg-[var(--color-accent-border)]"></div>
+          </div>
+
+          <!-- stats band -->
+          <div class="mb-12 grid grid-cols-3 gap-4 border-y border-[var(--color-border-soft)] py-8 md:mb-16 md:gap-8 md:py-10">
+            <div class="text-center">
+              <div class="font-display text-3xl font-black tabular-nums text-[var(--color-accent)] md:text-5xl">$300M</div>
+              <div class="mt-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-muted)] md:text-xs">Platform scale</div>
+            </div>
+            <div class="text-center">
+              <div class="font-display text-3xl font-black tabular-nums text-[var(--color-accent)] md:text-5xl">20M+</div>
+              <div class="mt-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-muted)] md:text-xs">Entries optimized</div>
+            </div>
+            <div class="text-center">
+              <div class="font-display text-3xl font-black tabular-nums text-[var(--color-accent)] md:text-5xl">70%</div>
+              <div class="mt-2 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--color-text-muted)] md:text-xs">Faster reporting</div>
+            </div>
+          </div>
+
+          <div class="space-y-16 md:space-y-24">
+            <!-- job -->
+            <div class="group relative grid grid-cols-1 gap-x-12 gap-y-4 md:grid-cols-[1fr_auto] md:gap-y-6">
+              <div class="space-y-4 md:space-y-6">
+                <div class="space-y-2 md:space-y-3">
+                  <a href="#" class="font-display text-3xl font-black tracking-tighter text-[var(--color-text)] transition-colors duration-500 hover:text-[var(--color-accent)] group-hover:text-[var(--color-accent)] md:text-5xl">IEEE</a>
+                  <p class="text-lg font-bold tracking-tight text-[var(--color-text)] opacity-80 md:text-xl">Research Assistant</p>
+                </div>
+                <p class="max-w-3xl text-base leading-relaxed text-[var(--color-text-muted)] md:text-lg">Engineered a low-budget IoT water level measurement system using ESP32 to facilitate flood mitigation. Results are officially published in the IEEE Xplore Digital Library.</p>
+                <div class="flex flex-wrap gap-2">
+                  <span class="border border-[var(--color-border)] bg-[var(--color-pill)] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] md:px-3 md:text-[10px]">IoT</span>
+                  <span class="border border-[var(--color-border)] bg-[var(--color-pill)] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] md:px-3 md:text-[10px]">ESP32</span>
+                  <span class="border border-[var(--color-border)] bg-[var(--color-pill)] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] md:px-3 md:text-[10px]">System Design</span>
+                  <span class="border border-[var(--color-border)] bg-[var(--color-pill)] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] md:px-3 md:text-[10px]">Research</span>
+                </div>
+              </div>
+              <div class="flex h-full flex-col items-start justify-between py-2 md:items-end md:border-l md:border-[var(--color-border)] md:pl-8">
+                <span class="text-xs font-bold uppercase tracking-tighter text-[var(--color-text-muted)] opacity-80 tabular-nums md:text-sm">Jul 2024 — May 2025</span>
+              </div>
+            </div>
+            <!-- job -->
+            <div class="group relative grid grid-cols-1 gap-x-12 gap-y-4 md:grid-cols-[1fr_auto] md:gap-y-6">
+              <div class="space-y-4 md:space-y-6">
+                <div class="space-y-2 md:space-y-3">
+                  <a href="#" class="font-display text-3xl font-black tracking-tighter text-[var(--color-text)] transition-colors duration-500 hover:text-[var(--color-accent)] group-hover:text-[var(--color-accent)] md:text-5xl">ODDS-Thailand</a>
+                  <p class="text-lg font-bold tracking-tight text-[var(--color-text)] opacity-80 md:text-xl">Software Engineering Intern</p>
+                </div>
+                <p class="max-w-3xl text-base leading-relaxed text-[var(--color-text-muted)] md:text-lg">Developed responsive UI components for a $300M financial platform. Optimized database queries for a MongoDB cluster containing 20M+ entries.</p>
+                <div class="flex flex-wrap gap-2">
+                  <span class="border border-[var(--color-border)] bg-[var(--color-pill)] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] md:px-3 md:text-[10px]">React</span>
+                  <span class="border border-[var(--color-border)] bg-[var(--color-pill)] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] md:px-3 md:text-[10px]">Tailwind CSS</span>
+                  <span class="border border-[var(--color-border)] bg-[var(--color-pill)] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] md:px-3 md:text-[10px]">MongoDB</span>
+                  <span class="border border-[var(--color-border)] bg-[var(--color-pill)] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] md:px-3 md:text-[10px]">Optimization</span>
+                </div>
+              </div>
+              <div class="flex h-full flex-col items-start justify-between py-2 md:items-end md:border-l md:border-[var(--color-border)] md:pl-8">
+                <span class="text-xs font-bold uppercase tracking-tighter text-[var(--color-text-muted)] opacity-80 tabular-nums md:text-sm">Jul 2024 — Aug 2024</span>
+              </div>
+            </div>
+            <!-- job -->
+            <div class="group relative grid grid-cols-1 gap-x-12 gap-y-4 md:grid-cols-[1fr_auto] md:gap-y-6">
+              <div class="space-y-4 md:space-y-6">
+                <div class="space-y-2 md:space-y-3">
+                  <h3 class="font-display text-3xl font-black tracking-tighter text-[var(--color-text)] transition-colors duration-500 group-hover:text-[var(--color-accent)] md:text-5xl">NurseMetrics</h3>
+                  <p class="text-lg font-bold tracking-tight text-[var(--color-text)] opacity-80 md:text-xl">Lead Developer</p>
+                </div>
+                <p class="max-w-3xl text-base leading-relaxed text-[var(--color-text-muted)] md:text-lg">Architected a KPI tracking web application using Google Apps Script (JavaScript) to automate data entry, reducing reporting time by 70%.</p>
+                <div class="flex flex-wrap gap-2">
+                  <span class="border border-[var(--color-border)] bg-[var(--color-pill)] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] md:px-3 md:text-[10px]">JavaScript</span>
+                  <span class="border border-[var(--color-border)] bg-[var(--color-pill)] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] md:px-3 md:text-[10px]">Automation</span>
+                  <span class="border border-[var(--color-border)] bg-[var(--color-pill)] px-2 py-1 text-[9px] font-black uppercase tracking-widest text-[var(--color-text-muted)] md:px-3 md:text-[10px]">Healthcare Tech</span>
+                </div>
+              </div>
+              <div class="flex h-full flex-col items-start justify-between py-2 md:items-end md:border-l md:border-[var(--color-border)] md:pl-8">
+                <span class="text-xs font-bold uppercase tracking-tighter text-[var(--color-text-muted)] opacity-80 tabular-nums md:text-sm">May 2023 — Aug 2024</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- WORK -->
+        <section id="work" class="mx-auto max-w-7xl border-t border-[var(--color-border-soft)] px-3 py-12 md:px-4 md:py-24">
+          <div class="group mb-12 md:mb-20">
+            <h2 class="font-display mb-4 text-xl font-black uppercase tracking-[0.4em] text-[var(--color-text-muted)] transition-colors duration-300 group-hover:text-[var(--color-accent)] md:text-2xl">Selected Works</h2>
+            <div class="h-px w-full bg-[var(--color-border)] transition-colors duration-300 group-hover:bg-[var(--color-accent-border)]"></div>
+          </div>
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
+            <!-- card: Badminton Tracker (placeholder image) -->
+            <div class="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-2xl transition-all duration-500 hover:border-[var(--color-accent-border)]">
+              <div class="mb-6 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)]">
+                <div class="flex h-48 w-full items-center justify-center bg-gradient-to-br from-[var(--color-accent-soft)] via-[var(--color-surface-strong)] to-[var(--color-bg)]">
+                  <span class="text-sm font-black uppercase tracking-[0.3em] text-[var(--color-text-muted)]">Coming Soon</span>
+                </div>
+              </div>
+              <div class="mb-6 flex items-start justify-between">
+                <h3 class="font-display text-2xl font-bold tracking-tight text-[var(--color-text)]">Badminton Tracker</h3>
+              </div>
+              <div class="mb-8 space-y-4">
+                <p class="leading-relaxed text-[var(--color-text-muted)]">A full-stack match analytics platform for competitive players who want more than a running score.</p>
+                <div class="space-y-1">
+                  <p class="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--color-text-muted)] opacity-80">Problem</p>
+                  <p class="text-sm leading-relaxed text-[var(--color-text-muted)]">Most casual score trackers stop at points. I wanted a tool that could also capture match history and make performance trends easier to analyze over time.</p>
+                </div>
+                <div class="rounded-2xl border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-4 py-3">
+                  <p class="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--color-tag-text)]">Technical Highlight</p>
+                  <p class="mt-2 text-sm font-medium leading-relaxed text-[var(--color-text)]">Designed the stack around live updates plus persistent analytics, balancing responsive match-day interactions with longer-term data tracking.</p>
+                </div>
+              </div>
+              <div class="mt-auto flex flex-wrap gap-2">
+                <span class="rounded-full border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--color-tag-text)]">MERN Stack</span>
+                <span class="rounded-full border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--color-tag-text)]">TypeScript</span>
+                <span class="rounded-full border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--color-tag-text)]">MongoDB</span>
+              </div>
+            </div>
+
+            <!-- card: Sentinel -->
+            <div class="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-[var(--color-border)] bg-[var(--color-surface)] p-8 shadow-2xl transition-all duration-500 hover:border-[var(--color-accent-border)]">
+              <div class="mb-6 overflow-hidden rounded-2xl border border-[var(--color-border)] bg-gradient-to-br from-[var(--color-accent-soft)] to-[var(--color-bg)]">
+                <img src="/sentinel.jpg" alt="Sentinel fraud detection dashboard" onerror="this.style.display='none'" class="h-48 w-full object-cover object-top" />
+              </div>
+              <div class="mb-6 flex items-start justify-between">
+                <h3 class="font-display text-2xl font-bold tracking-tight text-[var(--color-text)]">Sentinel</h3>
+              </div>
+              <div class="mb-8 space-y-4">
+                <p class="leading-relaxed text-[var(--color-text-muted)]">A hackathon-built fraud detection platform designed to help analysts investigate suspicious behavior beyond isolated transactions.</p>
+                <div class="rounded-2xl border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-4 py-3">
+                  <p class="text-[10px] font-black uppercase tracking-[0.24em] text-[var(--color-tag-text)]">Technical Highlight</p>
+                  <p class="mt-2 text-sm font-medium leading-relaxed text-[var(--color-text)]">Combining multiple detection strategies into one analyst-friendly experience without losing clarity during a short hackathon build window.</p>
+                </div>
+              </div>
+              <div class="mt-auto flex flex-wrap gap-2">
+                <span class="rounded-full border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--color-tag-text)]">Python</span>
+                <span class="rounded-full border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--color-tag-text)]">FastAPI</span>
+                <span class="rounded-full border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-3 py-1 text-[10px] font-black uppercase tracking-widest text-[var(--color-tag-text)]">Machine Learning</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- HOBBIES -->
+        <section id="hobbies" class="mx-auto max-w-7xl border-t border-[var(--color-border-soft)] px-3 py-12 md:px-4 md:py-24">
+          <div class="group mb-12 md:mb-20">
+            <h2 class="font-display mb-4 text-xl font-black uppercase tracking-[0.4em] text-[var(--color-text-muted)] transition-colors duration-300 group-hover:text-[var(--color-accent)] md:text-2xl">Beyond the Code</h2>
+            <div class="h-px w-full bg-[var(--color-border)] transition-colors duration-300 group-hover:bg-[var(--color-accent-border)]"></div>
+          </div>
+          <div class="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8 lg:grid-cols-3">
+            <div class="group overflow-hidden rounded-2xl border border-[var(--color-border-soft)] bg-[var(--color-pill)] transition-all hover:border-[var(--color-accent-border)] hover:bg-[var(--color-pill-strong)]">
+              <div class="aspect-video w-full overflow-hidden bg-[var(--color-surface-strong)]">
+                <img src="/kv.jpg" alt="" onerror="this.style.display='none'" class="h-full w-full object-cover grayscale transition-all duration-500 group-hover:grayscale-0 group-hover:scale-105" />
+              </div>
+              <div class="p-6 md:p-8">
+                <h3 class="font-display mb-2 text-lg font-bold text-[var(--color-text)] md:text-xl">Badminton</h3>
+                <p class="text-sm text-[var(--color-text-muted)]">Inspired by the technical precision and tactical brilliance of Kunlavut Vitidsarn, I enjoy studying the mechanics of the game and applying elite strategies to the court.</p>
+              </div>
+            </div>
+            <div class="group overflow-hidden rounded-2xl border border-[var(--color-border-soft)] bg-[var(--color-pill)] transition-all hover:border-[var(--color-accent-border)] hover:bg-[var(--color-pill-strong)]">
+              <div class="aspect-video w-full overflow-hidden bg-[var(--color-surface-strong)]">
+                <img src="/frieren.jpg" alt="" onerror="this.style.display='none'" class="h-full w-full object-cover grayscale transition-all duration-500 group-hover:grayscale-0 group-hover:scale-105" />
+              </div>
+              <div class="p-6 md:p-8">
+                <h3 class="font-display mb-2 text-lg font-bold text-[var(--color-text)] md:text-xl">Anime</h3>
+                <p class="text-sm text-[var(--color-text-muted)]">In my free time, I watch anime and read some manga. Favorites include Your Name, Clannad, and Charlotte.</p>
+              </div>
+            </div>
+            <div class="group overflow-hidden rounded-2xl border border-[var(--color-border-soft)] bg-[var(--color-pill)] transition-all hover:border-[var(--color-accent-border)] hover:bg-[var(--color-pill-strong)]">
+              <div class="aspect-video w-full overflow-hidden bg-[var(--color-surface-strong)]">
+                <img src="/minecraft.avif" alt="" onerror="this.style.display='none'" class="h-full w-full object-cover grayscale transition-all duration-500 group-hover:grayscale-0 group-hover:scale-105" />
+              </div>
+              <div class="p-6 md:p-8">
+                <h3 class="font-display mb-2 text-lg font-bold text-[var(--color-text)] md:text-xl">Gaming</h3>
+                <p class="text-sm text-[var(--color-text-muted)]">Strategy and teamwork focused. I enjoy Valorant, Minecraft, and co-op horror like Phasmophobia and Devour.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- music -->
+          <div class="mt-10 rounded-2xl border border-[var(--color-border-soft)] bg-[var(--color-pill)] p-6 md:p-8">
+            <p class="text-[10px] font-black uppercase tracking-[0.35em] text-[var(--color-text-muted)]">On Repeat</p>
+            <h3 class="font-display mt-4 text-2xl font-bold text-[var(--color-text)] md:text-3xl">Music</h3>
+            <p class="mt-4 text-sm leading-8 text-[var(--color-text-muted)] md:text-base">
+              Music is a big part of how I focus, reset, and unwind outside of code. My taste moves across a few genres, especially
+              <span class="text-[var(--color-text)]">Thai-pop</span>, <span class="text-[var(--color-text)]">Japanese-pop</span>,
+              <span class="text-[var(--color-text)]">city-pop</span>, and <span class="text-[var(--color-text)]">hip-hop</span>.
+            </p>
+            <div class="mt-8 space-y-4">
+              <div class="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-5 transition-colors duration-300 hover:border-[var(--color-accent-border)] md:px-6 md:py-6">
+                <p class="font-display text-lg font-bold text-[var(--color-text)] md:text-xl">Thai-pop</p>
+                <p class="mt-3 text-sm leading-7 text-[var(--color-text-muted)] md:text-base">Melodic hooks and a mix of polished production with a more emotional feel.</p>
+                <div class="mt-5 grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
+                  <iframe title="Thai-pop track preview" src="https://open.spotify.com/embed/track/34XtsYtOE2XUlgF8Iv2WUz?utm_source=generator&theme=0" width="100%" height="152" class="w-full rounded-xl" frameborder="0" loading="lazy"></iframe>
+                  <iframe title="Thai-pop artist preview" src="https://open.spotify.com/embed/artist/5pxvW2nJ0a77b9oX24Unwi?utm_source=generator&theme=0" width="100%" height="152" class="w-full rounded-xl" frameborder="0" loading="lazy"></iframe>
+                </div>
+              </div>
+              <div class="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-5 transition-colors duration-300 hover:border-[var(--color-accent-border)] md:px-6 md:py-6">
+                <p class="font-display text-lg font-bold text-[var(--color-text)] md:text-xl">City-pop</p>
+                <p class="mt-3 text-sm leading-7 text-[var(--color-text-muted)] md:text-base">Smoother, laid-back, easy to have on in the background.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CONTACT -->
+        <footer id="contact" class="mx-auto max-w-7xl overflow-hidden border-t border-[var(--color-border-soft)] px-3 py-20 md:px-4 md:py-32">
+          <div class="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+            <div>
+              <h2 class="font-display mb-4 text-5xl font-black tracking-tighter text-[var(--color-text)] md:text-8xl">send me <br class="hidden md:block" /> anything!</h2>
+              <p class="mb-8 max-w-2xl text-base font-medium leading-relaxed text-[var(--color-text-muted)] md:mb-12 md:text-xl">Whether it's a research opportunity, a project idea, or just a conversation about hardware and systems, I'd love to hear from you.</p>
+              <div class="mb-8 flex flex-wrap gap-3 md:mb-10">
+                <a href="#" class="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-pill)] px-5 py-2.5 text-sm font-semibold text-[var(--color-text)] transition-all duration-300 hover:border-[var(--color-accent-border)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)]">View Resume</a>
+                <a href="#" class="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-pill)] px-5 py-2.5 text-sm font-semibold text-[var(--color-text)] transition-all duration-300 hover:border-[var(--color-accent-border)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent)]">LinkedIn</a>
+              </div>
+              <div class="space-y-2">
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] italic text-[var(--color-text-muted)]">QUESTIONS? HIT ME UP ↓</p>
+                <button class="text-left text-xl font-black text-[var(--color-text)] underline decoration-[var(--color-accent-border)] underline-offset-8 transition-all hover:text-[var(--color-accent)] active:scale-95 md:text-4xl">nleelath@uwaterloo.ca</button>
+              </div>
+            </div>
+
+            <!-- static "time" card (the React version renders an interactive globe here) -->
+            <div class="flex justify-center md:justify-end">
+              <div class="w-full max-w-[700px]">
+                <div class="relative flex h-[400px] w-full flex-col justify-between overflow-hidden rounded-[32px] border border-[var(--color-border-soft)] bg-[var(--color-bg-elevated)] p-6 shadow-2xl md:h-[640px] md:p-8">
+                  <div class="z-10 flex items-start justify-between">
+                    <span class="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--color-text-muted)]">LOCAL TIME</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"></path></svg>
+                  </div>
+                  <div class="pointer-events-none absolute inset-0 flex items-center justify-center">
+                    <div class="h-56 w-56 rounded-full border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] blur-2xl md:h-80 md:w-80"></div>
+                  </div>
+                  <div class="z-10">
+                    <h2 class="mb-2 text-4xl font-black tracking-tighter tabular-nums text-[var(--color-text)] md:text-7xl">02:45 PM</h2>
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-[var(--color-text-muted)] md:text-sm">Waterloo, ON (GMT-4)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </main>
+    </div>
+  </body>
+</html>

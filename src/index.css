@@ -2,61 +2,90 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------------------------------------------------------------------------
+   Design tokens.
+
+   One accent (oxblood red) across the whole page in both themes. One neutral
+   family (warm) in both themes. One radius scale, locked:
+     --radius-pill   full round  -> buttons, chips, tags, icon buttons
+     --radius-card   20px        -> cards, panels, section containers
+     --radius-media  12px        -> images and embeds nested inside a card
+   Nothing on the page may invent a fourth radius.
+--------------------------------------------------------------------------- */
+
 :root {
-  --color-bg: #111111;
-  --color-bg-elevated: #171717;
-  --color-surface: #1b1b1b;
-  --color-surface-strong: #242424;
-  --color-text: #f3f3f3;
-  --color-text-muted: #9a9a9a;
+  color-scheme: dark;
+  --color-bg: #100d0c;
+  --color-bg-elevated: #191512;
+  --color-surface: #1d1815;
+  --color-surface-strong: #2c2420;
+  --color-text: #f6f1ec;
+  --color-text-muted: #a59d97;
   --color-accent: #e5484d;
-  --color-accent-soft: rgba(229, 72, 77, 0.12);
-  --color-accent-border: rgba(229, 72, 77, 0.28);
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-border-soft: rgba(255, 255, 255, 0.05);
-  --color-nav: rgba(17, 17, 17, 0.72);
-  --color-pill: rgba(255, 255, 255, 0.05);
-  --color-pill-strong: rgba(255, 255, 255, 0.08);
-  --color-tag-text: #f0b2b4;
+  --color-accent-solid: #d83a3f;
+  --color-accent-soft: rgba(229, 72, 77, 0.14);
+  --color-accent-border: rgba(229, 72, 77, 0.32);
+  /* Accent tuned for SMALL text. --color-accent is calibrated for display
+     numerals, borders, icons and graphics, where WCAG's 3:1 large-text bar
+     applies; at 14px it lands just under 4.5:1 on the darker surfaces, so
+     anything body-sized uses this shifted-lightness variant of the same hue. */
+  --color-accent-text: #e86064;
+  --color-border: rgba(255, 246, 240, 0.1);
+  --color-border-soft: rgba(255, 246, 240, 0.05);
+  --color-nav: rgba(16, 13, 12, 0.72);
+  --color-pill: rgba(255, 246, 240, 0.05);
+  --color-pill-strong: rgba(255, 246, 240, 0.08);
   --color-selection: rgba(229, 72, 77, 0.18);
   --color-shadow: rgba(229, 72, 77, 0.2);
-  --color-bg-gradient-start: #141414;
-  --color-bg-gradient-mid: #111111;
-  --color-bg-gradient-end: #171717;
+  --color-bg-gradient-start: #161210;
+  --color-bg-gradient-mid: #100d0c;
+  --color-bg-gradient-end: #191512;
   --color-radial: rgba(229, 72, 77, 0.08);
+
+  /* Shadows are tinted to the background hue, never pure black. */
+  --shadow-card: 0 24px 60px -32px rgba(12, 8, 6, 0.9);
+
+  --radius-pill: 9999px;
+  --radius-card: 20px;
+  --radius-media: 12px;
 }
 
 :root[data-theme="light"] {
-  --color-bg: #e7e0d6;
-  --color-bg-elevated: #f2ece3;
-  --color-surface: #ddd3c6;
-  --color-surface-strong: #d2c4b2;
+  color-scheme: light;
+  --color-bg: #eae3d8;
+  --color-bg-elevated: #f7f1e8;
+  --color-surface: #e0d6c8;
+  --color-surface-strong: #d4c7b5;
   --color-text: #171411;
-  --color-text-muted: #5d554e;
-  --color-accent: #c84f46;
-  --color-accent-soft: rgba(200, 79, 70, 0.12);
-  --color-accent-border: rgba(200, 79, 70, 0.28);
+  --color-text-muted: #4b443d;
+  --color-accent: #b83e36;
+  --color-accent-solid: #b83e36;
+  --color-accent-soft: rgba(184, 62, 54, 0.12);
+  --color-accent-border: rgba(184, 62, 54, 0.3);
+  --color-accent-text: #95322c;
   --color-border: rgba(23, 20, 17, 0.14);
   --color-border-soft: rgba(23, 20, 17, 0.1);
-  --color-nav: rgba(231, 224, 214, 0.84);
+  --color-nav: rgba(234, 227, 216, 0.84);
   --color-pill: rgba(23, 20, 17, 0.05);
   --color-pill-strong: rgba(23, 20, 17, 0.09);
-  --color-tag-text: #8f3d37;
-  --color-selection: rgba(200, 79, 70, 0.16);
-  --color-shadow: rgba(200, 79, 70, 0.16);
-  --color-bg-gradient-start: #f0e8dd;
-  --color-bg-gradient-mid: #e7e0d6;
-  --color-bg-gradient-end: #ddd3c6;
-  --color-radial: rgba(200, 79, 70, 0.07);
+  --color-selection: rgba(184, 62, 54, 0.16);
+  --color-shadow: rgba(184, 62, 54, 0.16);
+  --color-bg-gradient-start: #f3ebe0;
+  --color-bg-gradient-mid: #eae3d8;
+  --color-bg-gradient-end: #e0d6c8;
+  --color-radial: rgba(184, 62, 54, 0.07);
+
+  --shadow-card: 0 24px 60px -34px rgba(74, 54, 40, 0.45);
 }
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
 }
 
 body {
   margin: 0;
-  font-family: "Manrope", sans-serif;
+  font-family: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   background:
     radial-gradient(circle at top right, var(--color-radial), transparent 28%),
     linear-gradient(180deg, var(--color-bg-gradient-start) 0%, var(--color-bg-gradient-mid) 30%, var(--color-bg-gradient-end) 100%);
@@ -66,10 +95,233 @@ body {
   transition: background 250ms ease, color 250ms ease;
 }
 
+::selection {
+  background: var(--color-selection);
+}
+
 a {
   color: inherit;
 }
 
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 .font-display {
-  font-family: "Sora", sans-serif;
+  font-family: "Sora", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+/* ---------------------------------------------------------------------------
+   Scroll progress bar.
+
+   Pure CSS scroll-driven animation: no scroll listener, no React state, no
+   per-frame work on the main thread. Browsers without scroll-timeline support
+   simply never show the bar, which is the correct degradation for a purely
+   decorative indicator.
+--------------------------------------------------------------------------- */
+
+@keyframes scroll-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.scroll-progress {
+  display: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  .scroll-progress {
+    display: block;
+    animation: scroll-progress linear both;
+    animation-timeline: scroll(root block);
+  }
+}
+
+/* Typewriter caret (RotatingText) */
+@keyframes caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.caret-blink {
+  animation: caret-blink 1s steps(1) infinite;
+}
+
+/* Gentle float for the loader shuttlecock */
+@keyframes shuttle-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.shuttle-bob {
+  animation: shuttle-bob 2.2s ease-in-out infinite;
+}
+
+/* Konami easter-egg shuttlecock rain (EasterEgg) */
+@keyframes shuttle-fall {
+  0% {
+    transform: translateY(-12vh) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(112vh) rotate(260deg);
+    opacity: 0;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Pointer-reactive surfaces.
+
+   --px / --py are written directly to the element by a ref (never React state)
+   so tracking the cursor costs one style mutation per frame instead of a
+   re-render of the subtree.
+--------------------------------------------------------------------------- */
+
+.pointer-surface {
+  --px: 50%;
+  --py: 50%;
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  --lift: 0px;
+  transform: perspective(1200px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y))
+    translateY(var(--lift));
+  transition: transform 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pointer-surface[data-tracking="true"] {
+  /* While the cursor is inside, follow it immediately; ease only on exit. */
+  transition: transform 80ms linear;
+}
+
+.pointer-glow {
+  background: radial-gradient(
+    circle at var(--px) var(--py),
+    var(--color-accent-soft),
+    transparent 60%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .pointer-surface {
+    transform: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Scroll choreography.
+
+   Native CSS scroll-driven animations: these run on the compositor rather than
+   the main thread, which is what makes scrubbed motion feel smooth instead of
+   merely present. No scroll listener, no React state, no per-frame JS.
+
+   Every effect degrades to its own end state when unsupported, because the
+   keyframes drive the property and the element's normal style is already the
+   resting value. A browser without scroll-timeline support (Firefox at time of
+   writing) simply renders the finished frame: a drawn spine, an unscaled
+   image, a fully opaque hero. Nothing disappears.
+
+   All of it sits behind prefers-reduced-motion.
+--------------------------------------------------------------------------- */
+
+@keyframes hero-recede {
+  to {
+    opacity: 0;
+    transform: translateY(-2rem) scale(0.97);
+  }
+}
+
+@keyframes spine-draw {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes zoom-settle {
+  from {
+    transform: scale(1.14);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    /* `view()` resolves against the nearest ancestor scroll container, and
+       `overflow: hidden` makes an element one. Both the hero content and the
+       hobby image sit inside clipped boxes that never scroll, so an anonymous
+       view() timeline there would sit frozen at 0% forever. Naming the timeline
+       on an outer element that is NOT inside a clipped box, then referencing it
+       from the descendant, keeps the measurement against the document. */
+    .hero-view-source {
+      view-timeline-name: --hero-view;
+      view-timeline-axis: block;
+    }
+
+    .card-view-source {
+      view-timeline-name: --card-view;
+      view-timeline-axis: block;
+    }
+
+    /* The hero hands off to the page instead of just scrolling away. */
+    .hero-recede {
+      animation: hero-recede linear both;
+      animation-timeline: --hero-view;
+      animation-range: exit 30% exit 95%;
+    }
+
+    /* The career spine draws itself in step with reading the roles: the line
+       is chronology, so tying its length to scroll position is the content
+       describing itself. */
+    .spine-draw {
+      animation: spine-draw linear both;
+      animation-timeline: view();
+      animation-range: entry 60% exit 40%;
+    }
+
+    /* Slow settle on the one large image, so the biggest visual on the page
+       has depth as it passes rather than sitting flat. */
+    .zoom-settle {
+      animation: zoom-settle linear both;
+      animation-timeline: --card-view;
+      animation-range: cover;
+    }
+  }
 }
