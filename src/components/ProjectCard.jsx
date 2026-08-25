@@ -2,13 +2,19 @@ import { useRef } from "react";
 import { ExternalLink, Github, Cpu } from "lucide-react";
 import usePrefersReducedMotion from "../hooks/usePrefersReducedMotion";
 
-const MAX_TILT = 4; // degrees
+const PARALLAX = 7; // px the artwork drifts against the cursor
 
 /**
- * A single project. Tilt and glow follow the cursor by writing CSS custom
+ * A single project. The cursor drives a spotlight, a lift, and a small
+ * counter-drift of the artwork inside its frame, all written as CSS custom
  * properties straight onto the node through a ref, so tracking costs one style
  * mutation per pointer event instead of re-rendering the card (and every
  * sibling in the grid) on every frame.
+ *
+ * Deliberately no 3D tilt: rotating a card this size shears its type, softens
+ * a screenshot that is already small, and breaks the alignment it shares with
+ * the card beside it. Depth here comes from the artwork moving against a fixed
+ * frame, which reads as parallax rather than as a rotating slab.
  */
 const ProjectCard = ({
   title,
@@ -37,17 +43,18 @@ const ProjectCard = ({
     node.dataset.tracking = "true";
     node.style.setProperty("--px", `${x * 100}%`);
     node.style.setProperty("--py", `${y * 100}%`);
-    node.style.setProperty("--tilt-x", `${(y - 0.5) * -2 * MAX_TILT}deg`);
-    node.style.setProperty("--tilt-y", `${(x - 0.5) * 2 * MAX_TILT}deg`);
-    node.style.setProperty("--lift", "-6px");
+    // Signed -0.5..0.5 so the artwork drifts away from the cursor.
+    node.style.setProperty("--mx", `${x - 0.5}`);
+    node.style.setProperty("--my", `${y - 0.5}`);
+    node.style.setProperty("--lift", "-5px");
   };
 
   const handlePointerLeave = () => {
     const node = cardRef.current;
     if (!node) return;
     node.dataset.tracking = "false";
-    node.style.setProperty("--tilt-x", "0deg");
-    node.style.setProperty("--tilt-y", "0deg");
+    node.style.setProperty("--mx", "0");
+    node.style.setProperty("--my", "0");
     node.style.setProperty("--lift", "0px");
   };
 
@@ -56,7 +63,7 @@ const ProjectCard = ({
       ref={cardRef}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
-      className="pointer-surface group relative flex h-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-6 shadow-[var(--shadow-card)] duration-500 hover:border-[var(--color-accent-border)] md:p-8"
+      className="pointer-surface group relative flex h-full flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-bg-elevated)] p-6 shadow-[var(--shadow-card)] hover:border-[var(--color-accent-border)] hover:shadow-[var(--shadow-card-hover)] md:p-8"
     >
       <div
         aria-hidden="true"
@@ -65,7 +72,10 @@ const ProjectCard = ({
 
       <div className="relative z-10 flex h-full flex-col">
         {(image || placeholderLabel) && (
-          <div className="mb-6 overflow-hidden rounded-[var(--radius-media)] border border-[var(--color-border)] bg-[var(--color-surface)]">
+          // 16:9 frame, matching the screenshots themselves. The old fixed
+          // height cropped a quarter off the bottom of a 16:9 shot, which cut
+          // the product's own headline in half.
+          <div className="mb-6 aspect-video w-full overflow-hidden rounded-[var(--radius-media)] border border-[var(--color-border)] bg-[var(--color-surface)]">
             {image ? (
               // Screenshots arrive in whatever palette their own product used.
               // Holding them at reduced saturation at rest keeps the page on a
@@ -77,11 +87,12 @@ const ProjectCard = ({
                 loading="lazy"
                 decoding="async"
                 width="1000"
-                height="560"
-                className="h-52 w-full object-cover object-top saturate-[0.35] transition-all duration-700 group-hover:scale-[1.03] group-hover:saturate-100 md:h-56"
+                height="563"
+                className="pointer-media h-full w-full object-cover object-center saturate-[0.35] group-hover:saturate-100"
+                style={reduceMotion ? undefined : { "--parallax": `${PARALLAX}px` }}
               />
             ) : (
-              <div className="flex h-52 w-full items-center justify-center bg-gradient-to-br from-[var(--color-accent-soft)] via-[var(--color-surface)] to-[var(--color-bg)] md:h-56">
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[var(--color-accent-soft)] via-[var(--color-surface)] to-[var(--color-bg)]">
                 <span className="rounded-[var(--radius-pill)] border border-[var(--color-border)] px-4 py-1.5 text-xs font-semibold text-[var(--color-text-muted)]">
                   {placeholderLabel}
                 </span>
