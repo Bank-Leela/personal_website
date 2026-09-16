@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#100d0c" />
+    <meta name="theme-color" content="#f9f6ef" />
 
     <!--
       Resolve the theme before first paint. Without this the document renders
@@ -15,44 +15,21 @@
         try {
           var stored = localStorage.getItem("theme");
           var theme =
-            stored ||
-            (window.matchMedia("(prefers-color-scheme: light)").matches
-              ? "light"
-              : "dark");
+            stored === "dark" || stored === "light"
+              ? stored
+              : window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
           document.documentElement.dataset.theme = theme;
           document
             .querySelector('meta[name="theme-color"]')
-            .setAttribute("content", theme === "light" ? "#eae3d8" : "#100d0c");
+            // Keep these two hexes in sync with the theme effect in src/App.jsx.
+            .setAttribute("content", theme === "dark" ? "#12100c" : "#f9f6ef");
         } catch (e) {
-          document.documentElement.dataset.theme = "dark";
+          document.documentElement.dataset.theme = "light";
         }
       })();
     </script>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!--
-      Fonts load without blocking the first paint: the stylesheet is fetched as
-      `media="print"` (non-render-blocking) and promoted to `all` once it lands.
-      `display=swap` means text is readable in the fallback stack meanwhile.
-    -->
-    <link
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800;900&display=swap"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800;900&display=swap"
-      media="print"
-      onload="this.media='all'"
-    />
-    <noscript>
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800;900&display=swap"
-      />
-    </noscript>
 
     <link rel="icon" type="image/png" href="/icon.png" />
     <link rel="apple-touch-icon" href="/icon.png" />
@@ -61,7 +38,7 @@
     <title>Bank Leelathanapipat | Computer Engineering @ UWaterloo</title>
     <meta
       name="description"
-      content="Bank Leelathanapipat, Computer Engineering '30 at the University of Waterloo. Software engineering co-op, IEEE-published IoT research, and full-stack and machine learning projects."
+      content="Bank Leelathanapipat, Computer Engineering ’30 at the University of Waterloo. Software engineering co-op, IEEE-published IoT research, and full-stack and machine learning projects."
     />
 
     <!-- Open Graph -->
@@ -70,7 +47,7 @@
     <meta property="og:title" content="Bank Leelathanapipat | Computer Engineering @ UWaterloo" />
     <meta
       property="og:description"
-      content="Computer Engineering '30 at the University of Waterloo. Software engineering co-op, IEEE-published IoT research, full-stack and ML projects."
+      content="Computer Engineering ’30 at the University of Waterloo. Software engineering co-op, IEEE-published IoT research, full-stack and ML projects."
     />
     <meta property="og:url" content="https://www.bankleela.com/" />
     <meta property="og:image" content="https://www.bankleela.com/icon.png" />
@@ -81,7 +58,7 @@
     <meta name="twitter:title" content="Bank Leelathanapipat | Computer Engineering @ UWaterloo" />
     <meta
       name="twitter:description"
-      content="Computer Engineering '30 at the University of Waterloo. Software engineering co-op and IEEE-published IoT research."
+      content="Computer Engineering ’30 at the University of Waterloo. Software engineering co-op and IEEE-published IoT research."
     />
     <meta name="twitter:image" content="https://www.bankleela.com/icon.png" />
 

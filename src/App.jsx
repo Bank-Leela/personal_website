@@ -1,214 +1,301 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import ProjectCard from "./components/ProjectCard";
-import ScrollProgress from "./components/ScrollProgress";
-import Reveal from "./components/Reveal";
-import StatsBand from "./components/StatsBand";
-import ExperienceTimeline from "./components/ExperienceTimeline";
-import MusicShelf from "./components/MusicShelf";
-import EasterEgg from "./components/EasterEgg";
-import Loader, { introAlreadySeen } from "./components/Loader";
-import useActiveSection from "./hooks/useActiveSection";
-import SmoothScroll from "./lib/SmoothScroll";
-import usePrefersReducedMotion from "./hooks/usePrefersReducedMotion";
-import { Mail, Linkedin, Github, FileText, Moon, Sun, Check, Copy } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import Shuttle from "./components/Shuttle";
 
-// react-globe.gl pulls in three.js (~600KB+); lazy-load it so it stays out of
-// the initial bundle and only downloads when the contact footer is reached.
-const GlobeBox = React.lazy(() => import("./components/GlobeBox"));
+const EMAIL = "nleelath@uwaterloo.ca";
+const RESUME = "/Bank_Leela.pdf";
 
-const CONTACT_EMAIL = "nleelath@uwaterloo.ca";
-
-const SOCIALS = [
-  { icon: Mail, href: `mailto:${CONTACT_EMAIL}`, label: "Email" },
-  { icon: Github, href: "https://github.com/Bank-Leela", label: "GitHub" },
-  {
-    icon: Linkedin,
-    href: "https://www.linkedin.com/in/bank-leelathanapipat",
-    label: "LinkedIn",
-  },
-  {
-    mask: "/devpost.svg",
-    href: "https://devpost.com/natdanai-leelathanapipat?ref_content=user-portfolio&ref_feature=portfolio&ref_medium=global-nav",
-    label: "Devpost",
-  },
-  { icon: FileText, href: "/Bank_Leela.pdf", label: "Resume" },
+const PANES = [
+  { id: "serve", label: "Serve" },
+  { id: "record", label: "Record" },
+  { id: "builds", label: "Builds" },
+  { id: "off-court", label: "Off court" },
 ];
 
-const SocialLinks = () => (
-  <ul className="flex list-none items-center gap-2.5 p-0">
-    {SOCIALS.map((social) => (
-      <li key={social.label}>
-        <a
-          href={social.href}
-          target="_blank"
-          rel="noreferrer"
-          aria-label={social.label}
-          title={social.label}
-          className="flex h-11 w-11 items-center justify-center rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-[var(--color-pill)] text-[var(--color-text-muted)] transition-all duration-300 hover:border-[var(--color-accent-border)] hover:bg-[var(--color-accent-soft)] hover:text-[var(--color-accent-text)] active:scale-95"
-        >
-          {social.icon ? (
-            <social.icon size={18} aria-hidden="true" />
-          ) : (
-            <span
-              className="h-[18px] w-[18px] bg-current"
-              style={{
-                WebkitMaskImage: `url(${social.mask})`,
-                maskImage: `url(${social.mask})`,
-                WebkitMaskRepeat: "no-repeat",
-                maskRepeat: "no-repeat",
-                WebkitMaskPosition: "center",
-                maskPosition: "center",
-                WebkitMaskSize: "contain",
-                maskSize: "contain",
-              }}
-              aria-hidden="true"
-            />
-          )}
-        </a>
-      </li>
-    ))}
-  </ul>
-);
+/* The old site's anchors, kept working so existing links and the sitemap do not
+   break now that the panes have been renamed. */
+const LEGACY_ANCHORS = {
+  about: "serve",
+  experience: "record",
+  projects: "builds",
+  hobbies: "off-court",
+};
 
-// Plain section headline plus a rule. No small-caps label above it: the
-// section's position on the page already says what it is.
-const SectionHeading = ({ children }) => (
-  <Reveal className="group mb-12 md:mb-16">
-    <h2 className="font-display mb-5 text-3xl font-black tracking-tight text-[var(--color-text)] md:text-4xl">
-      {children}
-    </h2>
-    <div className="h-px w-full bg-[var(--color-border)] transition-colors duration-500 group-hover:bg-[var(--color-accent-border)]" />
-  </Reveal>
-);
+const LINKS = [
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/bank-leelathanapipat" },
+  { label: "GitHub", href: "https://github.com/Bank-Leela" },
+  { label: "Devpost", href: "https://devpost.com/natdanai-leelathanapipat" },
+  { label: "Email", href: `mailto:${EMAIL}` },
+  { label: "Resume", href: RESUME },
+];
 
-// `link` is shown as its own labelled line rather than wired to the company
-// name. The IEEE URL points at the published paper, not at IEEE, so making the
-// employer name the anchor was quietly mislabelling where the link goes.
-const EXPERIENCE = [
+const RECORD = [
   {
     company: "IEEE",
     role: "Research Assistant",
-    period: "Jul 2024 - May 2025",
+    period: "2024 to 2025",
     description:
-      "Engineered a low-budget IoT water level measurement system using ESP32 to facilitate flood mitigation. Results are officially published in the IEEE Xplore Digital Library.",
-    tags: ["IoT", "ESP32", "System Design", "Research"],
+      "A low-budget IoT water level measurement system on ESP32 for flood mitigation, published in the IEEE Xplore Digital Library.",
     link: "https://ieeexplore.ieee.org/abstract/document/10811073",
-    linkLabel: "Read the paper on IEEE Xplore",
   },
   {
     company: "ODDS-Thailand",
     role: "Software Engineering Intern",
-    period: "Jul 2024 - Aug 2024",
+    period: "2024",
     description:
-      "Developed responsive UI components for a $300M financial platform. Optimized database queries for a MongoDB cluster containing 20M+ entries.",
-    tags: ["React", "Tailwind CSS", "MongoDB", "Optimization"],
+      "Responsive UI for a $300M financial platform, and query optimisation against a MongoDB cluster holding over 20M entries.",
     link: "https://odds.team/",
-    linkLabel: "odds.team",
   },
   {
     company: "NurseMetrics",
     role: "Lead Developer",
-    period: "May 2023 - Aug 2024",
+    period: "2023 to 2024",
     description:
-      "Architected a KPI tracking web application using Google Apps Script (JavaScript) to automate data entry, reducing reporting time by 70%.",
-    tags: ["JavaScript", "Automation", "Healthcare Tech"],
+      "A KPI tracking application on Google Apps Script that automated data entry and cut reporting time by 70%.",
   },
 ];
 
-const PROJECTS = [
-  {
-    title: "Badminton Tracker",
-    description:
-      "A full-stack match analytics platform for competitive players who want more than a running score.",
-    problem:
-      "Most casual score trackers stop at points. I wanted a tool that could also capture match history and make performance trends easier to analyze over time.",
-    built:
-      "I built the frontend and backend flow for real-time scorekeeping, match history storage, and an interface that makes past performance easy to review.",
-    highlight:
-      "Designed the stack around live updates plus persistent analytics, balancing responsive match-day interactions with longer-term data tracking.",
-    tags: ["MERN Stack", "TypeScript", "API Development", "Tailwind CSS", "MongoDB"],
-    repo: "https://github.com/Bank-Leela/badminton_tracker",
-    repoLabel: "Source",
-    placeholderLabel: "Screenshots coming soon",
-  },
+const BUILDS = [
   {
     title: "Sentinel",
     description:
-      "A hackathon-built fraud detection platform designed to help analysts investigate suspicious behavior beyond isolated transactions.",
-    problem:
-      "Fraud tools often surface alerts without enough context. We wanted a system that could help analysts understand connected activity, not just single anomalous events.",
-    built:
-      "I contributed to a workflow that combines anomaly scoring, rules, graph-based investigation, and a UI for triage so teams can move from alert to explanation faster.",
-    highlight:
-      "The hard part was folding several detection strategies into one analyst-friendly view without losing clarity inside a short hackathon build window.",
-    tags: ["Python", "FastAPI", "Next.js", "Machine Learning", "Graph Analysis"],
-    repo: "https://github.com/SarveshwarSenthilKumar/Sentinel",
-    repoLabel: "Source",
-    link: "https://devpost.com/software/sentinel-128ad4",
-    linkLabel: "Case study",
-    image: "/sentinel.jpg",
-    imageAlt: "Sentinel fraud detection dashboard showing a transaction graph",
+      "Fraud detection that connects the activity around an alert, so an analyst gets from alert to explanation instead of triaging transactions one at a time.",
+    tech: "Python, FastAPI, Next.js, graph analysis",
+    links: [
+      { label: "Source", href: "https://github.com/SarveshwarSenthilKumar/Sentinel" },
+      { label: "Devpost", href: "https://devpost.com/software/sentinel-128ad4" },
+    ],
+  },
+  {
+    title: "Badminton Tracker",
+    description:
+      "Match analytics for competitive players. Casual apps stop at the running score; this one keeps match history and makes performance trends reviewable across a season.",
+    tech: "MERN, TypeScript, Tailwind CSS, MongoDB",
+    links: [{ label: "Source", href: "https://github.com/Bank-Leela/badminton_tracker" }],
   },
 ];
 
-const HOBBIES = [
+const MUSIC = [
+  { genre: "Thai-pop", href: "https://open.spotify.com/track/34XtsYtOE2XUlgF8Iv2WUz" },
+  { genre: "Japanese-pop", href: "https://open.spotify.com/track/1FOhzA4qQiyVnzVYt1KcgN" },
+  { genre: "City-pop", href: "https://open.spotify.com/track/0JUWF44gfMszGNhjCF7Ufs" },
+  { genre: "Hip-hop", href: "https://open.spotify.com/track/0y9uTzK9cNKSAEHnpeRG8C" },
+];
+
+const OFF_COURT = [
   {
-    name: "Badminton",
-    image: "/kv.jpg",
-    alt: "Badminton player mid-smash on court",
-    description:
-      "Inspired by the technical precision and tactical brilliance of Kunlavut Vitidsarn, I enjoy studying the mechanics of the game and applying elite strategies to the court.",
-    feature: true,
+    title: "Badminton",
+    body: (
+      <>
+        I study the mechanics of the game and try to bring elite strategy to the court, mostly
+        chasing the precision of{" "}
+        <Ext href="https://en.wikipedia.org/wiki/Kunlavut_Vitidsarn">Kunlavut Vitidsarn</Ext>.
+      </>
+    ),
+  },
+  { title: "Anime and manga", body: <>Favourites include Your Name, Clannad, and Charlotte.</> },
+  {
+    title: "Gaming",
+    body: (
+      <>
+        Strategy and teamwork first: Valorant, Minecraft, and co-op horror like Phasmophobia and
+        Devour.
+      </>
+    ),
   },
   {
-    name: "Anime",
-    image: "/frieren.jpg",
-    alt: "Still frame from the anime Frieren",
-    description:
-      "In my free time I watch anime and read manga. Favorites include Your Name, Clannad, and Charlotte.",
-  },
-  {
-    name: "Gaming",
-    image: "/minecraft.avif",
-    alt: "Minecraft landscape at sunset",
-    description:
-      "Strategy and teamwork focused: Valorant, Minecraft, and co-op horror like Phasmophobia and Devour.",
+    title: "Music",
+    body: (
+      <>
+        How I focus and reset. Depending on the day it is{" "}
+        {MUSIC.map((m, i) => (
+          <span key={m.genre}>
+            {i > 0 && (i === MUSIC.length - 1 ? " or " : ", ")}
+            <Ext href={m.href}>{m.genre}</Ext>
+          </span>
+        ))}
+        .
+      </>
+    ),
   },
 ];
 
-const NAV_ITEMS = [
-  { id: "experience", label: "Experience" },
-  { id: "work", label: "Work" },
-  { id: "hobbies", label: "Hobbies" },
-  { id: "contact", label: "Contact" },
-];
+function Ext({ href, className, children }) {
+  return (
+    <a href={href} target="_blank" rel="noreferrer" className={className}>
+      {children}
+    </a>
+  );
+}
 
-// "top" is observed alongside the real sections so that scrolling back into the
-// hero clears the nav underline instead of stranding it on the first section.
-const SPY_IDS = ["top", ...NAV_ITEMS.map((item) => item.id)];
+/* Children resolve one after another so a pane assembles rather than appearing
+   as a single block. */
+const GROUP = {
+  hidden: {},
+  shown: { transition: { staggerChildren: 0.07, delayChildren: 0.04 } },
+};
 
-function App() {
-  const heroRef = useRef(null);
-  const reduceMotion = usePrefersReducedMotion();
-  const activeSection = useActiveSection(SPY_IDS);
+const ITEM = {
+  hidden: { opacity: 0, y: 14 },
+  shown: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+};
 
-  // `introMounted` keeps the overlay in the tree long enough to fade; `introDone`
-  // drives the fade itself. Collapsing these into one flag would unmount the
-  // node on the same tick the class changes, so the transition would never run.
-  const [introMounted, setIntroMounted] = useState(() => !introAlreadySeen());
-  const [introDone, setIntroDone] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [theme, setTheme] = useState(() => {
-    if (typeof window === "undefined") return "dark";
-    // index.html already resolved this before first paint (stored choice, then
-    // OS preference); read it back rather than guessing a second time.
-    return document.documentElement.dataset.theme || "dark";
-  });
+const Serve = () => (
+  <>
+    <motion.p
+      variants={ITEM}
+      className="serif mx-auto max-w-[16ch] text-[clamp(2.1rem,5.2vw,3.9rem)] font-medium leading-[1.06]"
+    >
+      I build software that holds up.
+    </motion.p>
+    <motion.p variants={ITEM} className="prose mx-auto mt-7 max-w-[48ch] text-muted">
+      Computer Engineering at the <Ext href="https://uwaterloo.ca/">University of Waterloo</Ext>,
+      class of 2030. Research published in{" "}
+      <Ext href="https://ieeexplore.ieee.org/abstract/document/10811073">IEEE Xplore</Ext>, then
+      match analytics and fraud detection. Waterloo and Bangkok.
+    </motion.p>
+    <motion.p variants={ITEM} className="mt-8 flex flex-wrap justify-center gap-x-7 gap-y-2 text-[15px]">
+      <a href={RESUME} className="text-accent hover:underline">
+        Read the resume
+      </a>
+      <a href={`mailto:${EMAIL}`} className="text-muted transition-colors hover:text-ink">
+        {EMAIL}
+      </a>
+    </motion.p>
+  </>
+);
 
-  // Defer the heavy three.js globe until the contact footer is nearly in view,
-  // so visitors who never scroll there never download or execute it.
-  const globeSlotRef = useRef(null);
-  const [showGlobe, setShowGlobe] = useState(false);
+const Record = () => (
+  <div className="mx-auto max-w-[52ch] space-y-8">
+    {RECORD.map((job) => (
+      <motion.article key={job.company} variants={ITEM}>
+        <p className="meta">{job.period}</p>
+        <h2 className="serif mt-1 text-[22px] font-semibold">
+          {job.link ? (
+            <Ext href={job.link} className="transition-colors hover:text-accent">
+              {job.company}
+            </Ext>
+          ) : (
+            job.company
+          )}
+          <span className="text-muted">, {job.role}</span>
+        </h2>
+        <p className="prose mt-2 text-[17px] text-muted">{job.description}</p>
+      </motion.article>
+    ))}
+  </div>
+);
+
+const Builds = () => (
+  <div className="mx-auto max-w-[52ch] space-y-9">
+    {BUILDS.map((project) => (
+      <motion.article key={project.title} variants={ITEM}>
+        <h2 className="serif text-[26px] font-semibold">{project.title}</h2>
+        <p className="prose mt-2 text-[17px] text-muted">{project.description}</p>
+        <p className="meta mt-3">{project.tech}</p>
+        <p className="mt-2 flex justify-center gap-6 text-[14px]">
+          {project.links.map((l) => (
+            <Ext key={l.label} href={l.href} className="text-accent hover:underline">
+              {l.label}
+            </Ext>
+          ))}
+        </p>
+      </motion.article>
+    ))}
+  </div>
+);
+
+const OffCourt = () => (
+  <div className="mx-auto max-w-[52ch] space-y-7">
+    {OFF_COURT.map((item) => (
+      <motion.article key={item.title} variants={ITEM}>
+        <h2 className="serif text-[21px] font-semibold">{item.title}</h2>
+        <p className="prose mt-1.5 text-[17px] text-muted">{item.body}</p>
+      </motion.article>
+    ))}
+  </div>
+);
+
+const CONTENT = { serve: Serve, record: Record, builds: Builds, "off-court": OffCourt };
+
+function readPane() {
+  const hash = window.location.hash.replace("#", "");
+  if (CONTENT[hash]) return hash;
+  return LEGACY_ANCHORS[hash] || "serve";
+}
+
+/**
+ * Identity rail. Zain's sits centre-left with the reading matter to its right;
+ * this one is pinned to the right edge and right-aligned, with the reading
+ * matter centred in the space it leaves.
+ */
+function Rail({ pane, onPick, theme, onToggleTheme, onSmash }) {
+  return (
+    <aside className="flex shrink-0 flex-col gap-5 md:h-full md:justify-center md:text-right">
+      <p className="serif text-[19px] font-semibold leading-tight">Bank Leelathanapipat</p>
+
+      <nav aria-label="Panes">
+        <ul className="m-0 flex list-none flex-wrap gap-x-5 gap-y-1 p-0 text-[15px] md:flex-col md:items-end md:gap-1.5">
+          {PANES.map((p) => (
+            <li key={p.id}>
+              <a
+                href={`#${p.id}`}
+                onClick={onPick(p.id)}
+                aria-current={pane === p.id ? "page" : undefined}
+                className={
+                  pane === p.id ? "text-accent" : "text-ink transition-colors hover:text-accent"
+                }
+              >
+                {p.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <ul className="m-0 flex list-none flex-wrap gap-x-5 gap-y-1 p-0 md:flex-col md:items-end md:gap-1">
+        {LINKS.map((l) => (
+          <li key={l.label}>
+            <a
+              href={l.href}
+              target={l.href.startsWith("http") ? "_blank" : undefined}
+              rel={l.href.startsWith("http") ? "noreferrer" : undefined}
+              className="meta transition-colors hover:text-ink"
+            >
+              {l.label}
+            </a>
+          </li>
+        ))}
+        <li>
+          <button
+            type="button"
+            onClick={onToggleTheme}
+            className="meta transition-colors hover:text-ink"
+          >
+            {theme === "dark" ? "Light" : "Dark"}
+          </button>
+        </li>
+        <li>
+          <button
+            type="button"
+            onClick={onSmash}
+            className="meta transition-colors hover:text-accent"
+          >
+            Smash
+          </button>
+        </li>
+      </ul>
+    </aside>
+  );
+}
+
+export default function App() {
+  const reduce = useReducedMotion();
+  const [theme, setTheme] = useState(
+    () => document.documentElement.dataset.theme || "light",
+  );
+  const [pane, setPane] = useState(readPane);
+  const [smashToken, setSmashToken] = useState(0);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -219,384 +306,63 @@ function App() {
     }
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", theme === "light" ? "#eae3d8" : "#100d0c");
+      // Keep these two hexes in sync with the boot script in index.html.
+      ?.setAttribute("content", theme === "dark" ? "#12100c" : "#f9f6ef");
   }, [theme]);
 
-  // Safety net: if `transitionend` never arrives (reduced motion, a
-  // background tab, a browser that skips the transition), unmount anyway.
   useEffect(() => {
-    if (!introDone) return undefined;
-    const timer = window.setTimeout(() => setIntroMounted(false), 600);
-    return () => window.clearTimeout(timer);
-  }, [introDone]);
-
-  useEffect(() => {
-    const el = globeSlotRef.current;
-    if (!el) return undefined;
-    if (typeof IntersectionObserver === "undefined") {
-      setShowGlobe(true);
-      return undefined;
-    }
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setShowGlobe(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "300px" }
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
+    const onHash = () => setPane(readPane());
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
-  const handleCopyEmail = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(CONTACT_EMAIL);
-      setCopied(true);
-      window.setTimeout(() => setCopied(false), 2000);
-    } catch (e) {
-      // Clipboard blocked (insecure context, denied permission). Fall back to
-      // the mail client so the action still does something useful.
-      window.location.href = `mailto:${CONTACT_EMAIL}`;
-    }
-  }, []);
+  const pick = useCallback(
+    (id) => (event) => {
+      event.preventDefault();
+      history.replaceState(null, "", id === "serve" ? " " : `#${id}`);
+      setPane(id);
+      // The shuttle carries the change: one smash across the incoming pane.
+      setSmashToken((n) => n + 1);
+    },
+    [],
+  );
 
-  // Hero glow follows the cursor through CSS custom properties written on the
-  // node itself. Routing this through React state would re-render the entire
-  // hero subtree on every pointer event.
-  const handleHeroPointerMove = (event) => {
-    const node = heroRef.current;
-    if (!node || reduceMotion) return;
-    const bounds = node.getBoundingClientRect();
-    node.style.setProperty("--px", `${((event.clientX - bounds.left) / bounds.width) * 100}%`);
-    node.style.setProperty("--py", `${((event.clientY - bounds.top) / bounds.height) * 100}%`);
-    node.dataset.glow = "on";
-  };
+  const smash = useCallback(() => setSmashToken((n) => n + 1), []);
+  const toggleTheme = useCallback(
+    () => setTheme((t) => (t === "dark" ? "light" : "dark")),
+    [],
+  );
 
-  const handleHeroPointerLeave = () => {
-    if (heroRef.current) heroRef.current.dataset.glow = "off";
-  };
+  const Pane = CONTENT[pane];
 
   return (
-    <div className="relative">
-      <SmoothScroll />
-      <ScrollProgress />
-      <EasterEgg />
-
-      <a
-        href="#experience"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[110] focus:rounded-[var(--radius-pill)] focus:bg-[var(--color-accent-solid)] focus:px-5 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-white"
-      >
-        Skip to content
-      </a>
-
-      {/* The page below is fully rendered and painted while this overlay is up,
-          so it is a brand moment rather than a gate. It runs once per session. */}
-      {introMounted && (
-        <div
-          role="status"
-          aria-live="polite"
-          className={`pointer-events-none fixed inset-0 z-[100] flex items-center justify-center bg-[var(--color-bg)] transition-opacity duration-300 ${
-            introDone ? "opacity-0" : "opacity-100"
-          }`}
-          onTransitionEnd={() => introDone && setIntroMounted(false)}
-        >
-          <Loader onComplete={() => setIntroDone(true)} />
-        </div>
-      )}
-
-      <div className="fixed inset-0 -z-10 bg-[var(--color-bg)]" />
-
-      <div className="relative z-10">
-        <nav className="fixed top-0 z-50 w-full border-b border-[var(--color-border-soft)] bg-[var(--color-nav)] backdrop-blur-md">
-          <div className="mx-auto flex h-16 max-w-[1520px] items-center justify-between gap-4 px-4 md:h-[72px] md:px-6">
-            <a
-              href="#top"
-              className="font-display shrink-0 text-base font-black tracking-tight text-[var(--color-text)] md:text-lg"
+    <>
+      <div className="grid h-[100dvh] grid-rows-[minmax(0,1fr)_auto] gap-8 overflow-hidden px-6 py-8 md:grid-cols-[minmax(0,1fr)_13rem] md:grid-rows-1 md:gap-14 md:px-12 md:py-0">
+        <main className="flex min-h-0 items-center justify-center overflow-y-auto py-2 text-center">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={pane}
+              variants={GROUP}
+              initial={reduce ? false : "hidden"}
+              animate="shown"
+              exit={reduce ? undefined : { opacity: 0, y: -10, transition: { duration: 0.2 } }}
+              className="w-full"
             >
-              <span className="sm:hidden">Bank L.</span>
-              <span className="hidden sm:inline">Bank Leelathanapipat</span>
-            </a>
-
-            <div className="flex items-center gap-1 text-sm font-medium text-[var(--color-text-muted)] sm:gap-2 md:gap-6">
-              {NAV_ITEMS.map((item) => (
-                <a
-                  key={item.id}
-                  href={`#${item.id}`}
-                  aria-current={activeSection === item.id ? "true" : undefined}
-                  className={`relative inline-flex h-11 items-center whitespace-nowrap px-1.5 text-[13px] transition-colors after:absolute after:bottom-2 after:left-1.5 after:right-1.5 after:h-[2px] after:origin-left after:rounded-[var(--radius-pill)] after:bg-[var(--color-accent)] after:transition-transform after:duration-300 md:px-1 md:text-sm ${
-                    activeSection === item.id
-                      ? "text-[var(--color-text)] after:scale-x-100"
-                      : "after:scale-x-0 hover:text-[var(--color-text)] hover:after:scale-x-100"
-                  }`}
-                >
-                  {item.label}
-                </a>
-              ))}
-              <button
-                type="button"
-                onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
-                className="ml-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-pill)] border border-[var(--color-border)] bg-[var(--color-pill)] text-[var(--color-text-muted)] transition-all hover:border-[var(--color-accent-border)] hover:text-[var(--color-accent-text)] active:scale-95"
-                aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-                title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-              >
-                {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-              </button>
-            </div>
-          </div>
-        </nav>
-
-        {/* ---------------------------------------------------------------
-            HERO. Asymmetric split: the value proposition on the left, a
-            generative die plot holding the right. Four text elements total.
-        --------------------------------------------------------------- */}
-        <header
-          id="top"
-          ref={heroRef}
-          data-glow="off"
-          onPointerMove={handleHeroPointerMove}
-          onPointerLeave={handleHeroPointerLeave}
-          className="hero-view-source group/hero relative flex min-h-[100dvh] w-full items-center overflow-hidden pb-12 pt-20 md:pb-16 md:pt-24"
-        >
-          <div
-            aria-hidden="true"
-            className="pointer-glow pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-data-[glow=on]/hero:opacity-100"
-          />
-
-          <div className="hero-recede relative z-10 mx-auto w-full max-w-[1520px] px-4 md:px-6">
-            <div>
-              <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-3 md:mb-8">
-                <span className="text-sm font-semibold tracking-tight text-[var(--color-text-muted)]">
-                  Bank Leelathanapipat
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-[var(--radius-pill)] border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-3.5 py-1.5">
-                  {/* Real availability state, not decoration. */}
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-[var(--radius-pill)] bg-[var(--color-accent)]" />
-                  <span className="text-xs font-semibold text-[var(--color-text)]">
-                    Available for co-op 2026
-                  </span>
-                </span>
-              </div>
-
-              {/* Fluid down to narrow phones. The 16ch measure only applies
-                  from `sm` up: on a 360px screen it would squeeze the headline
-                  into a column narrower than the viewport and add a fourth
-                  line, which is a font-scale error rather than a copy problem. */}
-              <h1 className="font-display mb-5 text-balance text-[clamp(1.9rem,8vw,2.6rem)] font-black leading-[1.02] tracking-tight text-[var(--color-text)] sm:max-w-[15ch] sm:text-7xl md:mb-7 lg:text-[5.4rem]">
-                Full-stack software, published research.
-              </h1>
-
-              <p className="mb-8 max-w-[54ch] text-lg leading-relaxed md:mb-10 text-[var(--color-text-muted)] md:text-[1.35rem]">
-                Computer Engineering &rsquo;30 at Waterloo. Software engineering{" "}
-                <span className="whitespace-nowrap">co-op</span>, IEEE-published IoT work, and
-                projects from match analytics to fraud detection.
-              </p>
-
-              <div className="flex flex-wrap items-center gap-4 md:gap-6">
-                <a
-                  href="#experience"
-                  className="inline-flex h-12 items-center whitespace-nowrap rounded-[var(--radius-pill)] bg-[var(--color-accent-solid)] px-7 text-base font-bold text-white shadow-lg shadow-[var(--color-shadow)] transition-all hover:brightness-110 active:scale-[0.98]"
-                >
-                  View experience
-                </a>
-                <SocialLinks />
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <div className="h-24 bg-gradient-to-b from-transparent to-[var(--color-surface)]" />
-
-        <main className="bg-[var(--color-surface)]">
-          {/* -------------------------------------------------------------
-              EXPERIENCE. A pinned context column beside a scrolling timeline.
-
-              The heading and the numbers stay put while the roles move past
-              them, which is what the old full-height date rail was gesturing at
-              without ever holding any content. It also gives this section a
-              layout family nothing else on the page uses.
-          ------------------------------------------------------------- */}
-          <section id="experience" className="mx-auto max-w-[1520px] px-4 py-16 md:px-6 md:py-24">
-            <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
-              <div className="lg:col-span-4">
-                <div className="lg:sticky lg:top-28">
-                  <Reveal className="group">
-                    <h2 className="font-display mb-5 text-3xl font-black tracking-tight text-[var(--color-text)] md:text-4xl">
-                      Where I have worked
-                    </h2>
-                    <div className="h-px w-full bg-[var(--color-border)] transition-colors duration-500 group-hover:bg-[var(--color-accent-border)] lg:w-16" />
-                  </Reveal>
-                  <Reveal delay={80} className="mt-8 lg:mt-10">
-                    <StatsBand />
-                  </Reveal>
-                </div>
-              </div>
-
-              <div className="lg:col-span-8">
-                <ExperienceTimeline items={EXPERIENCE} />
-              </div>
-            </div>
-          </section>
-
-          {/* -------------------------------------------------------------
-              WORK. Two projects, two cells. No phantom third column.
-          ------------------------------------------------------------- */}
-          <section
-            id="work"
-            className="mx-auto max-w-[1520px] border-t border-[var(--color-border-soft)] px-4 py-16 md:px-6 md:py-24"
-          >
-            <SectionHeading>Things I have built</SectionHeading>
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
-              {PROJECTS.map((project, i) => (
-                <Reveal key={project.title} delay={i * 80} className="h-full">
-                  <ProjectCard {...project} />
-                </Reveal>
-              ))}
-            </div>
-          </section>
-
-          {/* -------------------------------------------------------------
-              HOBBIES. Asymmetric bento: one feature cell plus two supporting
-              cells. Three interests, three cells, no blank tiles.
-          ------------------------------------------------------------- */}
-          <section
-            id="hobbies"
-            className="mx-auto max-w-[1520px] border-t border-[var(--color-border-soft)] px-4 py-16 md:px-6 md:py-24"
-          >
-            <SectionHeading>Outside the lab</SectionHeading>
-
-            <div className="grid gap-5 md:gap-6 lg:grid-cols-3 lg:grid-rows-[minmax(0,1fr)_minmax(0,1fr)]">
-              {HOBBIES.map((hobby, i) => (
-                <Reveal
-                  key={hobby.name}
-                  delay={i * 80}
-                  className={`card-view-source group flex flex-col overflow-hidden rounded-[var(--radius-card)] border border-[var(--color-border-soft)] bg-[var(--color-bg-elevated)] transition-colors duration-500 hover:border-[var(--color-accent-border)] ${
-                    hobby.feature ? "lg:col-span-2 lg:row-span-2" : ""
-                  }`}
-                >
-                  <div
-                    className={`w-full shrink-0 overflow-hidden ${
-                      hobby.feature ? "h-56 lg:h-auto lg:flex-1" : "h-44"
-                    }`}
-                  >
-                    <img
-                      src={hobby.image}
-                      alt={hobby.alt}
-                      loading="lazy"
-                      decoding="async"
-                      width="800"
-                      height="450"
-                      className={`h-full w-full object-cover saturate-[0.35] transition-all duration-700 group-hover:saturate-100 ${
-                        hobby.feature ? "zoom-settle" : "group-hover:scale-[1.03]"
-                      }`}
-                    />
-                  </div>
-                  <div className={hobby.feature ? "p-6 md:p-8" : "p-5 md:p-6"}>
-                    <h3
-                      className={`font-display font-bold text-[var(--color-text)] ${
-                        hobby.feature ? "text-2xl md:text-3xl" : "text-lg"
-                      }`}
-                    >
-                      {hobby.name}
-                    </h3>
-                    <p
-                      className={`mt-2 leading-relaxed text-[var(--color-text-muted)] ${
-                        hobby.feature ? "max-w-[62ch] text-base md:text-lg" : "text-sm"
-                      }`}
-                    >
-                      {hobby.description}
-                    </p>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-
-            {/* Music: a different layout family again, and every embed stays
-                behind a click so the section costs nothing to scroll past. */}
-            <Reveal className="mt-14 md:mt-20">
-              <h3 className="font-display text-2xl font-bold text-[var(--color-text)] md:text-3xl">
-                Music
-              </h3>
-              <p className="mt-4 max-w-[68ch] leading-relaxed text-[var(--color-text-muted)] md:text-lg">
-                Music is a big part of how I focus, reset, and unwind outside of code. My taste moves
-                across a few genres depending on whether I am studying, building, or slowing down
-                after a long day.
-              </p>
-              <div className="mt-10">
-                <MusicShelf theme={theme} />
-              </div>
-            </Reveal>
-          </section>
-
-          {/* -------------------------------------------------------------
-              CONTACT.
-          ------------------------------------------------------------- */}
-          <footer
-            id="contact"
-            className="mx-auto max-w-[1520px] overflow-hidden border-t border-[var(--color-border-soft)] px-4 py-20 md:px-6 md:py-28"
-          >
-            <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-16">
-              <Reveal>
-                <h2 className="font-display mb-6 text-5xl font-black tracking-tight text-[var(--color-text)] md:text-7xl">
-                  send me
-                  <br />
-                  anything!
-                </h2>
-                <p className="mb-10 max-w-[46ch] text-lg leading-relaxed text-[var(--color-text-muted)]">
-                  A research opportunity, a project idea, or just a conversation about hardware and
-                  systems. I would love to hear from you.
-                </p>
-
-                <button
-                  type="button"
-                  onClick={handleCopyEmail}
-                  className="group/copy inline-flex max-w-full items-center gap-3 rounded-[var(--radius-pill)] border border-[var(--color-accent-border)] bg-[var(--color-accent-soft)] px-5 py-3.5 text-left transition-all duration-300 hover:brightness-110 active:scale-[0.98]"
-                >
-                  {copied ? (
-                    <Check size={18} aria-hidden="true" className="shrink-0 text-[var(--color-accent-text)]" />
-                  ) : (
-                    <Copy size={18} aria-hidden="true" className="shrink-0 text-[var(--color-accent-text)]" />
-                  )}
-                  <span className="truncate text-base font-bold text-[var(--color-text)] md:text-xl">
-                    {CONTACT_EMAIL}
-                  </span>
-                  <span className="shrink-0 text-sm font-semibold text-[var(--color-text-muted)]">
-                    {copied ? "Copied" : "Copy"}
-                  </span>
-                </button>
-                <span className="sr-only" role="status" aria-live="polite">
-                  {copied ? "Email address copied to clipboard" : ""}
-                </span>
-
-                <div className="mt-10">
-                  <SocialLinks />
-                </div>
-
-                <p className="mt-10 text-sm text-[var(--color-text-muted)]">
-                  Waterloo, ON and Bangkok, TH
-                </p>
-              </Reveal>
-
-              <div ref={globeSlotRef} className="w-full">
-                {showGlobe ? (
-                  <React.Suspense
-                    fallback={
-                      <div className="h-[420px] w-full rounded-[var(--radius-card)] border border-[var(--color-border-soft)] bg-[var(--color-bg-elevated)] md:h-[560px]" />
-                    }
-                  >
-                    <GlobeBox theme={theme} />
-                  </React.Suspense>
-                ) : (
-                  <div className="h-[420px] w-full rounded-[var(--radius-card)] border border-[var(--color-border-soft)] bg-[var(--color-bg-elevated)] md:h-[560px]" />
-                )}
-              </div>
-            </div>
-          </footer>
+              <Pane />
+            </motion.div>
+          </AnimatePresence>
         </main>
+
+        <Rail
+          pane={pane}
+          onPick={pick}
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          onSmash={smash}
+        />
       </div>
-    </div>
+
+      <Shuttle smashToken={smashToken} theme={theme} />
+    </>
   );
 }
-
-export default App;
