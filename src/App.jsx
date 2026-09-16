@@ -31,12 +31,28 @@ const LINKS = [
 
 const RECORD = [
   {
-    company: "IEEE",
+    company: "Digital Health Center, Chulalongkorn University",
+    role: "Software Developer",
+    period: "2026",
+    description:
+      "A driver dispatch platform whose assignment engine is a deterministic constraint solver, now running the Faculty of Medicine's six-driver fleet in daily production. Also a camera-based CPR coach on pose estimation, validated at 98.7% agreement across 82 trainees.",
+  },
+  {
+    // KMITL was the employer. IEEE published the paper, so the citation is a
+    // link inside the description rather than a link on the organisation.
+    company: "King Mongkut's Institute of Technology Ladkrabang",
     role: "Research Assistant",
     period: "2024 to 2025",
-    description:
-      "A low-budget IoT water level measurement system on ESP32 for flood mitigation, published in the IEEE Xplore Digital Library.",
-    link: "https://ieeexplore.ieee.org/abstract/document/10811073",
+    description: (
+      <>
+        A reservoir flood-monitoring system using 433 MHz Yagi-Uda telemetry to stream water level
+        and flow velocity from dam substations to a live dashboard.{" "}
+        <Ext href="https://ieeexplore.ieee.org/abstract/document/10811073">
+          Published in IEEE Xplore
+        </Ext>
+        .
+      </>
+    ),
   },
   {
     company: "ODDS-Thailand",
@@ -166,7 +182,7 @@ const Serve = () => (
 );
 
 const Record = () => (
-  <div className="mx-auto max-w-[52ch] space-y-8">
+  <div className="mx-auto max-w-[52ch] space-y-6">
     {RECORD.map((job) => (
       <motion.article key={job.company} variants={ITEM}>
         <p className="meta">{job.period}</p>
