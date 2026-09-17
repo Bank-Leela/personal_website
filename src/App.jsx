@@ -136,16 +136,33 @@ const OFF_COURT = [
         I study the mechanics of the game and try to bring elite strategy to the court, mostly
         chasing the precision of{" "}
         <Ext href="https://en.wikipedia.org/wiki/Kunlavut_Vitidsarn">Kunlavut Vitidsarn</Ext>.
+        Watching is half the interest: where a shot was played from, what it forced, and why a
+        rally was often decided three shots before the point ended. I play regularly with the
+        Waterloo Badminton Club, and I keep track of my own patterns closely enough that it
+        eventually turned into a project.
       </>
     ),
   },
-  { title: "Anime and manga", body: <>Favourites include Your Name, Clannad, and Charlotte.</> },
   {
     title: "Gaming",
     body: (
       <>
         Strategy and teamwork first: Valorant, Minecraft, and co-op horror like Phasmophobia and
-        Devour.
+        Devour. What holds my attention is coordination under pressure, reading what the other
+        side is set up to do and committing before you are certain. Minecraft is the opposite
+        pole, building with no clock running. Co-op horror is mostly an excuse to be on a call
+        with friends while everything goes wrong.
+      </>
+    ),
+  },
+  {
+    title: "Anime and manga",
+    body: (
+      <>
+        Favourites include Your Name, Clannad, and Charlotte. Two of those are Jun Maeda&rsquo;s,
+        which is not an accident. I am drawn to ordinary life sharpened by a single impossible
+        premise, and to stories that earn their ending slowly rather than surprising you into it.
+        Your Name is the outlier, there for Shinkai&rsquo;s craft as much as the story.
       </>
     ),
   },
@@ -160,7 +177,9 @@ const OFF_COURT = [
             <Ext href={m.href}>{m.genre}</Ext>
           </span>
         ))}
-        .
+        . Thai-pop is home and gets the most play. City-pop is what goes on for long stretches of
+        work, since it sits in the background without asking for anything. Hip-hop is for the days
+        that need momentum instead of calm.
       </>
     ),
   },
