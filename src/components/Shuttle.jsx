@@ -18,24 +18,41 @@ import { useEffect, useRef } from "react";
  * Words it flies through are lit for a moment through the CSS Custom Highlight
  * API, which needs no DOM mutation.
  *
- * Base units are CSS pixels and seconds, tuned for a 1440px-wide viewport, then
- * scaled by `k` so the flight keeps its shape on any screen: velocity and
- * gravity scale with `k`, and drag, a reciprocal length, scales against it.
+ * The simulation runs in real units rather than invented ones. The viewport
+ * width is taken to be one badminton court end to end, which fixes a px/metre
+ * scale; gravity is 9.81 m/s^2 and the drag coefficient falls out of a real
+ * shuttle's 6.7 m/s terminal velocity, since terminal = sqrt(g/k). A smash is
+ * launched at 500 km/h, near the fastest ever recorded, and the physics does the
+ * rest: it is down to roughly 107 km/h a tenth of a second later and 48 km/h by
+ * three tenths, which is the same collapse a real smash undergoes crossing a
+ * court.
+ *
+ * At that speed a frame covers some 250px, so each frame is integrated in
+ * substeps fine enough to keep drag stable and to land wall contacts in the
+ * right place, and the text underneath is sampled along the path travelled
+ * rather than at a single point, or the shuttle would skip whole words.
  */
 
-const GRAVITY = 1150; // px/s^2 at k = 1
-const DRAG = 0.0011; // 1/px at k = 1
-const SMASH = 3300; // px/s, the impulse behind a pane change or the Smash button
-const MAX_SPEED = 7000; // px/s, cap on a thrown shuttle
-const BOUNCE_FLOOR = 0.46; // the skirt collapses on impact, so the floor is dead
-const BOUNCE_WALL = 0.6;
+const COURT_M = 13.4; // a badminton court, end to end; the viewport spans one
+const GRAVITY_MS2 = 9.81;
+const TERMINAL_MS = 6.7; // a real shuttle's terminal velocity, which fixes drag
+const SMASH_KMH = 500; // near the fastest smash ever recorded
+const MAX_THROW_KMH = 500; // a thrown shuttle cannot beat the hardest smash
+const THROW_GAIN = 4.2; // pointer speed to shuttle speed
+const SLEEP_MS = 0.25; // m/s below which it counts as at rest
+const DEAD_BOUNCE_MS = 0.55; // m/s of vertical bounce not worth keeping
+const HIT_MS = 3; // m/s below which it stops lighting words
+const SUBSTEP_PX = 18; // integrate in steps no coarser than this
+const MAX_SUBSTEPS = 24;
+const HIT_STRIDE_PX = 26; // sample the text this often along the path
+const MAX_HITS_PER_FRAME = 10; // caret lookups force layout, so bound them
+const BOUNCE_FLOOR = 0.5; // the skirt collapses on impact, so the floor is dead
+const BOUNCE_WALL = 0.72;
 const FRICTION = 0.86; // per second, once it is sliding on the floor
-const SLEEP_SPEED = 26; // px/s below which it is considered at rest
 const SLEEP_AFTER = 500; // ms at rest before the frame loop is released
 const GRAB_RADIUS = 30;
-const TRAIL = 22;
-const HIT_SAMPLE = 3; // sample the text under the shuttle every Nth frame
-const HIT_SPEED = 420; // px/s below which it stops lighting words
+const TRAIL_MS = 130; // the streak is time-based, so speed sets its length
+const MAX_TRAIL = 64;
 const HIT_LINGER = 620; // ms a clipped word stays lit
 const RADIUS = 13; // collision radius
 
@@ -117,7 +134,17 @@ export default function Shuttle({ smashToken = 0, theme }) {
     const ctx = canvas.getContext("2d");
     let width = window.innerWidth;
     let height = window.innerHeight;
-    let k = 1;
+
+    // Everything below is derived from the px/metre scale, so the shuttle obeys
+    // the same real quantities whatever the window size.
+    let ppm = width / COURT_M;
+    let gravity = GRAVITY_MS2 * ppm;
+    let drag = GRAVITY_MS2 / (TERMINAL_MS * TERMINAL_MS) / ppm;
+    let smashSpeed = (SMASH_KMH / 3.6) * ppm;
+    let maxThrow = (MAX_THROW_KMH / 3.6) * ppm;
+    let sleepSpeed = SLEEP_MS * ppm;
+    let deadBounce = DEAD_BOUNCE_MS * ppm;
+    let hitSpeed = HIT_MS * ppm;
 
     const shuttle = {
       x: width * 0.5,
@@ -126,10 +153,9 @@ export default function Shuttle({ smashToken = 0, theme }) {
       vy: 0,
       angle: Math.PI / 2,
     };
-    const trail = [];
+    let trail = [];
 
     let frame = 0;
-    let ticks = 0;
     let last = performance.now();
     let restingSince = 0;
     let grabbed = false;
@@ -138,15 +164,32 @@ export default function Shuttle({ smashToken = 0, theme }) {
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
+      const prevPpm = ppm;
       width = window.innerWidth;
       height = window.innerHeight;
-      k = Math.min(Math.max(width / 1440, 0.34), 1.3);
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      ppm = width / COURT_M;
+      gravity = GRAVITY_MS2 * ppm;
+      drag = GRAVITY_MS2 / (TERMINAL_MS * TERMINAL_MS) / ppm;
+      smashSpeed = (SMASH_KMH / 3.6) * ppm;
+      maxThrow = (MAX_THROW_KMH / 3.6) * ppm;
+      sleepSpeed = SLEEP_MS * ppm;
+      deadBounce = DEAD_BOUNCE_MS * ppm;
+      hitSpeed = HIT_MS * ppm;
+
+      // Carry the shuttle's real speed across the rescale rather than letting a
+      // resize quietly speed it up or slow it down.
+      const ratio = ppm / prevPpm;
+      shuttle.vx *= ratio;
+      shuttle.vy *= ratio;
+
       // A shrinking window must not strand the shuttle outside the viewport.
       shuttle.x = Math.min(Math.max(shuttle.x, RADIUS), width - RADIUS);
       shuttle.y = Math.min(Math.max(shuttle.y, RADIUS), height - RADIUS);
+      trail = [];
       wake();
     };
 
@@ -178,12 +221,27 @@ export default function Shuttle({ smashToken = 0, theme }) {
       });
     };
 
+    /*
+     * At 500 km/h a single frame covers a quarter of the screen, so sampling the
+     * text at one point per frame would skip whole paragraphs. Walk the segment
+     * actually travelled instead. Each lookup forces layout, hence the cap.
+     */
+    const clipAlong = (x0, y0, x1, y1) => {
+      if (!highlight) return;
+      const len = Math.hypot(x1 - x0, y1 - y0);
+      const n = Math.min(MAX_HITS_PER_FRAME, Math.max(1, Math.round(len / HIT_STRIDE_PX)));
+      for (let i = 1; i <= n; i += 1) {
+        const t = i / n;
+        clipWordAt(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t);
+      }
+    };
+
     // --- drawing ---------------------------------------------------------
     const drawShuttle = (speed) => {
       const { cork, skirt } = colorsRef.current;
       // Stretch along the axis of travel rather than blurring: cheaper, and it
       // reads as speed at 60fps.
-      const stretch = 1 + Math.min(speed / (SMASH * k), 1) * 0.8;
+      const stretch = 1 + Math.min(speed / smashSpeed, 1) * 2.4;
       const length = 26;
       const corkR = 5.5;
       const skirtR = 10;
@@ -240,9 +298,9 @@ export default function Shuttle({ smashToken = 0, theme }) {
       ctx.strokeStyle = cork;
       for (let i = 1; i < trail.length; i += 1) {
         const t = i / trail.length;
-        const fast = Math.min(trail[i].speed / (SMASH * k), 1);
-        ctx.globalAlpha = t * fast * 0.4;
-        ctx.lineWidth = 1 + 7 * t * fast;
+        const fast = Math.min(trail[i].speed / smashSpeed, 1);
+        ctx.globalAlpha = t * Math.sqrt(fast) * 0.45;
+        ctx.lineWidth = 1 + 9 * t * Math.sqrt(fast);
         ctx.beginPath();
         ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
         ctx.lineTo(trail[i].x, trail[i].y);
@@ -257,67 +315,87 @@ export default function Shuttle({ smashToken = 0, theme }) {
       // Clamp dt so a backgrounded tab does not resume with one huge jump.
       const dt = Math.min((now - last) / 1000, 1 / 30);
       last = now;
-      ticks += 1;
+
+      const fromX = shuttle.x;
+      const fromY = shuttle.y;
 
       if (!grabbed) {
-        const speed = Math.hypot(shuttle.vx, shuttle.vy);
-        const decel = (DRAG / k) * speed * dt;
-        shuttle.vx -= shuttle.vx * decel;
-        shuttle.vy -= shuttle.vy * decel;
-        shuttle.vy += GRAVITY * k * dt;
-        shuttle.x += shuttle.vx * dt;
-        shuttle.y += shuttle.vy * dt;
+        // Integrate in substeps: at full speed a whole frame is far too coarse
+        // for stable quadratic drag, and wall contacts would land late.
+        const entrySpeed = Math.hypot(shuttle.vx, shuttle.vy);
+        const steps = Math.min(
+          MAX_SUBSTEPS,
+          Math.max(1, Math.ceil((entrySpeed * dt) / SUBSTEP_PX)),
+        );
+        const h = dt / steps;
 
-        const floor = height - RADIUS;
-        if (shuttle.y > floor) {
-          shuttle.y = floor;
-          shuttle.vy = -shuttle.vy * BOUNCE_FLOOR;
-          shuttle.vx *= FRICTION;
-          // Kill the micro-bounces rather than letting it buzz on the floor.
-          if (Math.abs(shuttle.vy) < 60 * k) shuttle.vy = 0;
+        for (let i = 0; i < steps; i += 1) {
+          const speed = Math.hypot(shuttle.vx, shuttle.vy);
+          const decel = drag * speed * h;
+          shuttle.vx -= shuttle.vx * decel;
+          shuttle.vy -= shuttle.vy * decel;
+          shuttle.vy += gravity * h;
+          shuttle.x += shuttle.vx * h;
+          shuttle.y += shuttle.vy * h;
+
+          const floor = height - RADIUS;
+          if (shuttle.y > floor) {
+            shuttle.y = floor;
+            shuttle.vy = -shuttle.vy * BOUNCE_FLOOR;
+            shuttle.vx *= FRICTION;
+            // Kill the micro-bounces rather than letting it buzz on the floor.
+            if (Math.abs(shuttle.vy) < deadBounce) shuttle.vy = 0;
+          }
+          if (shuttle.y < RADIUS) {
+            shuttle.y = RADIUS;
+            shuttle.vy = -shuttle.vy * BOUNCE_WALL;
+          }
+          if (shuttle.x < RADIUS) {
+            shuttle.x = RADIUS;
+            shuttle.vx = -shuttle.vx * BOUNCE_WALL;
+          }
+          if (shuttle.x > width - RADIUS) {
+            shuttle.x = width - RADIUS;
+            shuttle.vx = -shuttle.vx * BOUNCE_WALL;
+          }
+          if (shuttle.vy === 0 && shuttle.y >= floor) {
+            shuttle.vx *= Math.pow(FRICTION, h * 6);
+          }
+
+          trail.push({ x: shuttle.x, y: shuttle.y, speed, t: now });
         }
-        if (shuttle.y < RADIUS) {
-          shuttle.y = RADIUS;
-          shuttle.vy = -shuttle.vy * BOUNCE_WALL;
-        }
-        if (shuttle.x < RADIUS) {
-          shuttle.x = RADIUS;
-          shuttle.vx = -shuttle.vx * BOUNCE_WALL;
-        }
-        if (shuttle.x > width - RADIUS) {
-          shuttle.x = width - RADIUS;
-          shuttle.vx = -shuttle.vx * BOUNCE_WALL;
-        }
-        if (shuttle.vy === 0 && shuttle.y >= floor) {
-          shuttle.vx *= Math.pow(FRICTION, dt * 6);
-        }
+      } else {
+        trail.push({ x: shuttle.x, y: shuttle.y, speed: 0, t: now });
+      }
+
+      // The streak is a fixed slice of time, so its length on screen is set by
+      // how fast the shuttle is actually going.
+      while (trail.length && (now - trail[0].t > TRAIL_MS || trail.length > MAX_TRAIL)) {
+        trail.shift();
       }
 
       const speed = Math.hypot(shuttle.vx, shuttle.vy);
 
       // Cork leads while it is travelling, and points at the floor once it is
       // slow, which is how a shuttle sits at rest.
-      const target = speed > SLEEP_SPEED ? Math.atan2(shuttle.vy, shuttle.vx) : Math.PI / 2;
+      const target = speed > sleepSpeed ? Math.atan2(shuttle.vy, shuttle.vx) : Math.PI / 2;
       let delta = target - shuttle.angle;
       while (delta > Math.PI) delta -= Math.PI * 2;
       while (delta < -Math.PI) delta += Math.PI * 2;
-      shuttle.angle += delta * Math.min(1, dt * (grabbed ? 9 : 20));
+      shuttle.angle += delta * Math.min(1, dt * (grabbed ? 9 : 26));
 
-      if (speed > HIT_SPEED && ticks % HIT_SAMPLE === 0) clipWordAt(shuttle.x, shuttle.y);
-
-      trail.push({ x: shuttle.x, y: shuttle.y, speed });
-      if (trail.length > TRAIL) trail.shift();
+      if (speed > hitSpeed) clipAlong(fromX, fromY, shuttle.x, shuttle.y);
 
       render(speed);
 
       // Release the frame loop once it has genuinely settled; any interaction
       // wakes it again.
-      if (!grabbed && speed < SLEEP_SPEED && shuttle.y >= height - RADIUS - 1) {
+      if (!grabbed && speed < sleepSpeed && shuttle.y >= height - RADIUS - 1) {
         if (!restingSince) restingSince = now;
         if (now - restingSince > SLEEP_AFTER) {
           shuttle.vx = 0;
           shuttle.vy = 0;
-          trail.length = 0;
+          trail = [];
           render(0);
           frame = 0;
           return;
@@ -362,6 +440,7 @@ export default function Shuttle({ smashToken = 0, theme }) {
       samples.push({ x: e.clientX, y: e.clientY, t: performance.now() });
       shuttle.vx = 0;
       shuttle.vy = 0;
+      trail = [];
       e.preventDefault();
       wake();
     };
@@ -386,18 +465,18 @@ export default function Shuttle({ smashToken = 0, theme }) {
       pointerId = null;
 
       // Throw velocity comes from the last stretch of pointer travel, not the
-      // single previous frame, so a flick reads as a flick.
+      // single previous frame, so a flick reads as a flick. The gain is what
+      // turns a human-speed drag into a shot, capped at the hardest smash.
       const now = performance.now();
       const recent = samples.filter((s) => now - s.t < 90);
       const first = recent[0];
       const lastSample = recent[recent.length - 1];
       if (first && lastSample && lastSample.t > first.t) {
         const seconds = (lastSample.t - first.t) / 1000;
-        const vx = ((lastSample.x - first.x) / seconds) * 1.15;
-        const vy = ((lastSample.y - first.y) / seconds) * 1.15;
+        const vx = ((lastSample.x - first.x) / seconds) * THROW_GAIN;
+        const vy = ((lastSample.y - first.y) / seconds) * THROW_GAIN;
         const speed = Math.hypot(vx, vy);
-        const cap = MAX_SPEED * k;
-        const scale = speed > cap ? cap / speed : 1;
+        const scale = speed > maxThrow ? maxThrow / speed : 1;
         shuttle.vx = vx * scale;
         shuttle.vy = vy * scale;
       }
@@ -424,11 +503,10 @@ export default function Shuttle({ smashToken = 0, theme }) {
 
     smashRef.current = () => {
       const dir = shuttle.x > width * 0.5 ? -1 : 1;
-      const angle = 0.18 + Math.random() * 0.22;
-      const speed = SMASH * k * (0.9 + Math.random() * 0.2);
-      shuttle.vx = speed * Math.cos(angle) * dir;
-      shuttle.vy = -speed * Math.sin(angle);
-      trail.length = 0;
+      const angle = 0.16 + Math.random() * 0.14;
+      shuttle.vx = smashSpeed * Math.cos(angle) * dir;
+      shuttle.vy = -smashSpeed * Math.sin(angle);
+      trail = [];
       wake();
     };
 
