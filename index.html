@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f9f6ef" />
+    <meta name="theme-color" content="#f4f4f2" />
 
     <!--
       Resolve the theme before first paint. Without this the document renders
@@ -24,7 +24,7 @@
           document
             .querySelector('meta[name="theme-color"]')
             // Keep these two hexes in sync with the theme effect in src/App.jsx.
-            .setAttribute("content", theme === "dark" ? "#12100c" : "#f9f6ef");
+            .setAttribute("content", theme === "dark" ? "#121212" : "#f4f4f2");
         } catch (e) {
           document.documentElement.dataset.theme = "light";
         }

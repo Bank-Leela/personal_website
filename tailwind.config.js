@@ -4,18 +4,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: "var(--bg)",
-        ink: "var(--text)",
-        muted: "var(--text-muted)",
-        faint: "var(--text-faint)",
+        paper: "var(--paper)",
+        ink: "var(--ink)",
+        body: "var(--body)",
+        meta: "var(--meta)",
         rule: "var(--rule)",
-        accent: "var(--accent)",
       },
       fontFamily: {
         sans: ['"Space Grotesk Variable"', "ui-sans-serif", "system-ui", "sans-serif"],
-        serif: ['"Newsreader Variable"', '"Iowan Old Style"', "Georgia", "serif"],
       },
-      maxWidth: { shell: "1180px" },
     },
   },
   plugins: [],

@@ -1,39 +1,39 @@
-@import "@fontsource-variable/newsreader";
 @import "@fontsource-variable/space-grotesk";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Warm paper, one terracotta accent. Dark is the same paper at night rather
-   than an inversion. */
+/*
+  Greyscale, with no accent colour anywhere in the interface. Links are
+  underlined rather than coloured, so the only saturated thing a visitor ever
+  sees on this site is the cork of the shuttlecock.
+*/
 :root {
   color-scheme: light;
-  --bg: #f9f6ef;
-  --text: #201d18;
-  --text-muted: #5f584d;
-  --text-faint: #7d7568;
-  --rule: rgba(32, 29, 24, 0.12);
-  --accent: #b5522a;
-  --selection: rgba(181, 82, 42, 0.18);
+  --paper: #f4f4f2;
+  --ink: #141414;
+  --body: #5c5c5c; /* 6.3:1 on paper */
+  --meta: #6e6e6e; /* 4.6:1 on paper */
+  --rule: rgba(20, 20, 20, 0.18);
+  --selection: rgba(20, 20, 20, 0.12);
   /* Canvas paints outside the Tailwind layer, so the shuttle reads its ink here. */
-  --shuttle-cork: #b5522a;
-  --shuttle-skirt: #201d18;
-  --bg-blur: rgba(249, 246, 239, 0.88);
+  --shuttle-cork: #ff4d1f;
+  --shuttle-skirt: #141414;
+  --court: rgba(20, 20, 20, 0.26);
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #12100c;
-  --text: #ece5d6;
-  --text-muted: #a49b8c;
-  --text-faint: #8a8173;
-  --rule: rgba(236, 229, 214, 0.14);
-  --accent: #e4906a;
-  --selection: rgba(228, 144, 106, 0.22);
-  --shuttle-cork: #e4906a;
-  --shuttle-skirt: #ece5d6;
-  --bg-blur: rgba(18, 16, 12, 0.88);
+  --paper: #121212;
+  --ink: #f0f0ee;
+  --body: #a8a8a8; /* 6.9:1 on paper */
+  --meta: #8e8e8e; /* 5.1:1 on paper */
+  --rule: rgba(240, 240, 238, 0.22);
+  --selection: rgba(240, 240, 238, 0.16);
+  --shuttle-cork: #ff4d1f;
+  --shuttle-skirt: #f0f0ee;
+  --court: rgba(240, 240, 238, 0.28);
 }
 
 /* The whole site is one screen. Nothing scrolls the document; a pane too tall
@@ -47,8 +47,8 @@ body {
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--text);
+  background: var(--paper);
+  color: var(--ink);
   font-family: "Space Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -59,12 +59,59 @@ body {
   background: var(--selection);
 }
 
-/* Words the shuttle passes through, lit for a moment by the CSS Custom
-   Highlight API. Only a handful of properties are honoured inside
-   ::highlight(), so this stays to colour alone. */
+/* The shuttle lights the words it flies through. Only a handful of properties
+   are honoured inside ::highlight(), so this stays to colour alone. */
 ::highlight(shuttle-hit) {
-  background-color: var(--accent);
-  color: var(--bg);
+  background-color: var(--shuttle-cork);
+  color: var(--paper);
+}
+
+/* The court stretches to fill any window, so its strokes must not stretch with
+   it; this keeps every line a hairline at every window shape. */
+.court * {
+  vector-effect: non-scaling-stroke;
+}
+
+/*
+  Court lines are heavy enough now to fight the copy where the two cross, so
+  text frosts what is behind it. `backdrop-filter` blurs the court, never the
+  glyphs, so the type stays perfectly sharp while the line behind it goes soft.
+
+  This belongs on the text elements themselves rather than their containers: a
+  container is as wide as its grid column, so frosting one leaves a blurred
+  rectangle reaching far past a short line of text. `inline-block` shrinks the
+  box to the words where the words are shorter than the column.
+
+  The shuttle canvas sits above this layer, so it stays crisp as it flies over.
+*/
+.readable {
+  display: inline-block;
+  vertical-align: top;
+  max-width: 100%;
+  padding: 0.22rem 0.45rem;
+  margin: -0.22rem 0;
+  -webkit-backdrop-filter: blur(9px);
+  backdrop-filter: blur(9px);
+}
+
+/* The corners carry small text and sit against the outer lines, where a heavy
+   blur reads as a smudge rather than as relief. */
+.readable-soft {
+  width: fit-content;
+  padding: 0.18rem 0.4rem;
+  margin: -0.18rem 0;
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+/* Blur is a lie on a flat ground when the viewer has asked for less of it. */
+@media (prefers-reduced-transparency: reduce) {
+  .readable,
+  .readable-soft {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    background: var(--paper);
+  }
 }
 
 a {
@@ -74,37 +121,38 @@ a {
 
 a:focus-visible,
 button:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--ink);
   outline-offset: 3px;
 }
 
-/* Newsreader's optical-size axis picks the cut from the rendered size. */
-.serif {
-  font-family: "Newsreader Variable", "Iowan Old Style", Georgia, serif;
-  font-optical-sizing: auto;
+/*
+  Every link in running text. Coloured links are the single most copied thing
+  about the site this one used to resemble, so these carry an underline and no
+  colour at all; the underline darkens to full ink on hover.
+*/
+.link {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--rule);
+  transition: text-decoration-color 160ms ease;
+}
+
+.link:hover {
+  text-decoration-color: var(--ink);
 }
 
 .prose {
-  font-family: "Newsreader Variable", "Iowan Old Style", Georgia, serif;
-  font-optical-sizing: auto;
-  font-size: 1.2rem;
+  font-size: 1.0625rem;
   line-height: 1.6;
+  color: var(--body);
   text-wrap: pretty;
-}
-
-.prose a {
-  color: var(--accent);
-}
-
-.prose a:hover {
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 .meta {
   font-size: 0.8125rem;
   letter-spacing: 0.01em;
-  color: var(--text-faint);
+  color: var(--meta);
 }
 
 @media (prefers-reduced-motion: reduce) {

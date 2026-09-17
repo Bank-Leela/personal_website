@@ -54,6 +54,9 @@ const GRAB_RADIUS = 30;
 const TRAIL_MS = 130; // the streak is time-based, so speed sets its length
 const MAX_TRAIL = 64;
 const HIT_LINGER = 620; // ms a clipped word stays lit
+const SHOVE_GAP = 220; // ms before the same block can be knocked again
+const SHOVE_MAX = 64; // px a single full-speed hit moves a block
+const SHOVE_LIMIT = 280; // px a block can end up from where it started
 // The drawn body, in px about its own origin, with the cork along +x. The
 // collisions read these too, so the shape that bounces is the shape you see.
 const LENGTH = 26;
@@ -208,11 +211,55 @@ export default function Shuttle({ smashToken = 0, theme }) {
     const lit = new Map();
     const nodeIds = new WeakMap();
     let nextNodeId = 0;
+    const shoved = new Map();
 
-    const clipWordAt = (x, y) => {
-      if (!highlight) return;
+    /*
+     * Knock a block of text along the shuttle's trajectory and leave it where
+     * it lands. Hits accumulate, so a block driven into repeatedly keeps going
+     * until it reaches SHOVE_LIMIT from where it started, at which point it
+     * stops rather than disappearing off the page. Switching panes remounts the
+     * content and everything returns to its proper place.
+     *
+     * The offset is written to `translate`, which is its own property in modern
+     * CSS, so it composes with the `transform` that Motion owns on these same
+     * elements rather than fighting it for control.
+     */
+    const shove = (node, vx, vy, speed) => {
+      const start = node.parentElement;
+      if (!start) return;
+      const block = start.closest("p, h2, dt, dd, li");
+      const main = document.querySelector("main");
+      if (!block || !main || !main.contains(block)) return;
+
+      // Blocks from a pane that has since been swapped out are dead weight.
+      shoved.forEach((_, el) => {
+        if (!el.isConnected) shoved.delete(el);
+      });
+
+      const now = performance.now();
+      const prev = shoved.get(block) || { x: 0, y: 0, t: 0 };
+      if (now - prev.t < SHOVE_GAP) return;
+
+      const len = Math.hypot(vx, vy) || 1;
+      const mag = 6 + SHOVE_MAX * Math.min(speed / smashSpeed, 1);
+      let x = prev.x + (vx / len) * mag;
+      let y = prev.y + (vy / len) * mag;
+      const dist = Math.hypot(x, y);
+      if (dist > SHOVE_LIMIT) {
+        x = (x / dist) * SHOVE_LIMIT;
+        y = (y / dist) * SHOVE_LIMIT;
+      }
+      shoved.set(block, { x, y, t: now });
+
+      block.style.transition = "translate 340ms cubic-bezier(0.16, 1, 0.3, 1)";
+      block.style.translate = `${x}px ${y}px`;
+    };
+
+    const clipWordAt = (x, y, vx, vy, speed) => {
       const hit = wordRangeAt(x, y);
       if (!hit) return;
+      shove(hit.node, vx, vy, speed);
+      if (!highlight) return;
       let id = nodeIds.get(hit.node);
       if (id === undefined) {
         id = nextNodeId;
@@ -235,13 +282,12 @@ export default function Shuttle({ smashToken = 0, theme }) {
      * text at one point per frame would skip whole paragraphs. Walk the segment
      * actually travelled instead. Each lookup forces layout, hence the cap.
      */
-    const clipAlong = (x0, y0, x1, y1) => {
-      if (!highlight) return;
+    const clipAlong = (x0, y0, x1, y1, vx, vy, speed) => {
       const len = Math.hypot(x1 - x0, y1 - y0);
       const n = Math.min(MAX_HITS_PER_FRAME, Math.max(1, Math.round(len / HIT_STRIDE_PX)));
       for (let i = 1; i <= n; i += 1) {
         const t = i / n;
-        clipWordAt(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t);
+        clipWordAt(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, vx, vy, speed);
       }
     };
 
@@ -430,7 +476,7 @@ export default function Shuttle({ smashToken = 0, theme }) {
       while (delta < -Math.PI) delta += Math.PI * 2;
       shuttle.angle += delta * Math.min(1, dt * (grabbed ? 9 : settled ? 7 : 26));
 
-      if (speed > hitSpeed) clipAlong(fromX, fromY, shuttle.x, shuttle.y);
+      if (speed > hitSpeed) clipAlong(fromX, fromY, shuttle.x, shuttle.y, shuttle.vx, shuttle.vy, speed);
 
       render(speed);
 
@@ -573,6 +619,11 @@ export default function Shuttle({ smashToken = 0, theme }) {
       document.removeEventListener("visibilitychange", onVisibility);
       lit.forEach((entry) => window.clearTimeout(entry.timer));
       lit.clear();
+      shoved.forEach((_, block) => {
+        block.style.transition = "";
+        block.style.translate = "";
+      });
+      shoved.clear();
       if (highlight) {
         highlight.clear();
         CSS.highlights.delete("shuttle-hit");
