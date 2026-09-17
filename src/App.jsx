@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Court from "./components/Court";
 import Shuttle from "./components/Shuttle";
@@ -308,7 +308,11 @@ export default function App() {
   const [pane, setPane] = useState(readPane);
   const [smashToken, setSmashToken] = useState(0);
 
-  useEffect(() => {
+  // A layout effect, so the attribute lands before any child's passive effect
+  // runs. React fires children's effects first, and the shuttle reads its
+  // colours from the stylesheet when the theme changes; with a plain effect it
+  // read the outgoing palette every time and painted itself into the paper.
+  useLayoutEffect(() => {
     document.documentElement.dataset.theme = theme;
     try {
       localStorage.setItem("theme", theme);
