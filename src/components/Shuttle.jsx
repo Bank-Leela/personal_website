@@ -124,17 +124,27 @@ function wordRangeAt(x, y) {
 
 export default function Shuttle({ smashToken = 0, theme }) {
   const canvasRef = useRef(null);
-  const colorsRef = useRef({ cork: "#b5522a", skirt: "#201d18" });
+  const colorsRef = useRef({ cork: "#ff4d1f", skirt: "#141414" });
   const smashRef = useRef(null);
+  const repaintRef = useRef(null);
 
-  // Colours are read from the stylesheet rather than passed in, so a theme
-  // change repaints the shuttle without restarting the simulation.
+  /*
+   * Colours are read from the stylesheet rather than passed in, so a theme
+   * change restyles the shuttle without restarting the simulation.
+   *
+   * A settled shuttle has released its animation frame, so nothing would
+   * redraw the canvas on its own and it would sit there in the outgoing
+   * palette: in dark mode that means a near-black skirt on a near-black
+   * ground, which looks like the shuttle has vanished. Hence the explicit
+   * repaint.
+   */
   useEffect(() => {
     const styles = getComputedStyle(document.documentElement);
     colorsRef.current = {
-      cork: styles.getPropertyValue("--shuttle-cork").trim() || "#b5522a",
-      skirt: styles.getPropertyValue("--shuttle-skirt").trim() || "#201d18",
+      cork: styles.getPropertyValue("--shuttle-cork").trim() || "#ff4d1f",
+      skirt: styles.getPropertyValue("--shuttle-skirt").trim() || "#141414",
     };
+    repaintRef.current?.();
   }, [theme]);
 
   useEffect(() => {
@@ -597,6 +607,8 @@ export default function Shuttle({ smashToken = 0, theme }) {
     };
     document.addEventListener("visibilitychange", onVisibility);
 
+    repaintRef.current = () => render(Math.hypot(shuttle.vx, shuttle.vy));
+
     smashRef.current = () => {
       const dir = shuttle.x > width * 0.5 ? -1 : 1;
       const angle = 0.16 + Math.random() * 0.14;
@@ -612,6 +624,7 @@ export default function Shuttle({ smashToken = 0, theme }) {
     return () => {
       cancelAnimationFrame(frame);
       smashRef.current = null;
+      repaintRef.current = null;
       window.removeEventListener("pointermove", onHover);
       canvas.removeEventListener("pointerdown", onDown);
       canvas.removeEventListener("pointermove", onMove);
