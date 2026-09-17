@@ -210,17 +210,17 @@ const Serve = () => (
     <div className="mx-auto max-w-[46ch] text-center">
       <motion.p
         variants={ITEM}
-        className="readable text-[clamp(2.1rem,4.4vw,3.4rem)] font-medium leading-[1.06] tracking-[-0.03em]"
+        className="knock readable text-[clamp(2.1rem,4.4vw,3.4rem)] font-medium leading-[1.06] tracking-[-0.03em]"
       >
         I build software that holds up.
       </motion.p>
-      <motion.p variants={ITEM} className="readable prose mt-7">
+      <motion.p variants={ITEM} className="knock readable prose mt-7">
         Computer Engineering at the <Ext href="https://uwaterloo.ca/">University of Waterloo</Ext>,
         class of 2030. Research published in{" "}
         <Ext href="https://ieeexplore.ieee.org/abstract/document/10811073">IEEE Xplore</Ext>, then
         match analytics and fraud detection.
       </motion.p>
-      <motion.p variants={ITEM} className="readable mt-8 flex flex-wrap justify-center gap-x-7 gap-y-2 text-[15px]">
+      <motion.p variants={ITEM} className="knock readable mt-8 flex flex-wrap justify-center gap-x-7 gap-y-2 text-[15px]">
         <a href={RESUME} className="link">
           Read the resume
         </a>
@@ -234,7 +234,7 @@ const Serve = () => (
         headline has no room for. */}
     <dl className="m-0 mx-auto max-w-[42ch] self-center text-center">
       {ABOUT.map((fact) => (
-        <motion.div key={fact.label} variants={ITEM} className="mt-5 first:mt-0">
+        <motion.div key={fact.label} variants={ITEM} className="knock mt-5 first:mt-0">
           <dt className="readable meta">{fact.label}</dt>
           <dd className="readable prose m-0 mt-1 text-[16px]">{fact.value}</dd>
         </motion.div>
@@ -246,7 +246,7 @@ const Serve = () => (
 const Record = () => (
   <div className="grid gap-x-14 gap-y-8 md:grid-cols-2">
     {RECORD.map((job) => (
-      <motion.article key={job.company} variants={ITEM}>
+      <motion.article key={job.company} variants={ITEM} className="knock max-w-[46ch]">
         <p className="readable meta">{job.period}</p>
         <h2 className="readable mt-1 text-[20px] font-medium tracking-[-0.02em]">
           {job.link ? <Ext href={job.link}>{job.company}</Ext> : job.company}
@@ -261,7 +261,7 @@ const Record = () => (
 const Builds = () => (
   <div className="grid gap-x-14 gap-y-8 md:grid-cols-2">
     {BUILDS.map((project) => (
-      <motion.article key={project.title} variants={ITEM}>
+      <motion.article key={project.title} variants={ITEM} className="knock max-w-[46ch]">
         <h2 className="readable text-[22px] font-medium tracking-[-0.02em]">{project.title}</h2>
         <p className="readable prose mt-2 text-[16px]">{project.description}</p>
         <p className="readable meta mt-3">
@@ -281,7 +281,7 @@ const Builds = () => (
 const OffCourt = () => (
   <div className="grid gap-x-14 gap-y-8 md:grid-cols-2">
     {OFF_COURT.map((item) => (
-      <motion.article key={item.title} variants={ITEM}>
+      <motion.article key={item.title} variants={ITEM} className="knock max-w-[46ch]">
         <h2 className="readable text-[19px] font-medium tracking-[-0.02em]">{item.title}</h2>
         <p className="readable prose mt-1.5 text-[16px]">{item.body}</p>
       </motion.article>
@@ -356,7 +356,7 @@ export default function App() {
       <Court />
 
       <div className="relative z-10 grid h-[100dvh] grid-cols-2 grid-rows-[auto_minmax(0,1fr)_auto] gap-x-6 gap-y-5 overflow-hidden px-6 py-6 md:px-10 md:py-8">
-        <a href="#serve" className="readable-soft self-start text-[15px] font-medium tracking-[-0.02em]">
+        <a href="#serve" className="readable-soft self-start text-[21px] font-semibold tracking-[-0.035em]">
           Bank Leelathanapipat
         </a>
 

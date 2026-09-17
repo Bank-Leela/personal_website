@@ -227,7 +227,9 @@ export default function Shuttle({ smashToken = 0, theme }) {
     const shove = (node, vx, vy, speed) => {
       const start = node.parentElement;
       if (!start) return;
-      const block = start.closest("p, h2, dt, dd, li");
+      // Knock whole entries. Targeting the individual paragraph or heading
+      // tore an entry apart, leaving its title stranded from its own body.
+      const block = start.closest(".knock");
       const main = document.querySelector("main");
       if (!block || !main || !main.contains(block)) return;
 
