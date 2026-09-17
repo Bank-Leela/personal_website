@@ -54,7 +54,15 @@ const GRAB_RADIUS = 30;
 const TRAIL_MS = 130; // the streak is time-based, so speed sets its length
 const MAX_TRAIL = 64;
 const HIT_LINGER = 620; // ms a clipped word stays lit
-const RADIUS = 13; // collision radius
+// The drawn body, in px about its own origin, with the cork along +x. The
+// collisions read these too, so the shape that bounces is the shape you see.
+const LENGTH = 26;
+const NOSE = LENGTH * 0.34;
+const TAIL = -LENGTH * 0.66;
+const CORK_R = 5.5;
+const SKIRT_R = 10;
+// Coarse radius, for the grab test and for clamping a dragged shuttle only.
+const RADIUS = 18;
 
 const canHighlight = () =>
   typeof CSS !== "undefined" &&
@@ -159,6 +167,7 @@ export default function Shuttle({ smashToken = 0, theme }) {
     let last = performance.now();
     let restingSince = 0;
     let grabbed = false;
+    let facing = 1; // the way the cork points once it comes to rest
     let pointerId = null;
     const samples = [];
 
@@ -236,17 +245,47 @@ export default function Shuttle({ smashToken = 0, theme }) {
       }
     };
 
+    /*
+     * How far the body reaches from its origin at a given angle. Standing on
+     * its cork it is tall and narrow; lying on its skirt it is short and wide,
+     * so a single collision radius would either bury it or float it depending
+     * on which way up it came to rest.
+     */
+    const bounds = (a) => {
+      const c = Math.cos(a);
+      const sn = Math.sin(a);
+      const pts = [
+        [NOSE + CORK_R, 0],
+        [NOSE, CORK_R],
+        [NOSE, -CORK_R],
+        [TAIL, SKIRT_R],
+        [TAIL, -SKIRT_R],
+      ];
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
+      for (let i = 0; i < pts.length; i += 1) {
+        const x = pts[i][0] * c - pts[i][1] * sn;
+        const y = pts[i][0] * sn + pts[i][1] * c;
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+      return { minX, maxX, minY, maxY };
+    };
+
     // --- drawing ---------------------------------------------------------
     const drawShuttle = (speed) => {
       const { cork, skirt } = colorsRef.current;
       // Stretch along the axis of travel rather than blurring: cheaper, and it
       // reads as speed at 60fps.
       const stretch = 1 + Math.min(speed / smashSpeed, 1) * 2.4;
-      const length = 26;
-      const corkR = 5.5;
-      const skirtR = 10;
-      const nose = length * 0.34;
-      const tail = -length * 0.66;
+      const corkR = CORK_R;
+      const skirtR = SKIRT_R;
+      const nose = NOSE;
+      const tail = TAIL;
 
       ctx.save();
       ctx.translate(shuttle.x, shuttle.y);
@@ -338,7 +377,8 @@ export default function Shuttle({ smashToken = 0, theme }) {
           shuttle.x += shuttle.vx * h;
           shuttle.y += shuttle.vy * h;
 
-          const floor = height - RADIUS;
+          const b = bounds(shuttle.angle);
+          const floor = height - b.maxY;
           if (shuttle.y > floor) {
             shuttle.y = floor;
             shuttle.vy = -shuttle.vy * BOUNCE_FLOOR;
@@ -346,16 +386,16 @@ export default function Shuttle({ smashToken = 0, theme }) {
             // Kill the micro-bounces rather than letting it buzz on the floor.
             if (Math.abs(shuttle.vy) < deadBounce) shuttle.vy = 0;
           }
-          if (shuttle.y < RADIUS) {
-            shuttle.y = RADIUS;
+          if (shuttle.y < -b.minY) {
+            shuttle.y = -b.minY;
             shuttle.vy = -shuttle.vy * BOUNCE_WALL;
           }
-          if (shuttle.x < RADIUS) {
-            shuttle.x = RADIUS;
+          if (shuttle.x < -b.minX) {
+            shuttle.x = -b.minX;
             shuttle.vx = -shuttle.vx * BOUNCE_WALL;
           }
-          if (shuttle.x > width - RADIUS) {
-            shuttle.x = width - RADIUS;
+          if (shuttle.x > width - b.maxX) {
+            shuttle.x = width - b.maxX;
             shuttle.vx = -shuttle.vx * BOUNCE_WALL;
           }
           if (shuttle.vy === 0 && shuttle.y >= floor) {
@@ -376,13 +416,19 @@ export default function Shuttle({ smashToken = 0, theme }) {
 
       const speed = Math.hypot(shuttle.vx, shuttle.vy);
 
-      // Cork leads while it is travelling, and points at the floor once it is
-      // slow, which is how a shuttle sits at rest.
-      const target = speed > sleepSpeed ? Math.atan2(shuttle.vy, shuttle.vx) : Math.PI / 2;
+      // The cork leads while it is travelling. Once the shuttle runs out of
+      // speed it topples onto its skirt and lies flat, the way a spent shuttle
+      // actually ends up, still pointing the way it was last going. The turn is
+      // slower than the in-flight tracking so you see it fall over.
+      if (speed > sleepSpeed) facing = shuttle.vx >= 0 ? 1 : -1;
+      const settled = speed <= sleepSpeed;
+      const target = settled
+        ? (facing > 0 ? 0 : Math.PI)
+        : Math.atan2(shuttle.vy, shuttle.vx);
       let delta = target - shuttle.angle;
       while (delta > Math.PI) delta -= Math.PI * 2;
       while (delta < -Math.PI) delta += Math.PI * 2;
-      shuttle.angle += delta * Math.min(1, dt * (grabbed ? 9 : 26));
+      shuttle.angle += delta * Math.min(1, dt * (grabbed ? 9 : settled ? 7 : 26));
 
       if (speed > hitSpeed) clipAlong(fromX, fromY, shuttle.x, shuttle.y);
 
@@ -390,7 +436,9 @@ export default function Shuttle({ smashToken = 0, theme }) {
 
       // Release the frame loop once it has genuinely settled; any interaction
       // wakes it again.
-      if (!grabbed && speed < sleepSpeed && shuttle.y >= height - RADIUS - 1) {
+      const rest = bounds(shuttle.angle);
+      const flat = Math.abs(delta) < 0.04;
+      if (!grabbed && speed < sleepSpeed && flat && shuttle.y >= height - rest.maxY - 1) {
         if (!restingSince) restingSince = now;
         if (now - restingSince > SLEEP_AFTER) {
           shuttle.vx = 0;
