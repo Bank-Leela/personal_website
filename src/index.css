@@ -5,35 +5,43 @@
 @tailwind utilities;
 
 /*
-  Greyscale, with no accent colour anywhere in the interface. Links are
-  underlined rather than coloured, so the only saturated thing a visitor ever
-  sees on this site is the cork of the shuttlecock.
+  Three tournament mats on a dark arena floor, after the top-down broadcast
+  shot: the grey Yonex mat, the green Thai court and the red finals court. Each
+  keeps white lines and white type, the way a real mat carries its markings, so
+  the only colour choice a visitor makes is the surface. The band on the
+  shuttlecock's cork stays the one saturated accent on every court.
+
+  Text on the mat is tuned per surface: body copy holds at least 4.5:1 and the
+  small meta line as well, which on the green means both sit close to white.
 */
 :root {
-  color-scheme: light;
-  --paper: #f4f4f2;
-  --ink: #141414;
-  --body: #5c5c5c; /* 6.3:1 on paper */
-  --meta: #6e6e6e; /* 4.6:1 on paper */
-  --rule: rgba(20, 20, 20, 0.18);
-  --selection: rgba(20, 20, 20, 0.12);
+  color-scheme: dark;
+  --floor: #0c0c0d;
+  --mat: #5a5c61;
+  --line: rgba(255, 255, 255, 0.92);
+  --ink: #fbfbf9;
+  --body: #e8e8e5; /* 5.4:1 on the grey mat */
+  --meta: #dadad6; /* 4.8:1 */
+  --rule: rgba(255, 255, 255, 0.4);
+  --selection: rgba(255, 255, 255, 0.24);
   /* Canvas paints outside the Tailwind layer, so the shuttle reads its ink here. */
-  --shuttle-cork: #ff4d1f;
-  --shuttle-skirt: #141414;
-  --court: rgba(20, 20, 20, 0.26);
+  --shuttle-cork: #f4eee3; /* leather */
+  --shuttle-band: #ff4d1f;
+  --shuttle-skirt: #f7f7f4; /* feathers */
 }
 
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --paper: #121212;
-  --ink: #f0f0ee;
-  --body: #a8a8a8; /* 6.9:1 on paper */
-  --meta: #8e8e8e; /* 5.1:1 on paper */
-  --rule: rgba(240, 240, 238, 0.22);
-  --selection: rgba(240, 240, 238, 0.16);
-  --shuttle-cork: #ff4d1f;
-  --shuttle-skirt: #f0f0ee;
-  --court: rgba(240, 240, 238, 0.28);
+:root[data-court="green"] {
+  --mat: #1a7a33;
+  --ink: #fbfdf9;
+  --body: #f1f4ef; /* 4.9:1 */
+  --meta: #eaede8; /* 4.6:1 */
+}
+
+:root[data-court="red"] {
+  --mat: #b3232a;
+  --ink: #fffaf9;
+  --body: #f6e9e8; /* 5.6:1 */
+  --meta: #efe0df; /* 5.1:1 */
 }
 
 /* The whole site is one screen. Nothing scrolls the document; a pane too tall
@@ -47,12 +55,17 @@ body {
 
 body {
   margin: 0;
-  background: var(--paper);
+  background: var(--floor);
   color: var(--ink);
   font-family: "Space Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  transition: background-color 220ms ease, color 220ms ease;
+}
+
+/* The mat is the one surface that changes colour, so it alone transitions. */
+.mat {
+  background: var(--mat);
+  transition: background-color 260ms ease;
 }
 
 ::selection {
@@ -62,12 +75,12 @@ body {
 /* The shuttle lights the words it flies through. Only a handful of properties
    are honoured inside ::highlight(), so this stays to colour alone. */
 ::highlight(shuttle-hit) {
-  background-color: var(--shuttle-cork);
-  color: var(--paper);
+  background-color: var(--shuttle-band);
+  color: var(--floor);
 }
 
-/* The court stretches to fill any window, so its strokes must not stretch with
-   it; this keeps every line a hairline at every window shape. */
+/* The court stretches to fill the mat, so its strokes must not stretch with
+   it; this keeps every line the same weight at every window shape. */
 .court * {
   vector-effect: non-scaling-stroke;
 }
@@ -94,23 +107,12 @@ body {
   backdrop-filter: blur(9px);
 }
 
-/* The corners carry small text and sit against the outer lines, where a heavy
-   blur reads as a smudge rather than as relief. */
-.readable-soft {
-  width: fit-content;
-  padding: 0.18rem 0.4rem;
-  margin: -0.18rem 0;
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
-}
-
 /* Blur is a lie on a flat ground when the viewer has asked for less of it. */
 @media (prefers-reduced-transparency: reduce) {
-  .readable,
-  .readable-soft {
+  .readable {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    background: var(--paper);
+    background: var(--mat);
   }
 }
 

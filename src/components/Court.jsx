@@ -1,12 +1,12 @@
 /**
- * Badminton court markings behind the page.
+ * Badminton court markings painted on the mat.
  *
  * The proportions are chosen to sit well on a screen rather than to match a
  * real court: a true 13.4 x 6.1 court stretched to a browser window is a
  * letterbox strip with dead space above and below it. So the viewBox is a
  * plain 100 x 100 and `preserveAspectRatio="none"` lets the whole thing
- * stretch edge to edge, which means every coordinate below reads as a
- * percentage of the viewport and the layout works at any window shape without
+ * stretch edge to edge of the mat, which means every coordinate below reads
+ * as a percentage of the mat and the layout works at any window shape without
  * a second orientation.
  *
  * Stretching a viewBox would normally distort the stroke along with it, hence
@@ -16,13 +16,13 @@
 export default function Court() {
   return (
     <svg
-      className="court pointer-events-none fixed inset-0 z-0 h-full w-full"
+      className="court pointer-events-none absolute inset-0 h-full w-full"
       viewBox="0 0 100 100"
       preserveAspectRatio="none"
       aria-hidden="true"
       focusable="false"
     >
-      <g fill="none" stroke="var(--court)" strokeWidth="3.5">
+      <g fill="none" stroke="var(--line)" strokeWidth="3.5">
         {/* Outer boundary: doubles sidelines and back boundary lines. */}
         <rect x="3" y="4" width="94" height="92" />
 

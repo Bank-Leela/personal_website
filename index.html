@@ -3,31 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f4f4f2" />
+    <!-- The arena floor, which frames every court; keep in sync with --floor in src/index.css. -->
+    <meta name="theme-color" content="#0c0c0d" />
 
     <!--
-      Resolve the theme before first paint. Without this the document renders
-      one frame of the default palette and then swaps, which reads as a flash.
-      Falls back to the OS preference when the visitor has no stored choice.
+      Resolve the court before first paint. Without this the document renders
+      one frame of the grey mat and then swaps, which reads as a flash.
     -->
     <script>
       (function () {
+        var court = "grey";
         try {
-          var stored = localStorage.getItem("theme");
-          var theme =
-            stored === "dark" || stored === "light"
-              ? stored
-              : window.matchMedia("(prefers-color-scheme: dark)").matches
-                ? "dark"
-                : "light";
-          document.documentElement.dataset.theme = theme;
-          document
-            .querySelector('meta[name="theme-color"]')
-            // Keep these two hexes in sync with the theme effect in src/App.jsx.
-            .setAttribute("content", theme === "dark" ? "#121212" : "#f4f4f2");
+          var stored = localStorage.getItem("court");
+          if (stored === "green" || stored === "red") court = stored;
         } catch (e) {
-          document.documentElement.dataset.theme = "light";
+          /* storage unavailable; the grey mat is laid */
         }
+        document.documentElement.dataset.court = court;
       })();
     </script>
 

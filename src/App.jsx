@@ -22,6 +22,13 @@ const LEGACY_ANCHORS = {
   hobbies: "off-court",
 };
 
+/* The three mats a visitor can play on, each after a tournament court. */
+const COURTS = [
+  { id: "grey", label: "Grey" },
+  { id: "green", label: "Green" },
+  { id: "red", label: "Red" },
+];
+
 const LINKS = [
   { label: "LinkedIn", href: "https://www.linkedin.com/in/bank-leelathanapipat" },
   { label: "GitHub", href: "https://github.com/Bank-Leela" },
@@ -246,7 +253,7 @@ const Serve = () => (
 const Record = () => (
   <div className="grid gap-x-14 gap-y-8 md:grid-cols-2">
     {RECORD.map((job) => (
-      <motion.article key={job.company} variants={ITEM} className="knock max-w-[46ch]">
+      <motion.article key={job.company} variants={ITEM} className="knock mx-auto max-w-[46ch]">
         <p className="readable meta">{job.period}</p>
         <h2 className="readable mt-1 text-[20px] font-medium tracking-[-0.02em]">
           {job.link ? <Ext href={job.link}>{job.company}</Ext> : job.company}
@@ -261,7 +268,7 @@ const Record = () => (
 const Builds = () => (
   <div className="grid gap-x-14 gap-y-8 md:grid-cols-2">
     {BUILDS.map((project) => (
-      <motion.article key={project.title} variants={ITEM} className="knock max-w-[46ch]">
+      <motion.article key={project.title} variants={ITEM} className="knock mx-auto max-w-[46ch]">
         <h2 className="readable text-[22px] font-medium tracking-[-0.02em]">{project.title}</h2>
         <p className="readable prose mt-2 text-[16px]">{project.description}</p>
         <p className="readable meta mt-3">
@@ -281,7 +288,7 @@ const Builds = () => (
 const OffCourt = () => (
   <div className="grid gap-x-14 gap-y-8 md:grid-cols-2">
     {OFF_COURT.map((item) => (
-      <motion.article key={item.title} variants={ITEM} className="knock max-w-[46ch]">
+      <motion.article key={item.title} variants={ITEM} className="knock mx-auto max-w-[46ch]">
         <h2 className="readable text-[19px] font-medium tracking-[-0.02em]">{item.title}</h2>
         <p className="readable prose mt-1.5 text-[16px]">{item.body}</p>
       </motion.article>
@@ -302,28 +309,24 @@ function readPane() {
 
 export default function App() {
   const reduce = useReducedMotion();
-  const [theme, setTheme] = useState(
-    () => document.documentElement.dataset.theme || "light",
+  const [court, setCourt] = useState(
+    () => document.documentElement.dataset.court || "grey",
   );
   const [pane, setPane] = useState(readPane);
   const [smashToken, setSmashToken] = useState(0);
 
   // A layout effect, so the attribute lands before any child's passive effect
   // runs. React fires children's effects first, and the shuttle reads its
-  // colours from the stylesheet when the theme changes; with a plain effect it
-  // read the outgoing palette every time and painted itself into the paper.
+  // colours from the stylesheet when the court changes; with a plain effect it
+  // read the outgoing palette every time and painted itself into the mat.
   useLayoutEffect(() => {
-    document.documentElement.dataset.theme = theme;
+    document.documentElement.dataset.court = court;
     try {
-      localStorage.setItem("theme", theme);
+      localStorage.setItem("court", court);
     } catch (e) {
-      /* storage unavailable; the theme still applies for this page view */
+      /* storage unavailable; the court still applies for this page view */
     }
-    document
-      .querySelector('meta[name="theme-color"]')
-      // Keep these two hexes in sync with the boot script in index.html.
-      ?.setAttribute("content", theme === "dark" ? "#121212" : "#f4f4f2");
-  }, [theme]);
+  }, [court]);
 
   useEffect(() => {
     const onHash = () => setPane(readPane());
@@ -343,29 +346,24 @@ export default function App() {
   );
 
   const smash = useCallback(() => setSmashToken((n) => n + 1), []);
-  const toggleTheme = useCallback(
-    () => setTheme((t) => (t === "dark" ? "light" : "dark")),
-    [],
-  );
 
   const Pane = CONTENT[pane];
 
   return (
     <>
       {/*
-        Four corners hold the furniture and the middle row holds the reading
-        matter, so nothing is stacked into a rail. The open centre is also the
-        shuttle's court.
+        The window is the arena: a dark floor with the mat laid in the middle
+        of it. The furniture sits on the floor around the mat, the way sponsor
+        boards and the umpire's chair do, and the reading matter sits on the
+        mat itself. The whole window is still the shuttle's court.
       */}
-      <Court />
-
-      <div className="relative z-10 grid h-[100dvh] grid-cols-2 grid-rows-[auto_minmax(0,1fr)_auto] gap-x-6 gap-y-5 overflow-hidden px-6 py-6 md:px-10 md:py-8">
-        <a href="#serve" className="readable-soft self-start text-[21px] font-semibold tracking-[-0.035em]">
+      <div className="relative z-10 grid h-[100dvh] grid-cols-2 grid-rows-[auto_minmax(0,1fr)_auto] gap-x-6 gap-y-4 overflow-hidden px-5 py-5 md:px-10 md:py-7">
+        <a href="#serve" className="self-start text-[21px] font-semibold tracking-[-0.035em]">
           Bank Leelathanapipat
         </a>
 
-        <nav aria-label="Panes" className="readable-soft justify-self-end self-start text-right">
-          <ul className="m-0 flex list-none flex-col items-end gap-1 p-0 text-[15px]">
+        <nav aria-label="Panes" className="justify-self-end self-start text-right">
+          <ul className="m-0 flex list-none flex-col items-end gap-1 p-0 text-[15px] md:flex-row md:items-baseline md:gap-x-6">
             {PANES.map((p) => (
               <li key={p.id}>
                 <a
@@ -381,22 +379,25 @@ export default function App() {
           </ul>
         </nav>
 
-        <main className="col-span-2 flex min-h-0 items-center overflow-y-auto overflow-x-hidden py-2">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={pane}
-              variants={GROUP}
-              initial={reduce ? false : "hidden"}
-              animate="shown"
-              exit={reduce ? undefined : { opacity: 0, y: -10, transition: { duration: 0.2 } }}
-              className="w-full"
-            >
-              <Pane />
-            </motion.div>
-          </AnimatePresence>
-        </main>
+        <section aria-label="Court" className="mat relative col-span-2 flex min-h-0">
+          <Court />
+          <main className="relative flex min-h-0 flex-1 items-center overflow-y-auto overflow-x-hidden px-6 py-6 md:px-12">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={pane}
+                variants={GROUP}
+                initial={reduce ? false : "hidden"}
+                animate="shown"
+                exit={reduce ? undefined : { opacity: 0, y: -10, transition: { duration: 0.2 } }}
+                className="w-full"
+              >
+                <Pane />
+              </motion.div>
+            </AnimatePresence>
+          </main>
+        </section>
 
-        <ul className="readable-soft m-0 flex list-none flex-wrap items-end gap-x-5 gap-y-1 self-end p-0">
+        <ul className="m-0 flex list-none flex-wrap items-end gap-x-5 gap-y-1 self-end p-0">
           {LINKS.map((l) => (
             <li key={l.label}>
               <a
@@ -411,17 +412,27 @@ export default function App() {
           ))}
         </ul>
 
-        <div className="readable-soft flex flex-col items-end gap-1 justify-self-end self-end">
-          <button type="button" onClick={toggleTheme} className="meta hover:text-ink">
-            {theme === "dark" ? "Light" : "Dark"}
-          </button>
+        <div className="flex flex-col items-end gap-1 justify-self-end self-end">
+          <div role="group" aria-label="Court surface" className="flex gap-x-4">
+            {COURTS.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => setCourt(c.id)}
+                aria-pressed={court === c.id}
+                className={court === c.id ? "meta underline underline-offset-4" : "meta hover:text-ink"}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
           <button type="button" onClick={smash} className="meta hover:text-ink">
             Smash
           </button>
         </div>
       </div>
 
-      <Shuttle smashToken={smashToken} theme={theme} />
+      <Shuttle smashToken={smashToken} court={court} />
     </>
   );
 }
