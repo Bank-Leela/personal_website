@@ -326,6 +326,11 @@ export default function App() {
     } catch (e) {
       /* storage unavailable; the court still applies for this page view */
     }
+    // Read back from the stylesheet, which has just restyled for the new court,
+    // so the hexes live in one place here rather than two.
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", getComputedStyle(document.documentElement).getPropertyValue("--mat").trim());
   }, [court]);
 
   useEffect(() => {
@@ -352,10 +357,10 @@ export default function App() {
   return (
     <>
       {/*
-        The window is the arena: a dark floor with the mat laid in the middle
-        of it. The furniture sits on the floor around the mat, the way sponsor
-        boards and the umpire's chair do, and the reading matter sits on the
-        mat itself. The whole window is still the shuttle's court.
+        The mat covers the whole window and the court is marked out in the
+        middle of it. The furniture sits on the mat outside the lines, the way
+        the umpire's chair and the line judges do, and the reading matter sits
+        inside them. The whole window is still the shuttle's court.
       */}
       <div className="relative z-10 grid h-[100dvh] grid-cols-2 grid-rows-[auto_minmax(0,1fr)_auto] gap-x-6 gap-y-4 overflow-hidden px-5 py-5 md:px-10 md:py-7">
         <a href="#serve" className="self-start text-[21px] font-semibold tracking-[-0.035em]">
@@ -379,7 +384,7 @@ export default function App() {
           </ul>
         </nav>
 
-        <section aria-label="Court" className="mat relative col-span-2 flex min-h-0">
+        <section aria-label="Court" className="relative col-span-2 flex min-h-0">
           <Court />
           <main className="relative flex min-h-0 flex-1 items-center overflow-y-auto overflow-x-hidden px-6 py-6 md:px-12">
             <AnimatePresence mode="wait">

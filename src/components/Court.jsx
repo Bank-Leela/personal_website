@@ -5,8 +5,8 @@
  * real court: a true 13.4 x 6.1 court stretched to a browser window is a
  * letterbox strip with dead space above and below it. So the viewBox is a
  * plain 100 x 100 and `preserveAspectRatio="none"` lets the whole thing
- * stretch edge to edge of the mat, which means every coordinate below reads
- * as a percentage of the mat and the layout works at any window shape without
+ * stretch edge to edge of the court region, which means every coordinate below
+ * reads as a percentage of it and the layout works at any window shape without
  * a second orientation.
  *
  * Stretching a viewBox would normally distort the stroke along with it, hence

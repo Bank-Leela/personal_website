@@ -3,15 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- The arena floor, which frames every court; keep in sync with --floor in src/index.css. -->
-    <meta name="theme-color" content="#0c0c0d" />
+    <meta name="theme-color" content="#5a5c61" />
 
     <!--
       Resolve the court before first paint. Without this the document renders
-      one frame of the grey mat and then swaps, which reads as a flash.
+      one frame of the grey mat and then swaps, which reads as a flash. The
+      browser chrome takes the mat's colour too, so it reads as one surface.
     -->
     <script>
       (function () {
+        // Keep these hexes in sync with --mat in src/index.css.
+        var MATS = { grey: "#5a5c61", green: "#1a7a33", red: "#b3232a" };
         var court = "grey";
         try {
           var stored = localStorage.getItem("court");
@@ -20,6 +22,7 @@
           /* storage unavailable; the grey mat is laid */
         }
         document.documentElement.dataset.court = court;
+        document.querySelector('meta[name="theme-color"]').setAttribute("content", MATS[court]);
       })();
     </script>
 

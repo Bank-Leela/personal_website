@@ -4,7 +4,6 @@ export default {
   theme: {
     extend: {
       colors: {
-        floor: "var(--floor)",
         mat: "var(--mat)",
         ink: "var(--ink)",
         body: "var(--body)",

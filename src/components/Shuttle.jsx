@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { LENGTH, SILHOUETTE, drawBody } from "./shuttleBody";
 
 /**
  * A shuttlecock that lives on the page permanently. You can grab it, throw it,
@@ -50,28 +51,15 @@ const BOUNCE_FLOOR = 0.5; // the skirt collapses on impact, so the floor is dead
 const BOUNCE_WALL = 0.72;
 const FRICTION = 0.86; // per second, once it is sliding on the floor
 const SLEEP_AFTER = 500; // ms at rest before the frame loop is released
-const GRAB_RADIUS = 30;
+const GRAB_RADIUS = LENGTH * 0.88;
 const TRAIL_MS = 130; // the streak is time-based, so speed sets its length
 const MAX_TRAIL = 64;
 const HIT_LINGER = 620; // ms a clipped word stays lit
 const SHOVE_GAP = 220; // ms before the same block can be knocked again
 const SHOVE_MAX = 64; // px a single full-speed hit moves a block
 const SHOVE_LIMIT = 280; // px a block can end up from where it started
-// The drawn body, in px about its own origin, with the cork along +x. The
-// proportions are a real shuttle's: 85mm long, a 27mm cork taking the first
-// 25mm of that, flaring to a 64mm skirt. The origin sits a third of the way
-// back from the tip, near the centre of mass. The collisions read these too,
-// so the shape that bounces is the shape you see.
-const LENGTH = 34;
-const TIP = LENGTH * 0.34;
-const TAIL = -LENGTH * 0.66;
-const CORK_R = LENGTH * 0.16;
-const CORK_BASE = TIP - LENGTH * 0.29; // where the feathers are set in
-const SKIRT_R = LENGTH * 0.37;
-const FEATHERS = 16; // a real shuttle has sixteen
-const VANE_W = LENGTH * 0.2; // the width of a feather seen face on
 // Coarse radius, for the grab test and for clamping a dragged shuttle only.
-const RADIUS = 22;
+const RADIUS = LENGTH * 0.65;
 
 const canHighlight = () =>
   typeof CSS !== "undefined" &&
@@ -130,7 +118,7 @@ function wordRangeAt(x, y) {
 
 export default function Shuttle({ smashToken = 0, court }) {
   const canvasRef = useRef(null);
-  const colorsRef = useRef({ cork: "#f4eee3", band: "#ff4d1f", skirt: "#f7f7f4" });
+  const colorsRef = useRef({ cork: "#fbfaf7", band: "#141414", skirt: "#fbfbf8", trail: "#ff4d1f" });
   const smashRef = useRef(null);
   const repaintRef = useRef(null);
 
@@ -145,9 +133,10 @@ export default function Shuttle({ smashToken = 0, court }) {
   useEffect(() => {
     const styles = getComputedStyle(document.documentElement);
     colorsRef.current = {
-      cork: styles.getPropertyValue("--shuttle-cork").trim() || "#f4eee3",
-      band: styles.getPropertyValue("--shuttle-band").trim() || "#ff4d1f",
-      skirt: styles.getPropertyValue("--shuttle-skirt").trim() || "#f7f7f4",
+      cork: styles.getPropertyValue("--shuttle-cork").trim() || "#fbfaf7",
+      band: styles.getPropertyValue("--shuttle-band").trim() || "#141414",
+      skirt: styles.getPropertyValue("--shuttle-skirt").trim() || "#fbfbf8",
+      trail: styles.getPropertyValue("--shuttle-trail").trim() || "#ff4d1f",
     };
     repaintRef.current?.();
   }, [court]);
@@ -317,13 +306,7 @@ export default function Shuttle({ smashToken = 0, court }) {
     const bounds = (a) => {
       const c = Math.cos(a);
       const sn = Math.sin(a);
-      const pts = [
-        [TIP, 0],
-        [TIP - CORK_R, CORK_R],
-        [TIP - CORK_R, -CORK_R],
-        [TAIL, SKIRT_R],
-        [TAIL, -SKIRT_R],
-      ];
+      const pts = SILHOUETTE;
       let minX = Infinity;
       let maxX = -Infinity;
       let minY = Infinity;
@@ -340,79 +323,8 @@ export default function Shuttle({ smashToken = 0, court }) {
     };
 
     // --- drawing ---------------------------------------------------------
-    /*
-     * Sixteen feathers set into a leather cork, seen side on. Each feather is
-     * a quill from the cork base to the skirt with a vane along its outer
-     * half. The vanes lie flat against the cone, so the ones at the near and
-     * far edges of the circle are seen edge on as bare quills and the ones
-     * facing the viewer are seen face on and wide; the width follows the
-     * cosine of each feather's angle round the axis. Far-side feathers are
-     * drawn first and dimmer, so the near ones overlap them the way a fan of
-     * feathers does. Two rows of thread bind the quills, as on a real one.
-     */
-    const OUTLINE = "rgba(28, 28, 30, 0.55)";
-    const feathers = [];
-    for (let k = 0; k < FEATHERS; k += 1) {
-      const a = ((k + 0.5) * Math.PI * 2) / FEATHERS;
-      feathers.push({ side: Math.sin(a), depth: Math.cos(a) });
-    }
-    feathers.sort((p, q) => p.depth - q.depth);
-
-    const drawFeather = (f) => {
-      const x0 = CORK_BASE;
-      const y0 = f.side * CORK_R * 0.85;
-      const x1 = TAIL;
-      const y1 = f.side * SKIRT_R;
-      const dx = x1 - x0;
-      const dy = y1 - y0;
-      const len = Math.hypot(dx, dy);
-      // Unit normal to the quill, for the vane's width.
-      const nx = -dy / len;
-      const ny = dx / len;
-      const w = VANE_W * (0.18 + 0.82 * Math.abs(f.depth));
-      const near = f.depth >= 0;
-
-      // Quill, the full length.
-      ctx.globalAlpha = near ? 0.8 : 0.4;
-      ctx.strokeStyle = OUTLINE;
-      ctx.lineWidth = 0.9;
-      ctx.beginPath();
-      ctx.moveTo(x0, y0);
-      ctx.lineTo(x1, y1);
-      ctx.stroke();
-
-      // Vane: along the outer two thirds of the quill, filling out towards
-      // the skirt and trimmed square-ish at the end, as the feathers of a
-      // tournament shuttle are cut.
-      const s0 = 0.32;
-      const pts = [];
-      for (let i = 0; i <= 8; i += 1) {
-        const u = i / 8;
-        const t = s0 + (1 - s0) * u;
-        const bulge = u < 0.8 ? Math.sin((u / 0.8) * (Math.PI / 2)) ** 0.8 : 1 - ((u - 0.8) / 0.2) * 0.45;
-        pts.push([x0 + dx * t, y0 + dy * t, w * 0.5 * bulge]);
-      }
-      ctx.beginPath();
-      for (let i = 0; i < pts.length; i += 1) {
-        const [x, y, h] = pts[i];
-        if (i === 0) ctx.moveTo(x + nx * h, y + ny * h);
-        else ctx.lineTo(x + nx * h, y + ny * h);
-      }
-      for (let i = pts.length - 1; i >= 0; i -= 1) {
-        const [x, y, h] = pts[i];
-        ctx.lineTo(x - nx * h, y - ny * h);
-      }
-      ctx.closePath();
-      ctx.globalAlpha = near ? 0.96 : 0.55;
-      ctx.fillStyle = colorsRef.current.skirt;
-      ctx.fill();
-      ctx.globalAlpha = near ? 0.6 : 0.3;
-      ctx.lineWidth = 0.7;
-      ctx.stroke();
-    };
-
+    // The body itself is drawn in shuttleBody.js; this places it.
     const drawShuttle = (speed) => {
-      const { cork, band } = colorsRef.current;
       // Stretch along the axis of travel rather than blurring: cheaper, and it
       // reads as speed at 60fps.
       const stretch = 1 + Math.min(speed / smashSpeed, 1) * 2.4;
@@ -421,63 +333,15 @@ export default function Shuttle({ smashToken = 0, court }) {
       ctx.translate(shuttle.x, shuttle.y);
       ctx.rotate(shuttle.angle);
       ctx.scale(stretch, 1);
-      ctx.lineJoin = "round";
-
-      for (let i = 0; i < feathers.length; i += 1) drawFeather(feathers[i]);
-
-      // The binding thread, two rings round the quills. Side on, a ring is a
-      // line across the cone at the cone's width there.
-      ctx.globalAlpha = 0.7;
-      ctx.strokeStyle = OUTLINE;
-      ctx.lineWidth = 1.1;
-      ctx.beginPath();
-      for (const t of [0.36, 0.62]) {
-        const x = CORK_BASE + (TAIL - CORK_BASE) * t;
-        const r = (CORK_R * 0.85 + (SKIRT_R - CORK_R * 0.85) * t) * 0.985;
-        ctx.moveTo(x, -r);
-        ctx.lineTo(x, r);
-      }
-      ctx.stroke();
-
-      // Cork: a leather dome on a short drum, shaded down its underside so it
-      // reads as round, and the coloured band where the feathers are set in.
-      const domeX = TIP - CORK_R;
-      ctx.beginPath();
-      ctx.moveTo(CORK_BASE, -CORK_R);
-      ctx.lineTo(domeX, -CORK_R);
-      ctx.arc(domeX, 0, CORK_R, -Math.PI / 2, Math.PI / 2);
-      ctx.lineTo(CORK_BASE, CORK_R);
-      ctx.closePath();
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = cork;
-      ctx.fill();
-      const shade = ctx.createLinearGradient(0, -CORK_R, 0, CORK_R);
-      shade.addColorStop(0, "rgba(255, 255, 255, 0.35)");
-      shade.addColorStop(0.45, "rgba(0, 0, 0, 0)");
-      shade.addColorStop(1, "rgba(0, 0, 0, 0.28)");
-      ctx.fillStyle = shade;
-      ctx.fill();
-      ctx.strokeStyle = OUTLINE;
-      ctx.lineWidth = 0.9;
-      ctx.stroke();
-
-      const bandW = LENGTH * 0.075;
-      ctx.beginPath();
-      ctx.rect(CORK_BASE, -CORK_R, bandW, CORK_R * 2);
-      ctx.fillStyle = band;
-      ctx.fill();
-      ctx.fillStyle = shade;
-      ctx.fill();
-
+      drawBody(ctx, colorsRef.current);
       ctx.restore();
     };
 
     const render = (speed) => {
-      const { band } = colorsRef.current;
       ctx.clearRect(0, 0, width, height);
 
       ctx.lineCap = "round";
-      ctx.strokeStyle = band;
+      ctx.strokeStyle = colorsRef.current.trail;
       for (let i = 1; i < trail.length; i += 1) {
         const t = i / trail.length;
         const fast = Math.min(trail[i].speed / smashSpeed, 1);

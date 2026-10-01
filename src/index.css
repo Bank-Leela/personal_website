@@ -5,18 +5,19 @@
 @tailwind utilities;
 
 /*
-  Three tournament mats on a dark arena floor, after the top-down broadcast
-  shot: the grey Yonex mat, the green Thai court and the red finals court. Each
-  keeps white lines and white type, the way a real mat carries its markings, so
-  the only colour choice a visitor makes is the surface. The band on the
-  shuttlecock's cork stays the one saturated accent on every court.
+  Three tournament mats, after the top-down broadcast shot: the grey Yonex mat,
+  the green Thai court and the red finals court. The mat covers the whole
+  window and runs on past the lines, as a real one does. Each keeps white lines
+  and white type, the way a real mat carries its markings, so the only colour
+  choice a visitor makes is the surface. The streak the shuttlecock leaves
+  stays the one saturated accent on every court.
 
   Text on the mat is tuned per surface: body copy holds at least 4.5:1 and the
   small meta line as well, which on the green means both sit close to white.
 */
 :root {
   color-scheme: dark;
-  --floor: #0c0c0d;
+  /* Keep the three --mat hexes in sync with the boot script in index.html. */
   --mat: #5a5c61;
   --line: rgba(255, 255, 255, 0.92);
   --ink: #fbfbf9;
@@ -25,9 +26,11 @@
   --rule: rgba(255, 255, 255, 0.4);
   --selection: rgba(255, 255, 255, 0.24);
   /* Canvas paints outside the Tailwind layer, so the shuttle reads its ink here. */
-  --shuttle-cork: #f4eee3; /* leather */
-  --shuttle-band: #ff4d1f;
-  --shuttle-skirt: #f7f7f4; /* feathers */
+  --shuttle-cork: #fbfaf7; /* white leather */
+  --shuttle-band: #141414; /* the tape where the feathers are set in */
+  --shuttle-skirt: #fbfbf8; /* feathers */
+  --shuttle-trail: #ff4d1f; /* the streak behind it, and the words it lights */
+  --on-trail: #0c0c0d;
 }
 
 :root[data-court="green"] {
@@ -55,16 +58,11 @@ body {
 
 body {
   margin: 0;
-  background: var(--floor);
+  background: var(--mat);
   color: var(--ink);
   font-family: "Space Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-/* The mat is the one surface that changes colour, so it alone transitions. */
-.mat {
-  background: var(--mat);
   transition: background-color 260ms ease;
 }
 
@@ -75,11 +73,11 @@ body {
 /* The shuttle lights the words it flies through. Only a handful of properties
    are honoured inside ::highlight(), so this stays to colour alone. */
 ::highlight(shuttle-hit) {
-  background-color: var(--shuttle-band);
-  color: var(--floor);
+  background-color: var(--shuttle-trail);
+  color: var(--on-trail);
 }
 
-/* The court stretches to fill the mat, so its strokes must not stretch with
+/* The court stretches to fill its region, so its strokes must not stretch with
    it; this keeps every line the same weight at every window shape. */
 .court * {
   vector-effect: non-scaling-stroke;
