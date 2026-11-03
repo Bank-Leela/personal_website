@@ -56,6 +56,63 @@ body {
   overscroll-behavior: none;
 }
 
+/* That inner region's scrollbar, drawn as one more court line: a slim pill in
+   the line colour on no track at all, where the platform default was a grey
+   box that belonged to no court. It is painted only while the pane is moving
+   (`data-scrolling`, set from the scroll handler in App.jsx) or while the
+   pointer is on it, so a resting page carries no extra line. The "More" cue is
+   what says a pane goes on below the fold.
+
+   Blink and WebKit get the pseudo-elements, which allow the pill shape.
+   Firefox only has the standard pair, so it gets those alone; Chromium would
+   otherwise let them override the pseudo-elements and lose the rounding.
+   Scrollbar pseudo-elements do not transition, so it appears and goes rather
+   than fading. */
+/* The gutter is reserved on both sides, so the two columns stay centred on the
+   net (and on the "More" cue that sits on it), and a pane that scrolls does
+   not shift sideways against one that does not. */
+.court-scroll {
+  scrollbar-gutter: stable both-edges;
+}
+
+.court-scroll::-webkit-scrollbar {
+  width: 12px;
+}
+
+.court-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.court-scroll::-webkit-scrollbar-thumb {
+  /* The transparent border insets a 4px pill inside the 12px gutter, so the
+     grab target stays wider than what is drawn. */
+  border: 4px solid transparent;
+  border-radius: 9999px;
+  background-color: transparent;
+  background-clip: padding-box;
+}
+
+.court-scroll[data-scrolling]::-webkit-scrollbar-thumb {
+  background-color: var(--line);
+}
+
+.court-scroll::-webkit-scrollbar-thumb:hover,
+.court-scroll::-webkit-scrollbar-thumb:active {
+  border-width: 3px;
+  background-color: var(--ink);
+}
+
+@supports (-moz-appearance: none) {
+  .court-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .court-scroll[data-scrolling] {
+    scrollbar-color: var(--line) transparent;
+  }
+}
+
 body {
   margin: 0;
   background: var(--mat);
@@ -153,6 +210,26 @@ button:focus-visible {
   font-size: 0.8125rem;
   letter-spacing: 0.01em;
   color: var(--meta);
+}
+
+/* The scroll cue's arrow dips now and then, enough to read as "this moves"
+   without bobbing for attention the whole time. The reduced-motion rule below
+   stops it. */
+@keyframes nudge {
+  0%,
+  70%,
+  90%,
+  100% {
+    transform: translateY(0);
+  }
+  80% {
+    transform: translateY(3px);
+  }
+}
+
+.nudge {
+  display: inline-block;
+  animation: nudge 2.4s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

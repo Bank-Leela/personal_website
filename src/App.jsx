@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Court from "./components/Court";
 import Shuttle from "./components/Shuttle";
@@ -378,6 +378,70 @@ export default function App() {
 
   const smash = useCallback(() => setSmashToken((n) => n + 1), []);
 
+  // A pane taller than the court scrolls inside <main>, and nothing else on the
+  // page says so: there is no scrollbar on a phone or a trackpad Mac, and the
+  // last visible line just looks like the end. `moreBelow` drives a cue that is
+  // shown only while there is something left to scroll to.
+  const mainRef = useRef(null);
+  const paneNode = useRef(null);
+  const observer = useRef(null);
+  const [moreBelow, setMoreBelow] = useState(false);
+
+  const measure = useCallback(() => {
+    const el = mainRef.current;
+    // 2px of slack: a fractional scroll position never quite meets the bottom.
+    if (el) setMoreBelow(el.scrollHeight - el.scrollTop - el.clientHeight > 2);
+  }, []);
+
+  const getObserver = useCallback(() => {
+    if (!observer.current) observer.current = new ResizeObserver(measure);
+    return observer.current;
+  }, [measure]);
+
+  useEffect(() => {
+    const ro = getObserver();
+    ro.observe(mainRef.current);
+    if (paneNode.current) ro.observe(paneNode.current);
+    return () => ro.disconnect();
+  }, [getObserver]);
+
+  // Every pane is a fresh node, and its height (not <main>'s) is what changes
+  // when the content does, so each one is observed as it mounts. A new pane
+  // also starts at the top instead of inheriting the last one's scroll.
+  const paneRef = useCallback(
+    (node) => {
+      const ro = getObserver();
+      if (paneNode.current) ro.unobserve(paneNode.current);
+      paneNode.current = node;
+      if (!node) return;
+      ro.observe(node);
+      if (mainRef.current) mainRef.current.scrollTop = 0;
+    },
+    [getObserver],
+  );
+
+  // The scrollbar shows only while the pane is moving. The flag is written
+  // straight onto the node: a state update here would re-render the whole page
+  // on every scroll event just to recolour a scrollbar.
+  const scrollIdle = useRef(0);
+  const onMainScroll = useCallback(() => {
+    measure();
+    const el = mainRef.current;
+    if (!el) return;
+    el.dataset.scrolling = "";
+    window.clearTimeout(scrollIdle.current);
+    scrollIdle.current = window.setTimeout(() => {
+      delete el.dataset.scrolling;
+    }, 900);
+  }, [measure]);
+
+  useEffect(() => () => window.clearTimeout(scrollIdle.current), []);
+
+  const scrollMore = useCallback(() => {
+    const el = mainRef.current;
+    el?.scrollBy({ top: el.clientHeight * 0.8, behavior: reduce ? "auto" : "smooth" });
+  }, [reduce]);
+
   const Pane = CONTENT[pane];
 
   return (
@@ -417,7 +481,13 @@ export default function App() {
               scroll origin can never be reached. On a phone that hid the top of
               every pane taller than the screen. Auto margins centre when the
               pane fits and fall to zero when it does not. */}
-          <main className="relative flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-6 py-6 md:px-12">
+          <main
+            ref={mainRef}
+            onScroll={onMainScroll}
+            // md:px-9, not 12: the scrollbar gutter (index.css) now takes 12px
+            // on each side, so this keeps the text the width it always was.
+            className="court-scroll relative flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-6 py-6 md:px-9"
+          >
             <AnimatePresence mode="wait">
               <motion.div
                 key={pane}
@@ -425,12 +495,42 @@ export default function App() {
                 initial={reduce ? false : "hidden"}
                 animate="shown"
                 exit={reduce ? undefined : { opacity: 0, y: -10, transition: { duration: 0.2 } }}
+                ref={paneRef}
+                // The entrance slides items up into place. A transform is not a
+                // resize, so the observer never sees it settle; check again.
+                onAnimationComplete={measure}
                 className="my-auto w-full"
               >
                 <Pane />
               </motion.div>
             </AnimatePresence>
           </main>
+
+          {/* Two words, centred on the net: at that width it fits the gap
+              between the two columns, so it covers no entry. Below the court
+              it sat where the shuttle comes to rest, and a click there grabbed
+              the shuttle instead. No fade on the edge instead: a mask on
+              <main> would make it the backdrop root, and every `.readable`
+              blur inside would stop softening the court lines behind the
+              text. */}
+          <AnimatePresence>
+            {moreBelow && (
+              <motion.button
+                key="more"
+                type="button"
+                onClick={scrollMore}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                aria-label="Scroll down for more"
+                // `!px-1`: `.readable`'s own padding would make it 2px wider
+                // than the 56px gutter it has to fit.
+                className="readable meta absolute bottom-2 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap !px-1 hover:text-ink"
+              >
+                More <span aria-hidden="true" className="nudge">&darr;</span>
+              </motion.button>
+            )}
+          </AnimatePresence>
         </section>
 
         <ul className="m-0 flex list-none flex-wrap items-end gap-x-5 gap-y-1 self-end p-0">
