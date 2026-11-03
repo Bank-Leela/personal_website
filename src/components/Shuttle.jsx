@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { LENGTH, SILHOUETTE, drawBody } from "./shuttleBody";
+import { LENGTH, REST_TILT, SILHOUETTE, drawBody } from "./shuttleBody";
 
 /**
  * A shuttlecock that lives on the page permanently. You can grab it, throw it,
@@ -160,6 +160,9 @@ export default function Shuttle({ smashToken = 0, court }) {
     let sleepSpeed = SLEEP_MS * ppm;
     let deadBounce = DEAD_BOUNCE_MS * ppm;
     let hitSpeed = HIT_MS * ppm;
+    // Speed of a fall through half a shuttle length: faster than toppling over
+    // can ever drop it (under 9px), slower than any real flight. See `lying`.
+    let wakeSpeed = Math.sqrt(gravity * LENGTH);
 
     const shuttle = {
       x: width * 0.5,
@@ -175,6 +178,7 @@ export default function Shuttle({ smashToken = 0, court }) {
     let restingSince = 0;
     let grabbed = false;
     let facing = 1; // the way the cork points once it comes to rest
+    let lying = false; // committed to toppling over and staying down
     let pointerId = null;
     const samples = [];
 
@@ -195,6 +199,7 @@ export default function Shuttle({ smashToken = 0, court }) {
       sleepSpeed = SLEEP_MS * ppm;
       deadBounce = DEAD_BOUNCE_MS * ppm;
       hitSpeed = HIT_MS * ppm;
+      wakeSpeed = Math.sqrt(gravity * LENGTH);
 
       // Carry the shuttle's real speed across the rescale rather than letting a
       // resize quietly speed it up or slow it down.
@@ -424,18 +429,32 @@ export default function Shuttle({ smashToken = 0, court }) {
       const speed = Math.hypot(shuttle.vx, shuttle.vy);
 
       // The cork leads while it is travelling. Once the shuttle runs out of
-      // speed it topples onto its skirt and lies flat, the way a spent shuttle
-      // actually ends up, still pointing the way it was last going. The turn is
-      // slower than the in-flight tracking so you see it fall over.
-      if (speed > sleepSpeed) facing = shuttle.vx >= 0 ? 1 : -1;
-      const settled = speed <= sleepSpeed;
-      const target = settled
-        ? (facing > 0 ? 0 : Math.PI)
+      // speed it topples onto its side, the way a spent shuttle actually ends
+      // up: tipped cork-down by REST_TILT so the cork and the skirt's rim both
+      // meet the floor. The turn is slower than the in-flight tracking so you
+      // see it fall over.
+      //
+      // Running out of speed is a commitment, held until it is genuinely moving
+      // again. Toppling lowers its underside, so it drops a few px onto the
+      // floor, and when that drop alone could end the topple, the cork swung
+      // back down to lead it, stalling it part-way over with the skirt in the
+      // air. The side it falls to is fixed at the same moment, from where the
+      // cork already points; taken from the sign of a sideways speed that is
+      // all but zero after a drop, it flipped, and each flip swung the shuttle
+      // back up through upright to the other side.
+      if (!lying && speed <= sleepSpeed) {
+        lying = true;
+        facing = Math.cos(shuttle.angle) >= 0 ? 1 : -1;
+      } else if (lying && speed > wakeSpeed) {
+        lying = false;
+      }
+      const target = lying
+        ? (facing > 0 ? REST_TILT : Math.PI - REST_TILT)
         : Math.atan2(shuttle.vy, shuttle.vx);
       let delta = target - shuttle.angle;
       while (delta > Math.PI) delta -= Math.PI * 2;
       while (delta < -Math.PI) delta += Math.PI * 2;
-      shuttle.angle += delta * Math.min(1, dt * (grabbed ? 9 : settled ? 7 : 26));
+      shuttle.angle += delta * Math.min(1, dt * (grabbed ? 9 : lying ? 7 : 26));
 
       if (speed > hitSpeed) clipAlong(fromX, fromY, shuttle.x, shuttle.y, shuttle.vx, shuttle.vy, speed);
 

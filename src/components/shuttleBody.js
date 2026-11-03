@@ -150,6 +150,27 @@ export const SILHOUETTE = [
   ...feathers.flatMap((f) => f.corners.map((pt) => [pt.x, pt.y])),
 ];
 
+/*
+ * The angle a spent shuttle lies at on the floor, cork tipped down from level.
+ * Lying level, only the rim of the skirt touches: the skirt is more than twice
+ * the cork's width, so the cork hangs in the air. A real one tips forward until
+ * the cork's underside and the rim both rest on the ground, and this is that
+ * angle. Tipping by `a` lowers the cork's underside (the exact nose arc, not the
+ * coarse silhouette) and lifts the rim, so the gap between them only shrinks
+ * with `a`, and bisection finds where it closes.
+ */
+const rim = feathers.flatMap((f) => f.corners);
+const corkUnderside = (a) => domeX * Math.sin(a) + corkR;
+const rimUnderside = (a) => Math.max(...rim.map((pt) => pt.x * Math.sin(a) + pt.y * Math.cos(a)));
+let tiltLo = 0;
+let tiltHi = Math.PI / 2;
+for (let i = 0; i < 40; i += 1) {
+  const mid = (tiltLo + tiltHi) / 2;
+  if (corkUnderside(mid) < rimUnderside(mid)) tiltLo = mid;
+  else tiltHi = mid;
+}
+export const REST_TILT = (tiltLo + tiltHi) / 2;
+
 const EDGE = "rgba(28, 28, 30, 0.42)";
 
 export function drawBody(ctx, { cork: corkColor, band: bandColor, skirt }) {
