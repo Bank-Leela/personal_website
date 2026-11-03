@@ -81,6 +81,29 @@ const RECORD = [
 
 const BUILDS = [
   {
+    title: "Fleet Dispatch",
+    description:
+      "Books, approves, and dispatches the Faculty of Medicine's cars at Chulalongkorn. The assignment engine places a whole day at once: long-haul trips first, a two-hour rest gap between any driver's rounds, and a 30-day fairness score so the work is shared evenly. Postgres itself refuses a double-booked car, and the solver was fuzzed across 144,000 simulated days.",
+    tech: "Next.js, TypeScript, Postgres, Prisma",
+    links: [{ label: "Source", href: "https://github.com/Bank-Leela/rent_car" }],
+  },
+  {
+    // The repo is private, so the public demo is the only link.
+    title: "Tabby",
+    description:
+      "Photograph a restaurant receipt, tap who had what, send one link. A vision model reads the items, and the app checks them against the receipt's own printed subtotal, so a misread is flagged before anyone pays. Every share adds up to the total exactly, to the cent, which property tests prove. No accounts: friends open the link and tap their name.",
+    tech: "Next.js, TypeScript, Claude API, Postgres, Drizzle",
+    links: [{ label: "Live demo", href: "https://tabby-nu.vercel.app" }],
+  },
+  {
+    // Private repo, and its releases go with it, so no link yet.
+    title: "Pood",
+    description:
+      "Free, offline dictation and voice control for Windows, Thai first. It listens locally, wakes on “wake up”, types into whatever app has focus, and runs the computer by voice: keys, app switching, and “show numbers, click 7” for anything on screen. A router sends Thai to a Thai fine-tuned Whisper and everything else to large-v3-turbo. No cloud, no word limit.",
+    tech: "Python, faster-whisper, Silero VAD, CUDA",
+    links: [],
+  },
+  {
     title: "Sentinel",
     description:
       "Scores transactions as they arrive and shows the reasoning behind each alert. Graph analysis pulls in the surrounding account activity, so an analyst sees the network a flagged transaction sits in rather than a number on its own. Takes CSV batches for retrospective review too. Built at GenAI Genesis.",
@@ -227,7 +250,10 @@ const Serve = () => (
         <Ext href="https://ieeexplore.ieee.org/abstract/document/10811073">IEEE Xplore</Ext>, then
         match analytics and fraud detection.
       </motion.p>
-      <motion.p variants={ITEM} className="knock readable mt-8 flex flex-wrap justify-center gap-x-7 gap-y-2 text-[15px]">
+      {/* `!inline-flex`, not `flex`: `.readable` is unlayered CSS declared after
+          the utilities, so its `inline-block` won and the gap never applied,
+          running the two links together as "resumenleelath@". */}
+      <motion.p variants={ITEM} className="knock readable mt-8 !inline-flex flex-wrap justify-center gap-x-7 gap-y-2 text-[15px]">
         <a href={RESUME} className="link">
           Read the resume
         </a>
@@ -386,7 +412,12 @@ export default function App() {
 
         <section aria-label="Court" className="relative col-span-2 flex min-h-0">
           <Court />
-          <main className="relative flex min-h-0 flex-1 items-center overflow-y-auto overflow-x-hidden px-6 py-6 md:px-12">
+          {/* Centred with `my-auto` on the pane, not `items-center` here:
+              centring pushes overflow out of BOTH ends, and the half above the
+              scroll origin can never be reached. On a phone that hid the top of
+              every pane taller than the screen. Auto margins centre when the
+              pane fits and fall to zero when it does not. */}
+          <main className="relative flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-6 py-6 md:px-12">
             <AnimatePresence mode="wait">
               <motion.div
                 key={pane}
@@ -394,7 +425,7 @@ export default function App() {
                 initial={reduce ? false : "hidden"}
                 animate="shown"
                 exit={reduce ? undefined : { opacity: 0, y: -10, transition: { duration: 0.2 } }}
-                className="w-full"
+                className="my-auto w-full"
               >
                 <Pane />
               </motion.div>
