@@ -47,7 +47,9 @@ const SUBSTEP_PX = 18; // integrate in steps no coarser than this
 const MAX_SUBSTEPS = 24;
 const HIT_STRIDE_PX = 26; // sample the text this often along the path
 const MAX_HITS_PER_FRAME = 10; // caret lookups force layout, so bound them
-const BOUNCE_FLOOR = 0.5; // the skirt collapses on impact, so the floor is dead
+// The cork springs back once, at half its speed. The next touch is dead: the
+// skirt collapses and it stays down (see `rebounding`).
+const BOUNCE_FLOOR = 0.5;
 const BOUNCE_WALL = 0.72;
 const FRICTION = 0.86; // per second, once it is sliding on the floor
 const SLEEP_AFTER = 500; // ms at rest before the frame loop is released
@@ -179,6 +181,8 @@ export default function Shuttle({ smashToken = 0, court }) {
     let grabbed = false;
     let facing = 1; // the way the cork points once it comes to rest
     let lying = false; // committed to toppling over and staying down
+    let landed = false; // has hit the floor since it was last sent flying
+    let rebounding = false; // in the air off its first bounce; holds its angle
     let pointerId = null;
     const samples = [];
 
@@ -327,6 +331,19 @@ export default function Shuttle({ smashToken = 0, court }) {
       return { minX, maxX, minY, maxY };
     };
 
+    /*
+     * Which way it falls over: the side the cork already leans to. Come down
+     * within about 9 degrees of straight (a drop, the page-load fall, a
+     * release with no throw in it) and there is no real lean; the tie always
+     * went to the right, so every drop fell the same way. A real shuttle
+     * balanced on its cork goes either way, so that case is a coin toss.
+     */
+    const sideToFall = () => {
+      const lean = Math.cos(shuttle.angle);
+      if (Math.abs(lean) > 0.15) return lean > 0 ? 1 : -1;
+      return Math.random() < 0.5 ? 1 : -1;
+    };
+
     // --- drawing ---------------------------------------------------------
     // The body itself is drawn in shuttleBody.js; this places it.
     const drawShuttle = (speed) => {
@@ -393,10 +410,26 @@ export default function Shuttle({ smashToken = 0, court }) {
           const floor = height - b.maxY;
           if (shuttle.y > floor) {
             shuttle.y = floor;
-            shuttle.vy = -shuttle.vy * BOUNCE_FLOOR;
+            // Only the first touch springs back. Coming down off that rebound,
+            // or anything after, the skirt takes it and it stays down.
+            shuttle.vy = rebounding || landed ? 0 : -shuttle.vy * BOUNCE_FLOOR;
             shuttle.vx *= FRICTION;
             // Kill the micro-bounces rather than letting it buzz on the floor.
             if (Math.abs(shuttle.vy) < deadBounce) shuttle.vy = 0;
+            // Once it is down for good it falls over, there and then, rather
+            // than after sliding to a stop (side: sideToFall). A live rebound
+            // first carries it up still cork-down: it tips over on the ground,
+            // never in the air.
+            if (!landed) {
+              if (shuttle.vy === 0) {
+                landed = true;
+                rebounding = false;
+                lying = true;
+                facing = sideToFall();
+              } else {
+                rebounding = true;
+              }
+            }
           }
           if (shuttle.y < -b.minY) {
             shuttle.y = -b.minY;
@@ -428,33 +461,39 @@ export default function Shuttle({ smashToken = 0, court }) {
 
       const speed = Math.hypot(shuttle.vx, shuttle.vy);
 
-      // The cork leads while it is travelling. Once the shuttle runs out of
-      // speed it topples onto its side, the way a spent shuttle actually ends
-      // up: tipped cork-down by REST_TILT so the cork and the skirt's rim both
-      // meet the floor. The turn is slower than the in-flight tracking so you
-      // see it fall over.
+      // The cork leads while it is travelling. Once the shuttle is down on the
+      // floor, or runs out of speed in the air, it topples onto its side, the
+      // way a spent shuttle actually ends up: tipped cork-down by REST_TILT so
+      // the cork and the skirt's rim both meet the floor. The turn is slower
+      // than the in-flight tracking so you see it fall over. On the rebound off
+      // its first touch it holds the angle it hit at: following the velocity
+      // would flip it cork-up for the hop, and toppling then would tip it over
+      // in mid-air. The top of that hop is not running out of speed either.
       //
-      // Running out of speed is a commitment, held until it is genuinely moving
-      // again. Toppling lowers its underside, so it drops a few px onto the
-      // floor, and when that drop alone could end the topple, the cork swung
-      // back down to lead it, stalling it part-way over with the skirt in the
-      // air. The side it falls to is fixed at the same moment, from where the
-      // cork already points; taken from the sign of a sideways speed that is
-      // all but zero after a drop, it flipped, and each flip swung the shuttle
-      // back up through upright to the other side.
-      if (!lying && speed <= sleepSpeed) {
+      // Being down is a commitment held until it is next sent flying (smash,
+      // grab, throw). Running out of speed holds until it is moving faster
+      // than toppling can drop it: toppling lowers its underside a few px, and
+      // when that drop alone could end the topple, the cork swung back down to
+      // lead it and it stalled part-way over with the skirt in the air. The
+      // side it falls to is fixed once, at the same moment (sideToFall);
+      // re-read every frame from the sign of a sideways speed that is all but
+      // zero after a drop, it flipped, and each flip swung the shuttle back up
+      // through upright to the other side.
+      if (!lying && !rebounding && speed <= sleepSpeed) {
         lying = true;
-        facing = Math.cos(shuttle.angle) >= 0 ? 1 : -1;
-      } else if (lying && speed > wakeSpeed) {
+        facing = sideToFall();
+      } else if (lying && !landed && speed > wakeSpeed) {
         lying = false;
       }
       const target = lying
         ? (facing > 0 ? REST_TILT : Math.PI - REST_TILT)
-        : Math.atan2(shuttle.vy, shuttle.vx);
+        : rebounding
+          ? shuttle.angle
+          : Math.atan2(shuttle.vy, shuttle.vx);
       let delta = target - shuttle.angle;
       while (delta > Math.PI) delta -= Math.PI * 2;
       while (delta < -Math.PI) delta += Math.PI * 2;
-      shuttle.angle += delta * Math.min(1, dt * (grabbed ? 9 : lying ? 7 : 26));
+      shuttle.angle += delta * Math.min(1, dt * (grabbed ? 9 : lying ? 12 : 26));
 
       if (speed > hitSpeed) clipAlong(fromX, fromY, shuttle.x, shuttle.y, shuttle.vx, shuttle.vy, speed);
 
@@ -507,6 +546,8 @@ export default function Shuttle({ smashToken = 0, court }) {
     const onDown = (e) => {
       if (!near(e.clientX, e.clientY)) return;
       grabbed = true;
+      landed = false;
+      rebounding = false;
       pointerId = e.pointerId;
       canvas.setPointerCapture(pointerId);
       canvas.style.cursor = "grabbing";
@@ -555,6 +596,10 @@ export default function Shuttle({ smashToken = 0, court }) {
         shuttle.vy = vy * scale;
       }
       samples.length = 0;
+      // Sent flying: the cork leads again until it next comes down.
+      landed = false;
+      rebounding = false;
+      lying = false;
       wake();
     };
 
@@ -583,6 +628,9 @@ export default function Shuttle({ smashToken = 0, court }) {
       shuttle.vx = smashSpeed * Math.cos(angle) * dir;
       shuttle.vy = -smashSpeed * Math.sin(angle);
       trail = [];
+      landed = false;
+      rebounding = false;
+      lying = false;
       wake();
     };
 
