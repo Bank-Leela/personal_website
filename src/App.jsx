@@ -81,37 +81,12 @@ const RECORD = [
 
 const BUILDS = [
   {
-    title: "Fleet Dispatch",
-    description:
-      "Books, approves, and dispatches the Faculty of Medicine's cars at Chulalongkorn. The assignment engine places a whole day at once: long-haul trips first, a two-hour rest gap between any driver's rounds, and a 30-day fairness score so the work is shared evenly. Postgres itself refuses a double-booked car, and the solver was fuzzed across 144,000 simulated days.",
-    tech: "Next.js, TypeScript, Postgres, Prisma",
-    links: [{ label: "Source", href: "https://github.com/Bank-Leela/rent_car" }],
-  },
-  {
-    // The repo is private, so the public demo is the only link.
-    title: "Tabby",
-    description:
-      "Photograph a restaurant receipt, tap who had what, send one link. A vision model reads the items, and the app checks them against the receipt's own printed subtotal, so a misread is flagged before anyone pays. Every share adds up to the total exactly, to the cent, which property tests prove. No accounts: friends open the link and tap their name.",
-    tech: "Next.js, TypeScript, Claude API, Postgres, Drizzle",
-    links: [{ label: "Live demo", href: "https://tabby-nu.vercel.app" }],
-  },
-  {
     // Private repo, and its releases go with it, so no link yet.
     title: "Pood",
     description:
       "Free, offline dictation and voice control for Windows, Thai first. It listens locally, wakes on “wake up”, types into whatever app has focus, and runs the computer by voice: keys, app switching, and “show numbers, click 7” for anything on screen. A router sends Thai to a Thai fine-tuned Whisper and everything else to large-v3-turbo. No cloud, no word limit.",
     tech: "Python, faster-whisper, Silero VAD, CUDA",
     links: [],
-  },
-  {
-    title: "Sentinel",
-    description:
-      "Scores transactions as they arrive and shows the reasoning behind each alert. Graph analysis pulls in the surrounding account activity, so an analyst sees the network a flagged transaction sits in rather than a number on its own. Takes CSV batches for retrospective review too. Built at GenAI Genesis.",
-    tech: "Python, FastAPI, Next.js, graph analysis",
-    links: [
-      { label: "Source", href: "https://github.com/SarveshwarSenthilKumar/Sentinel" },
-      { label: "Devpost", href: "https://devpost.com/software/sentinel-128ad4" },
-    ],
   },
   {
     // The Source link is deliberately absent: the only public badminton repo is
@@ -128,6 +103,31 @@ const BUILDS = [
       "Tracks the shuttlecock through broadcast match footage with a TrackNetV3 fork, then segments the video into rallies, caching each match and rendering overlays to check the tracking by eye. Groundwork for scoring individual shots.",
     tech: "Python, PyTorch, OpenCV, TrackNetV3",
     links: [{ label: "Source", href: "https://github.com/Bank-Leela/badminton_tracker" }],
+  },
+  {
+    title: "Fleet Dispatch",
+    description:
+      "Books, approves, and dispatches the Faculty of Medicine's cars at Chulalongkorn. The assignment engine places a whole day at once: long-haul trips first, a two-hour rest gap between any driver's rounds, and a 30-day fairness score so the work is shared evenly. Postgres itself refuses a double-booked car, and the solver was fuzzed across 144,000 simulated days.",
+    tech: "Next.js, TypeScript, Postgres, Prisma",
+    links: [{ label: "Source", href: "https://github.com/Bank-Leela/rent_car" }],
+  },
+  {
+    // The repo is private, so the public demo is the only link.
+    title: "Tabby",
+    description:
+      "Photograph a restaurant receipt, tap who had what, send one link. A vision model reads the items, and the app checks them against the receipt's own printed subtotal, so a misread is flagged before anyone pays. Every share adds up to the total exactly, to the cent, which property tests prove. No accounts: friends open the link and tap their name.",
+    tech: "Next.js, TypeScript, Claude API, Postgres, Drizzle",
+    links: [{ label: "Live demo", href: "https://tabby-nu.vercel.app" }],
+  },
+  {
+    title: "Sentinel",
+    description:
+      "Scores transactions as they arrive and shows the reasoning behind each alert. Graph analysis pulls in the surrounding account activity, so an analyst sees the network a flagged transaction sits in rather than a number on its own. Takes CSV batches for retrospective review too. Built at GenAI Genesis.",
+    tech: "Python, FastAPI, Next.js, graph analysis",
+    links: [
+      { label: "Source", href: "https://github.com/SarveshwarSenthilKumar/Sentinel" },
+      { label: "Devpost", href: "https://devpost.com/software/sentinel-128ad4" },
+    ],
   },
 ];
 
