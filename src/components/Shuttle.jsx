@@ -1,67 +1,65 @@
 import { useEffect, useRef } from "react";
-import { LENGTH, REST_TILT, SILHOUETTE, drawBody } from "./shuttleBody";
+import ShuttleArt from "./ShuttleArt";
+import { ART, LENGTH, REST_TILT } from "./shuttleBody";
+import { launch, makeBody, makeWorld, substep } from "./shuttlePhysics";
 
 /**
  * A shuttlecock that lives on the page permanently. You can grab it, throw it,
  * and watch it behave the way a shuttle actually behaves.
  *
- * The motion is the point. A shuttle leaves the racket faster than any other
- * projectile in sport and then sheds that speed almost immediately, because the
- * feather skirt drags against the square of velocity. So acceleration is
- * `-DRAG * |v| * v` plus gravity: fling it hard and it screams off, flattens
- * out, and drops on a steep tail. That asymmetry is what makes it read as a
- * shuttle rather than a ball.
+ * How it moves is in shuttlePhysics.js: the drag that makes it scream off and
+ * then drop on a steep tail, the way it swings cork-first into its own flight,
+ * and how it lands, falls over and lies. What it looks like is in
+ * shuttleBody.js and ShuttleArt.jsx: the shuttle is an SVG element, and this
+ * file moves it. The rest is here too: the frame loop, the hand that picks it
+ * up and throws it, the streak behind it (on a canvas under the shuttle), and
+ * the words it lights and knocks about on its way through.
  *
- * It never leaves the viewport. All four edges bounce, and the skirt eats most
- * of the energy each time, so it settles on the floor cork-down instead of
- * bouncing forever. Once it is asleep the animation frame is released entirely.
+ * It never leaves the viewport, and it always ends up at rest on the floor.
+ * Once it is asleep the animation frame is released entirely.
  *
  * Words it flies through are lit for a moment through the CSS Custom Highlight
  * API, which needs no DOM mutation.
  *
- * The simulation runs in real units rather than invented ones. The viewport
- * width is taken to be one badminton court end to end, which fixes a px/metre
- * scale; gravity is 9.81 m/s^2 and the drag coefficient falls out of a real
- * shuttle's 6.7 m/s terminal velocity, since terminal = sqrt(g/k). A smash is
- * launched at 500 km/h, near the fastest ever recorded, and the physics does the
- * rest: it is down to roughly 107 km/h a tenth of a second later and 48 km/h by
- * three tenths, which is the same collapse a real smash undergoes crossing a
- * court.
+ * A smash is launched at 500 km/h, near the fastest ever recorded, and the
+ * physics does the rest: it is down to roughly 107 km/h a tenth of a second of
+ * its own time later and 48 km/h by three tenths, which is the same collapse a
+ * real smash undergoes crossing a court.
  *
  * At that speed a frame covers some 250px, so each frame is integrated in
- * substeps fine enough to keep drag stable and to land wall contacts in the
- * right place, and the text underneath is sampled along the path travelled
- * rather than at a single point, or the shuttle would skip whole words.
+ * substeps fine enough to keep drag stable and to land contacts in the right
+ * place, and the text underneath is sampled along the path travelled rather
+ * than at a single point, or the shuttle would skip whole words.
  */
 
-const COURT_M = 13.4; // a badminton court, end to end; the viewport spans one
-const GRAVITY_MS2 = 9.81;
-const TERMINAL_MS = 6.7; // a real shuttle's terminal velocity, which fixes drag
 const SMASH_KMH = 500; // near the fastest smash ever recorded
 const MAX_THROW_KMH = 500; // a thrown shuttle cannot beat the hardest smash
 const THROW_GAIN = 4.2; // pointer speed to shuttle speed
 const SLEEP_MS = 0.25; // m/s below which it counts as at rest
-const DEAD_BOUNCE_MS = 0.55; // m/s of vertical bounce not worth keeping
+const SLEEP_SPIN = 0.5; // rad/s below which it counts as no longer turning
 const HIT_MS = 3; // m/s below which it stops lighting words
-const SUBSTEP_PX = 18; // integrate in steps no coarser than this
-const MAX_SUBSTEPS = 24;
+const SHOVE_MS = 9; // m/s below which it lights words but cannot move them
+const SUBSTEP_PX = 18; // integrate in steps no coarser than this,
+const SUBSTEP_HZ = 200; // nor, when it is slow, longer than 1/200s of its time
+const MAX_SUBSTEPS = 32;
 const HIT_STRIDE_PX = 26; // sample the text this often along the path
 const MAX_HITS_PER_FRAME = 10; // caret lookups force layout, so bound them
-// The cork springs back once, at half its speed. The next touch is dead: the
-// skirt collapses and it stays down (see `rebounding`).
-const BOUNCE_FLOOR = 0.5;
-const BOUNCE_WALL = 0.72;
-const FRICTION = 0.86; // per second, once it is sliding on the floor
-const SLEEP_AFTER = 500; // ms at rest before the frame loop is released
+const SLEEP_AFTER = 350; // ms at rest before the frame loop is released
 const GRAB_RADIUS = LENGTH * 0.88;
 const TRAIL_MS = 130; // the streak is time-based, so speed sets its length
-const MAX_TRAIL = 64;
+const MAX_TRAIL = 160;
 const HIT_LINGER = 620; // ms a clipped word stays lit
 const SHOVE_GAP = 220; // ms before the same block can be knocked again
 const SHOVE_MAX = 64; // px a single full-speed hit moves a block
 const SHOVE_LIMIT = 280; // px a block can end up from where it started
 // Coarse radius, for the grab test and for clamping a dragged shuttle only.
 const RADIUS = LENGTH * 0.65;
+// In the hand it hangs cork-down, as anything held by its light end does, and
+// trails the hand like a pendulum. HANG is the hand speed (px/s) that swings it
+// out to 45 degrees; the other two are the pendulum's spring and its damping.
+const HANG = 900;
+const HELD_STIFF = 190;
+const HELD_DAMP = 9;
 
 const canHighlight = () =>
   typeof CSS !== "undefined" &&
@@ -120,33 +118,29 @@ function wordRangeAt(x, y) {
 
 export default function Shuttle({ smashToken = 0, court }) {
   const canvasRef = useRef(null);
-  const colorsRef = useRef({ cork: "#fbfaf7", band: "#141414", skirt: "#fbfbf8", trail: "#ff4d1f" });
+  const artRef = useRef(null);
+  const trailColorRef = useRef("#ff4d1f");
   const smashRef = useRef(null);
   const repaintRef = useRef(null);
 
   /*
-   * Colours are read from the stylesheet rather than passed in, so a change
-   * of court restyles the shuttle without restarting the simulation.
+   * The streak's colour is read from the stylesheet rather than passed in, so
+   * a change of court can restyle it without restarting the simulation.
    *
    * A settled shuttle has released its animation frame, so nothing would
-   * redraw the canvas on its own and it would sit there in the outgoing
-   * palette. Hence the explicit repaint.
+   * redraw the canvas on its own. Hence the explicit repaint.
    */
   useEffect(() => {
     const styles = getComputedStyle(document.documentElement);
-    colorsRef.current = {
-      cork: styles.getPropertyValue("--shuttle-cork").trim() || "#fbfaf7",
-      band: styles.getPropertyValue("--shuttle-band").trim() || "#141414",
-      skirt: styles.getPropertyValue("--shuttle-skirt").trim() || "#fbfbf8",
-      trail: styles.getPropertyValue("--shuttle-trail").trim() || "#ff4d1f",
-    };
+    trailColorRef.current = styles.getPropertyValue("--shuttle-trail").trim() || "#ff4d1f";
     repaintRef.current?.();
   }, [court]);
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const canvas = canvasRef.current;
-    if (reduced || !canvas) return undefined;
+    const art = artRef.current;
+    if (reduced || !canvas || !art) return undefined;
 
     const ctx = canvas.getContext("2d");
     let width = window.innerWidth;
@@ -154,60 +148,47 @@ export default function Shuttle({ smashToken = 0, court }) {
 
     // Everything below is derived from the px/metre scale, so the shuttle obeys
     // the same real quantities whatever the window size.
-    let ppm = width / COURT_M;
-    let gravity = GRAVITY_MS2 * ppm;
-    let drag = GRAVITY_MS2 / (TERMINAL_MS * TERMINAL_MS) / ppm;
-    let smashSpeed = (SMASH_KMH / 3.6) * ppm;
-    let maxThrow = (MAX_THROW_KMH / 3.6) * ppm;
-    let sleepSpeed = SLEEP_MS * ppm;
-    let deadBounce = DEAD_BOUNCE_MS * ppm;
-    let hitSpeed = HIT_MS * ppm;
-    // Speed of a fall through half a shuttle length: faster than toppling over
-    // can ever drop it (under 9px), slower than any real flight. See `lying`.
-    let wakeSpeed = Math.sqrt(gravity * LENGTH);
+    let world = makeWorld(width, height);
+    let smashSpeed = (SMASH_KMH / 3.6) * world.ppm;
+    let maxThrow = (MAX_THROW_KMH / 3.6) * world.ppm;
+    let sleepSpeed = SLEEP_MS * world.ppm;
+    let hitSpeed = HIT_MS * world.ppm;
+    let shoveSpeed = SHOVE_MS * world.ppm;
 
-    const shuttle = {
-      x: width * 0.5,
-      y: height * 0.35,
-      vx: 0,
-      vy: 0,
-      angle: Math.PI / 2,
-    };
+    // It drops in on load and lies where it lands. Down the middle that is
+    // clear floor on a wide window, but on a phone the surface picker sits
+    // there, and it came to rest on top of it; the bottom left is the bare
+    // corner at that width.
+    const shuttle = makeBody(width * (width < 600 ? 0.16 : 0.5), height * 0.35);
     let trail = [];
 
     let frame = 0;
     let last = performance.now();
     let restingSince = 0;
     let grabbed = false;
-    let facing = 1; // the way the cork points once it comes to rest
-    let lying = false; // committed to toppling over and staying down
-    let landed = false; // has hit the floor since it was last sent flying
-    let rebounding = false; // in the air off its first bounce; holds its angle
+    let heldSpin = 0; // rad/s of real time, while it swings in the hand
     let pointerId = null;
     const samples = [];
 
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
-      const prevPpm = ppm;
+      const prevPpm = world.ppm;
       width = window.innerWidth;
       height = window.innerHeight;
       canvas.width = Math.round(width * dpr);
       canvas.height = Math.round(height * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      ppm = width / COURT_M;
-      gravity = GRAVITY_MS2 * ppm;
-      drag = GRAVITY_MS2 / (TERMINAL_MS * TERMINAL_MS) / ppm;
-      smashSpeed = (SMASH_KMH / 3.6) * ppm;
-      maxThrow = (MAX_THROW_KMH / 3.6) * ppm;
-      sleepSpeed = SLEEP_MS * ppm;
-      deadBounce = DEAD_BOUNCE_MS * ppm;
-      hitSpeed = HIT_MS * ppm;
-      wakeSpeed = Math.sqrt(gravity * LENGTH);
+      world = makeWorld(width, height);
+      smashSpeed = (SMASH_KMH / 3.6) * world.ppm;
+      maxThrow = (MAX_THROW_KMH / 3.6) * world.ppm;
+      sleepSpeed = SLEEP_MS * world.ppm;
+      hitSpeed = HIT_MS * world.ppm;
+      shoveSpeed = SHOVE_MS * world.ppm;
 
       // Carry the shuttle's real speed across the rescale rather than letting a
       // resize quietly speed it up or slow it down.
-      const ratio = ppm / prevPpm;
+      const ratio = world.ppm / prevPpm;
       shuttle.vx *= ratio;
       shuttle.vy *= ratio;
 
@@ -238,6 +219,11 @@ export default function Shuttle({ smashToken = 0, court }) {
      * elements rather than fighting it for control.
      */
     const shove = (node, vx, vy, speed) => {
+      // Only a shuttle that has been hit moves anything. One that is merely
+      // falling tops out under 7 m/s, and when that was enough, the drop on
+      // page load came down the middle of a phone's single column and left
+      // every block it passed out of place before the visitor had done a thing.
+      if (speed < shoveSpeed) return;
       const start = node.parentElement;
       if (!start) return;
       // Knock whole entries. Targeting the individual paragraph or heading
@@ -268,6 +254,8 @@ export default function Shuttle({ smashToken = 0, court }) {
 
       block.style.transition = "translate 340ms cubic-bezier(0.16, 1, 0.3, 1)";
       block.style.translate = `${x}px ${y}px`;
+      // The stylesheet lifts a knocked block over its neighbours.
+      block.dataset.shoved = "";
     };
 
     const clipWordAt = (x, y, vx, vy, speed) => {
@@ -306,64 +294,25 @@ export default function Shuttle({ smashToken = 0, court }) {
       }
     };
 
-    /*
-     * How far the body reaches from its origin at a given angle. Standing on
-     * its cork it is tall and narrow; lying on its skirt it is short and wide,
-     * so a single collision radius would either bury it or float it depending
-     * on which way up it came to rest.
-     */
-    const bounds = (a) => {
-      const c = Math.cos(a);
-      const sn = Math.sin(a);
-      const pts = SILHOUETTE;
-      let minX = Infinity;
-      let maxX = -Infinity;
-      let minY = Infinity;
-      let maxY = -Infinity;
-      for (let i = 0; i < pts.length; i += 1) {
-        const x = pts[i][0] * c - pts[i][1] * sn;
-        const y = pts[i][0] * sn + pts[i][1] * c;
-        if (x < minX) minX = x;
-        if (x > maxX) maxX = x;
-        if (y < minY) minY = y;
-        if (y > maxY) maxY = y;
-      }
-      return { minX, maxX, minY, maxY };
-    };
-
-    /*
-     * Which way it falls over: the side the cork already leans to. Come down
-     * within about 9 degrees of straight (a drop, the page-load fall, a
-     * release with no throw in it) and there is no real lean; the tie always
-     * went to the right, so every drop fell the same way. A real shuttle
-     * balanced on its cork goes either way, so that case is a coin toss.
-     */
-    const sideToFall = () => {
-      const lean = Math.cos(shuttle.angle);
-      if (Math.abs(lean) > 0.15) return lean > 0 ? 1 : -1;
-      return Math.random() < 0.5 ? 1 : -1;
-    };
-
     // --- drawing ---------------------------------------------------------
-    // The body itself is drawn in shuttleBody.js; this places it.
+    // The body is the SVG in ShuttleArt.jsx; this places it. Its transform
+    // origin is the shuttle's own origin, so it is moved there, turned, and
+    // then stretched along its axis.
     const drawShuttle = (speed) => {
       // Stretch along the axis of travel rather than blurring: cheaper, and it
       // reads as speed at 60fps.
       const stretch = 1 + Math.min(speed / smashSpeed, 1) * 2.4;
-
-      ctx.save();
-      ctx.translate(shuttle.x, shuttle.y);
-      ctx.rotate(shuttle.angle);
-      ctx.scale(stretch, 1);
-      drawBody(ctx, colorsRef.current);
-      ctx.restore();
+      art.style.transform =
+        `translate3d(${shuttle.x + ART.box.x}px, ${shuttle.y + ART.box.y}px, 0) ` +
+        `rotate(${shuttle.angle}rad) scaleX(${stretch})`;
+      art.style.visibility = "visible";
     };
 
     const render = (speed) => {
       ctx.clearRect(0, 0, width, height);
 
       ctx.lineCap = "round";
-      ctx.strokeStyle = colorsRef.current.trail;
+      ctx.strokeStyle = trailColorRef.current;
       for (let i = 1; i < trail.length; i += 1) {
         const t = i / trail.length;
         const fast = Math.min(trail[i].speed / smashSpeed, 1);
@@ -389,67 +338,35 @@ export default function Shuttle({ smashToken = 0, court }) {
 
       if (!grabbed) {
         // Integrate in substeps: at full speed a whole frame is far too coarse
-        // for stable quadratic drag, and wall contacts would land late.
+        // for stable quadratic drag, and contacts would land late. The clock
+        // runs fast (see shuttlePhysics.js), so a frame is more than a frame.
+        const span = dt * world.timeScale;
         const entrySpeed = Math.hypot(shuttle.vx, shuttle.vy);
         const steps = Math.min(
           MAX_SUBSTEPS,
-          Math.max(1, Math.ceil((entrySpeed * dt) / SUBSTEP_PX)),
+          Math.max(Math.ceil((entrySpeed * span) / SUBSTEP_PX), Math.ceil(span * SUBSTEP_HZ)),
         );
-        const h = dt / steps;
+        const h = span / steps;
 
         for (let i = 0; i < steps; i += 1) {
-          const speed = Math.hypot(shuttle.vx, shuttle.vy);
-          const decel = drag * speed * h;
-          shuttle.vx -= shuttle.vx * decel;
-          shuttle.vy -= shuttle.vy * decel;
-          shuttle.vy += gravity * h;
-          shuttle.x += shuttle.vx * h;
-          shuttle.y += shuttle.vy * h;
-
-          const b = bounds(shuttle.angle);
-          const floor = height - b.maxY;
-          if (shuttle.y > floor) {
-            shuttle.y = floor;
-            // Only the first touch springs back. Coming down off that rebound,
-            // or anything after, the skirt takes it and it stays down.
-            shuttle.vy = rebounding || landed ? 0 : -shuttle.vy * BOUNCE_FLOOR;
-            shuttle.vx *= FRICTION;
-            // Kill the micro-bounces rather than letting it buzz on the floor.
-            if (Math.abs(shuttle.vy) < deadBounce) shuttle.vy = 0;
-            // Once it is down for good it falls over, there and then, rather
-            // than after sliding to a stop (side: sideToFall). A live rebound
-            // first carries it up still cork-down: it tips over on the ground,
-            // never in the air.
-            if (!landed) {
-              if (shuttle.vy === 0) {
-                landed = true;
-                rebounding = false;
-                lying = true;
-                facing = sideToFall();
-              } else {
-                rebounding = true;
-              }
-            }
-          }
-          if (shuttle.y < -b.minY) {
-            shuttle.y = -b.minY;
-            shuttle.vy = -shuttle.vy * BOUNCE_WALL;
-          }
-          if (shuttle.x < -b.minX) {
-            shuttle.x = -b.minX;
-            shuttle.vx = -shuttle.vx * BOUNCE_WALL;
-          }
-          if (shuttle.x > width - b.maxX) {
-            shuttle.x = width - b.maxX;
-            shuttle.vx = -shuttle.vx * BOUNCE_WALL;
-          }
-          if (shuttle.vy === 0 && shuttle.y >= floor) {
-            shuttle.vx *= Math.pow(FRICTION, h * 6);
-          }
-
-          trail.push({ x: shuttle.x, y: shuttle.y, speed, t: now });
+          substep(shuttle, world, h);
+          trail.push({
+            x: shuttle.x,
+            y: shuttle.y,
+            speed: Math.hypot(shuttle.vx, shuttle.vy),
+            t: now,
+          });
         }
       } else {
+        // In the hand: the cork hangs, and swings out behind a moving hand
+        // into the direction it is being carried, so it leaves the hand
+        // already pointing the way it is thrown.
+        const hand = handVelocity(now);
+        let off = Math.atan2(hand.y + HANG, hand.x) - shuttle.angle;
+        while (off > Math.PI) off -= Math.PI * 2;
+        while (off < -Math.PI) off += Math.PI * 2;
+        heldSpin += (HELD_STIFF * off - HELD_DAMP * heldSpin) * dt;
+        shuttle.angle += heldSpin * dt;
         trail.push({ x: shuttle.x, y: shuttle.y, speed: 0, t: now });
       }
 
@@ -461,53 +378,26 @@ export default function Shuttle({ smashToken = 0, court }) {
 
       const speed = Math.hypot(shuttle.vx, shuttle.vy);
 
-      // The cork leads while it is travelling. Once the shuttle is down on the
-      // floor, or runs out of speed in the air, it topples onto its side, the
-      // way a spent shuttle actually ends up: tipped cork-down by REST_TILT so
-      // the cork and the skirt's rim both meet the floor. The turn is slower
-      // than the in-flight tracking so you see it fall over. On the rebound off
-      // its first touch it holds the angle it hit at: following the velocity
-      // would flip it cork-up for the hop, and toppling then would tip it over
-      // in mid-air. The top of that hop is not running out of speed either.
-      //
-      // Being down is a commitment held until it is next sent flying (smash,
-      // grab, throw). Running out of speed holds until it is moving faster
-      // than toppling can drop it: toppling lowers its underside a few px, and
-      // when that drop alone could end the topple, the cork swung back down to
-      // lead it and it stalled part-way over with the skirt in the air. The
-      // side it falls to is fixed once, at the same moment (sideToFall);
-      // re-read every frame from the sign of a sideways speed that is all but
-      // zero after a drop, it flipped, and each flip swung the shuttle back up
-      // through upright to the other side.
-      if (!lying && !rebounding && speed <= sleepSpeed) {
-        lying = true;
-        facing = sideToFall();
-      } else if (lying && !landed && speed > wakeSpeed) {
-        lying = false;
-      }
-      const target = lying
-        ? (facing > 0 ? REST_TILT : Math.PI - REST_TILT)
-        : rebounding
-          ? shuttle.angle
-          : Math.atan2(shuttle.vy, shuttle.vx);
-      let delta = target - shuttle.angle;
-      while (delta > Math.PI) delta -= Math.PI * 2;
-      while (delta < -Math.PI) delta += Math.PI * 2;
-      shuttle.angle += delta * Math.min(1, dt * (grabbed ? 9 : lying ? 12 : 26));
-
       if (speed > hitSpeed) clipAlong(fromX, fromY, shuttle.x, shuttle.y, shuttle.vx, shuttle.vy, speed);
 
       render(speed);
 
       // Release the frame loop once it has genuinely settled; any interaction
       // wakes it again.
-      const rest = bounds(shuttle.angle);
-      const flat = Math.abs(delta) < 0.04;
-      if (!grabbed && speed < sleepSpeed && flat && shuttle.y >= height - rest.maxY - 1) {
+      const still = shuttle.grounded && speed < sleepSpeed && Math.abs(shuttle.spin) < SLEEP_SPIN;
+      if (!grabbed && still) {
         if (!restingSince) restingSince = now;
         if (now - restingSince > SLEEP_AFTER) {
           shuttle.vx = 0;
           shuttle.vy = 0;
+          shuttle.spin = 0;
+          // Lying on cork and rim, it is within a hair of REST_TILT already;
+          // true it up, so it sleeps in exactly the pose it was drawn for.
+          // Propped against a wall it is at some other angle, and stays there.
+          const lean = Math.atan2(Math.sin(shuttle.angle), Math.abs(Math.cos(shuttle.angle)));
+          if (Math.abs(lean - REST_TILT) < 0.03) {
+            shuttle.angle = Math.cos(shuttle.angle) > 0 ? REST_TILT : Math.PI - REST_TILT;
+          }
           trail = [];
           render(0);
           frame = 0;
@@ -529,6 +419,17 @@ export default function Shuttle({ smashToken = 0, court }) {
     }
 
     // --- pointer ---------------------------------------------------------
+    // Hand speed in px per real second, from the last stretch of pointer
+    // travel, not the single previous event, so a flick reads as a flick.
+    const handVelocity = (now) => {
+      const recent = samples.filter((sample) => now - sample.t < 90);
+      const first = recent[0];
+      const latest = recent[recent.length - 1];
+      if (!first || latest.t <= first.t) return { x: 0, y: 0 };
+      const seconds = (latest.t - first.t) / 1000;
+      return { x: (latest.x - first.x) / seconds, y: (latest.y - first.y) / seconds };
+    };
+
     const near = (x, y) => Math.hypot(x - shuttle.x, y - shuttle.y) <= GRAB_RADIUS;
 
     /*
@@ -546,8 +447,8 @@ export default function Shuttle({ smashToken = 0, court }) {
     const onDown = (e) => {
       if (!near(e.clientX, e.clientY)) return;
       grabbed = true;
-      landed = false;
-      rebounding = false;
+      heldSpin = 0;
+      shuttle.spin = 0;
       pointerId = e.pointerId;
       canvas.setPointerCapture(pointerId);
       canvas.style.cursor = "grabbing";
@@ -579,27 +480,18 @@ export default function Shuttle({ smashToken = 0, court }) {
       }
       pointerId = null;
 
-      // Throw velocity comes from the last stretch of pointer travel, not the
-      // single previous frame, so a flick reads as a flick. The gain is what
-      // turns a human-speed drag into a shot, capped at the hardest smash.
-      const now = performance.now();
-      const recent = samples.filter((s) => now - s.t < 90);
-      const first = recent[0];
-      const lastSample = recent[recent.length - 1];
-      if (first && lastSample && lastSample.t > first.t) {
-        const seconds = (lastSample.t - first.t) / 1000;
-        const vx = ((lastSample.x - first.x) / seconds) * THROW_GAIN;
-        const vy = ((lastSample.y - first.y) / seconds) * THROW_GAIN;
-        const speed = Math.hypot(vx, vy);
-        const scale = speed > maxThrow ? maxThrow / speed : 1;
-        shuttle.vx = vx * scale;
-        shuttle.vy = vy * scale;
-      }
+      // The gain is what turns a human-speed drag into a shot, capped at the
+      // hardest smash. It leaves with whatever swing it had in the hand.
+      const hand = handVelocity(performance.now());
+      const vx = hand.x * THROW_GAIN;
+      const vy = hand.y * THROW_GAIN;
+      const speed = Math.hypot(vx, vy);
+      const scale = speed > maxThrow ? maxThrow / speed : 1;
+      shuttle.vx = vx * scale;
+      shuttle.vy = vy * scale;
+      shuttle.spin = heldSpin / world.timeScale;
       samples.length = 0;
-      // Sent flying: the cork leads again until it next comes down.
-      landed = false;
-      rebounding = false;
-      lying = false;
+      launch(shuttle);
       wake();
     };
 
@@ -624,13 +516,15 @@ export default function Shuttle({ smashToken = 0, court }) {
 
     smashRef.current = () => {
       const dir = shuttle.x > width * 0.5 ? -1 : 1;
-      const angle = 0.16 + Math.random() * 0.14;
-      shuttle.vx = smashSpeed * Math.cos(angle) * dir;
-      shuttle.vy = -smashSpeed * Math.sin(angle);
+      // Flat and hard across a wide window. An upright one is a short court
+      // across and a long one up, so there it is lifted, to fly the length of
+      // the screen and come down, where a flat one only rattled between the
+      // two side walls.
+      const lift = height > width ? 0.95 + Math.random() * 0.3 : 0.16 + Math.random() * 0.14;
+      shuttle.vx = smashSpeed * Math.cos(lift) * dir;
+      shuttle.vy = -smashSpeed * Math.sin(lift);
       trail = [];
-      landed = false;
-      rebounding = false;
-      lying = false;
+      launch(shuttle);
       wake();
     };
 
@@ -653,6 +547,7 @@ export default function Shuttle({ smashToken = 0, court }) {
       shoved.forEach((_, block) => {
         block.style.transition = "";
         block.style.translate = "";
+        delete block.dataset.shoved;
       });
       shoved.clear();
       if (highlight) {
@@ -660,6 +555,7 @@ export default function Shuttle({ smashToken = 0, court }) {
         CSS.highlights.delete("shuttle-hit");
       }
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      art.style.visibility = "hidden";
     };
   }, []);
 
@@ -667,12 +563,17 @@ export default function Shuttle({ smashToken = 0, court }) {
     if (smashToken > 0) smashRef.current?.();
   }, [smashToken]);
 
+  // The canvas carries the streak and takes the pointer; the shuttle itself
+  // is the SVG over it, which lets every pointer event through.
   return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden="true"
-      className="fixed inset-0 z-20 h-full w-full"
-      style={{ pointerEvents: "none" }}
-    />
+    <>
+      <canvas
+        ref={canvasRef}
+        aria-hidden="true"
+        className="fixed inset-0 z-20 h-full w-full"
+        style={{ pointerEvents: "none" }}
+      />
+      <ShuttleArt ref={artRef} />
+    </>
   );
 }

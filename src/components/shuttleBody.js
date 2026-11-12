@@ -1,23 +1,25 @@
 /**
- * The shuttlecock itself: a feather tournament shuttle, drawn about its own
- * origin with the cork pointing along +x. Shuttle.jsx owns where it is, which
- * way it points and how fast it is going; this file owns only what it looks
- * like, so the drawing can be worked on without touching the physics.
+ * The shuttlecock's geometry: a feather tournament shuttle, about its own
+ * origin with the cork pointing along +x. ShuttleArt.jsx turns what is built
+ * here into an SVG, Shuttle.jsx owns where that SVG is and which way it
+ * points, and shuttlePhysics.js collides with the shape exported at the
+ * bottom. Nothing in this file touches the DOM, so the physics can load it
+ * and be run without a browser.
  *
  * It is modelled in millimetres on a real shuttle and scaled to LENGTH px: 85mm
- * long, a white leather cork 27mm across and 25mm deep, a black band where the
- * feathers are set in, and sixteen feathers flaring to a 68mm skirt. Each
- * feather is bare quill for its first stretch, bound by two rings of thread,
- * then carries a vane cut at an angle across the tip.
+ * long, a white leather cork 27mm across and 25mm deep, a band of dark tape
+ * where the feathers are set in, and sixteen feathers flaring to a 68mm skirt.
+ * Each feather is bare straw-coloured quill for its first stretch, bound by
+ * two rings of thread, then carries a white vane cut to a point at the tip.
  *
- * It is drawn in three-quarter view rather than strictly side on, turned so the
- * cork leans towards the viewer. Seen exactly side on, every near feather hides
- * the far one directly behind it and the skirt reads as a flat triangle; turned,
- * the far quills show through the gaps between the near ones and the rim of the
- * skirt curves, which is what makes it read as an object rather than a sign.
+ * It is seen in three-quarter view, not strictly side on, turned so the cork
+ * leans towards the viewer. Seen exactly side on, every near feather hides the
+ * far one directly behind it and the skirt reads as a flat triangle; turned,
+ * the far quills show through the gaps between the near ones and the rim of
+ * the skirt curves, which is what makes it read as an object and not a sign.
  *
- * None of the geometry changes from frame to frame, so it is all built once,
- * here, as Path2D objects, and a frame only fills and strokes them.
+ * Every outline leaves here as the `d` of an SVG path, in px, worked out once
+ * when the module loads.
  */
 
 export const LENGTH = 46; // px, tip to skirt
@@ -29,7 +31,7 @@ const TAIL = TIP - 85;
 const CORK_R = 13.5;
 const CORK_BASE = TIP - 25; // where the feathers are set in
 const DOME = TIP - CORK_R; // centre of the cork's rounded nose
-const BAND = 4.5; // width of the black band
+const BAND = 5.5; // width of the tape
 const QUILL_R = 11; // radius at which the quills leave the cork
 const SKIRT_R = 34;
 const FEATHERS = 16; // a real shuttle has sixteen
@@ -65,16 +67,14 @@ const onFeather = (a, t, w) => {
   return project(X, r * Math.sin(a) + w * Math.cos(a), r * Math.cos(a) - w * Math.sin(a));
 };
 
-const pathThrough = (points, close) => {
-  const p = new Path2D();
-  points.forEach((pt, i) => (i === 0 ? p.moveTo(pt.x, pt.y) : p.lineTo(pt.x, pt.y)));
-  if (close) p.closePath();
-  return p;
-};
+const n = (v) => Number(v.toFixed(2));
 
-const arcOf = (from, to, n, at) => {
+const pathThrough = (points, close) =>
+  points.map((pt, i) => `${i === 0 ? "M" : "L"}${n(pt.x)} ${n(pt.y)}`).join("") + (close ? "Z" : "");
+
+const arcOf = (from, to, steps, at) => {
   const pts = [];
-  for (let i = 0; i <= n; i += 1) pts.push(at(from + ((to - from) * i) / n));
+  for (let i = 0; i <= steps; i += 1) pts.push(at(from + ((to - from) * i) / steps));
   return pts;
 };
 
@@ -91,8 +91,10 @@ for (let k = 0; k < FEATHERS; k += 1) {
   const inner = arcOf(0.97, VANE_FROM + 0.04, 8, (t) => onFeather(a, t, -VANE_IN * vaneWidth(t)));
   const tip = onFeather(a, 1, 0);
   const base = onFeather(a, 0, 0);
+  const depth = onFeather(a, VANE_FULL, VANE_W / 2).depth;
   feathers.push({
-    depth: onFeather(a, VANE_FULL, VANE_W / 2).depth,
+    depth,
+    near: depth > 0,
     vane: pathThrough([...outer, tip, ...inner], true),
     quill: pathThrough([base, tip]),
     // The quill throws a hairline of shadow onto its own vane.
@@ -121,47 +123,42 @@ const rings = RINGS.map((t) => {
  */
 const domeX = DOME * COS * S;
 const corkR = CORK_R * S;
-const cork = new Path2D();
-cork.moveTo(CORK_BASE * COS * S, -corkR);
-cork.lineTo(domeX, -corkR);
-cork.arc(domeX, 0, corkR, -Math.PI / 2, Math.PI / 2);
-arcOf(Math.PI / 2, -Math.PI / 2, 16, (a) => onRing(CORK_BASE, CORK_R, a)).forEach((pt) => cork.lineTo(pt.x, pt.y));
-cork.closePath();
+const corkBack = arcOf(Math.PI / 2, -Math.PI / 2, 16, (a) => onRing(CORK_BASE, CORK_R, a));
+const cork =
+  `M${n(CORK_BASE * COS * S)} ${n(-corkR)}L${n(domeX)} ${n(-corkR)}` +
+  `A${n(corkR)} ${n(corkR)} 0 0 1 ${n(domeX)} ${n(corkR)}` +
+  corkBack.map((pt) => `L${n(pt.x)} ${n(pt.y)}`).join("") +
+  "Z";
 
+const bandFront = arcOf(-Math.PI / 2, Math.PI / 2, 16, (a) => onRing(CORK_BASE + BAND, CORK_R + 0.2, a));
 const band = pathThrough(
-  [
-    ...arcOf(-Math.PI / 2, Math.PI / 2, 16, (a) => onRing(CORK_BASE + BAND, CORK_R + 0.2, a)),
-    ...arcOf(Math.PI / 2, -Math.PI / 2, 16, (a) => onRing(CORK_BASE, CORK_R + 0.2, a)),
-  ],
+  [...bandFront, ...arcOf(Math.PI / 2, -Math.PI / 2, 16, (a) => onRing(CORK_BASE, CORK_R + 0.2, a))],
   true,
 );
-// Light catching the top of the tape.
-const gloss = pathThrough(arcOf(-1.25, -0.45, 6, (a) => onRing(CORK_BASE + BAND * 0.5, CORK_R + 0.2, a)));
 
 /*
- * The outline Shuttle.jsx collides with, in px about the origin: the cork's
- * nose and shoulders and the corners of every feather tip, so the shape that
- * bounces is the shape you see.
+ * The shape shuttlePhysics.js collides with, in px about the origin: the cork's
+ * nose as the circle it is, and the corners of every feather tip. Between them
+ * they are the only parts that can touch a flat surface, so the shape that
+ * lands is the shape you see.
  */
-export const SILHOUETTE = [
-  [domeX + corkR, 0],
-  [domeX, -corkR],
-  [domeX, corkR],
-  ...feathers.flatMap((f) => f.corners.map((pt) => [pt.x, pt.y])),
-];
+export const CORK = { x: domeX, r: corkR };
+const rim = feathers.flatMap((f) => f.corners);
+export const RIM = rim.map((pt) => [pt.x, pt.y]);
 
 /*
  * The angle a spent shuttle lies at on the floor, cork tipped down from level.
  * Lying level, only the rim of the skirt touches: the skirt is more than twice
  * the cork's width, so the cork hangs in the air. A real one tips forward until
  * the cork's underside and the rim both rest on the ground, and this is that
- * angle. Tipping by `a` lowers the cork's underside (the exact nose arc, not the
- * coarse silhouette) and lifts the rim, so the gap between them only shrinks
- * with `a`, and bisection finds where it closes.
+ * angle. Tipping by `a` lowers the cork's underside (the CORK circle above) and
+ * lifts the rim, so the gap between them only shrinks with `a`, and bisection
+ * finds where it closes. The physics arrives at the same angle on its own,
+ * since it rests on the same two shapes; this is the exact value it is trued
+ * up to once it has stopped.
  */
-const rim = feathers.flatMap((f) => f.corners);
-const corkUnderside = (a) => domeX * Math.sin(a) + corkR;
-const rimUnderside = (a) => Math.max(...rim.map((pt) => pt.x * Math.sin(a) + pt.y * Math.cos(a)));
+const corkUnderside = (a) => CORK.x * Math.sin(a) + CORK.r;
+const rimUnderside = (a) => Math.max(...RIM.map(([x, y]) => x * Math.sin(a) + y * Math.cos(a)));
 let tiltLo = 0;
 let tiltHi = Math.PI / 2;
 for (let i = 0; i < 40; i += 1) {
@@ -171,94 +168,30 @@ for (let i = 0; i < 40; i += 1) {
 }
 export const REST_TILT = (tiltLo + tiltHi) / 2;
 
-const EDGE = "rgba(28, 28, 30, 0.42)";
+// The box the drawing fits in, with room for its strokes: ShuttleArt's viewBox.
+const PAD = 2;
+const xs = [...rim.map((pt) => pt.x), domeX + corkR];
+const ys = [...rim.map((pt) => pt.y), corkR, -corkR];
+const minX = Math.min(...xs) - PAD;
+const minY = Math.min(...ys) - PAD;
 
-export function drawBody(ctx, { cork: corkColor, band: bandColor, skirt }) {
-  ctx.save();
-  ctx.lineJoin = "round";
-  ctx.lineCap = "round";
-
-  ctx.strokeStyle = EDGE;
-  ctx.lineWidth = 1.5;
-  ctx.globalAlpha = 0.5;
-  rings.forEach((ring) => ctx.stroke(ring.far));
-
-  for (let i = 0; i < feathers.length; i += 1) {
-    const f = feathers[i];
-    const near = f.depth > 0;
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = skirt;
-    ctx.fill(f.vane);
-    // The far feathers are seen from inside the skirt, which is in shade.
-    if (!near) {
-      ctx.fillStyle = "rgba(20, 20, 24, 0.16)";
-      ctx.fill(f.vane);
-    }
-    ctx.strokeStyle = EDGE;
-    ctx.lineWidth = 0.6;
-    ctx.globalAlpha = near ? 0.6 : 0.45;
-    ctx.stroke(f.vane);
-
-    ctx.globalAlpha = near ? 0.32 : 0.2;
-    ctx.lineWidth = 1.1;
-    ctx.stroke(f.shadow);
-
-    // Quill: a dark edge with the light shaft laid down its middle, so it reads
-    // against the vane as well as against the mat. Square ends, so it stops at
-    // the tip of its vane rather than poking out past it.
-    ctx.lineCap = "butt";
-    ctx.globalAlpha = near ? 0.75 : 0.5;
-    ctx.lineWidth = 1.9;
-    ctx.stroke(f.quill);
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = skirt;
-    ctx.lineWidth = 1.1;
-    ctx.stroke(f.quill);
-    ctx.lineCap = "round";
-  }
-
-  // The near halves of the thread: a light cord with a dark edge either side.
-  ctx.globalAlpha = 0.45;
-  ctx.strokeStyle = EDGE;
-  ctx.lineWidth = 1.9;
-  rings.forEach((ring) => ctx.stroke(ring.near));
-  ctx.globalAlpha = 1;
-  ctx.strokeStyle = skirt;
-  ctx.lineWidth = 1.1;
-  rings.forEach((ring) => ctx.stroke(ring.near));
-
-  // Cork: white leather, lit from above so the nose reads as round.
-  ctx.fillStyle = corkColor;
-  ctx.fill(cork);
-  const across = ctx.createLinearGradient(0, -corkR, 0, corkR);
-  across.addColorStop(0, "rgba(255, 255, 255, 0.45)");
-  across.addColorStop(0.5, "rgba(0, 0, 0, 0)");
-  across.addColorStop(1, "rgba(0, 0, 0, 0.13)");
-  ctx.fillStyle = across;
-  ctx.fill(cork);
-  const round = ctx.createRadialGradient(
-    domeX + corkR * 0.3,
-    -corkR * 0.35,
-    corkR * 0.1,
-    domeX,
-    0,
-    corkR * 1.05,
-  );
-  round.addColorStop(0, "rgba(255, 255, 255, 0.6)");
-  round.addColorStop(0.6, "rgba(0, 0, 0, 0)");
-  round.addColorStop(1, "rgba(0, 0, 0, 0.08)");
-  ctx.fillStyle = round;
-  ctx.fill(cork);
-  ctx.strokeStyle = EDGE;
-  ctx.lineWidth = 0.8;
-  ctx.stroke(cork);
-
-  ctx.fillStyle = bandColor;
-  ctx.fill(band);
-  ctx.globalAlpha = 0.5;
-  ctx.strokeStyle = "#ffffff";
-  ctx.lineWidth = 0.9;
-  ctx.stroke(gloss);
-
-  ctx.restore();
-}
+/** Everything ShuttleArt.jsx draws, far to near. */
+export const ART = {
+  box: {
+    x: n(minX),
+    y: n(minY),
+    width: n(Math.max(...xs) + PAD - minX),
+    height: n(Math.max(...ys) + PAD - minY),
+  },
+  feathers: feathers.map(({ near, vane, quill, shadow }) => ({ near, vane, quill, shadow })),
+  rings,
+  cork,
+  corkCenter: { x: n(domeX), r: n(corkR) },
+  band,
+  // Where the tape meets the leather: a line of shadow on the cork beside it,
+  bandEdge: pathThrough(arcOf(-1.35, 1.35, 12, (a) => onRing(CORK_BASE + BAND + 0.7, CORK_R - 0.2, a))),
+  // and the light catching the top of the tape.
+  gloss: pathThrough(arcOf(-1.25, -0.45, 6, (a) => onRing(CORK_BASE + BAND * 0.5, CORK_R + 0.2, a))),
+  // The span of the skirt along the axis, for the vanes' gradient.
+  skirt: { from: n(CORK_BASE * COS * S), to: n(TAIL * COS * S) },
+};
