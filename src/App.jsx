@@ -223,6 +223,19 @@ function Ext({ href, children }) {
   );
 }
 
+/* A link that leaves the site says so. Drawn rather than typed: the arrow
+   glyph is outside the font's Latin subset, and iOS swaps in an emoji. */
+const Out = () => (
+  <svg
+    viewBox="0 0 10 10"
+    aria-hidden="true"
+    className="ml-1 inline-block h-[0.6em] w-[0.6em] fill-none stroke-current"
+    strokeWidth="1.4"
+  >
+    <path d="M2 8 8 2M3.5 2H8v4.5" />
+  </svg>
+);
+
 /* Children resolve one after another so a pane assembles rather than appearing
    as a single block. */
 const GROUP = {
@@ -236,24 +249,25 @@ const ITEM = {
 };
 
 const Serve = () => (
-  <div className="grid items-center gap-x-14 gap-y-10 md:grid-cols-2">
+  <div className="pane-grid items-center">
     <div className="mx-auto max-w-[46ch] text-center">
       <motion.p
         variants={ITEM}
-        className="knock readable text-[clamp(2.1rem,4.4vw,3.4rem)] font-medium leading-[1.06] tracking-[-0.03em]"
+        // Balanced, or at tablet width it broke as four words and then "up."
+        className="knock readable mx-auto text-balance text-[clamp(2.1rem,4.4vw,3.4rem)] font-medium leading-[1.06] tracking-[-0.03em]"
       >
         I build software that holds up.
       </motion.p>
-      <motion.p variants={ITEM} className="knock readable prose mt-7">
+      <motion.p variants={ITEM} className="knock readable prose mx-auto mt-7">
         Computer Engineering at the <Ext href="https://uwaterloo.ca/">University of Waterloo</Ext>,
         class of 2030. Research published in{" "}
         <Ext href="https://ieeexplore.ieee.org/abstract/document/10811073">IEEE Xplore</Ext>, then
         match analytics and fraud detection.
       </motion.p>
-      {/* `!inline-flex`, not `flex`: `.readable` is unlayered CSS declared after
-          the utilities, so its `inline-block` won and the gap never applied,
-          running the two links together as "resumenleelath@". */}
-      <motion.p variants={ITEM} className="knock readable mt-8 !inline-flex flex-wrap justify-center gap-x-7 gap-y-2 text-[15px]">
+      <motion.p
+        variants={ITEM}
+        className="knock readable mx-auto mt-8 flex flex-wrap justify-center gap-x-7 gap-y-2 text-[15px]"
+      >
         <a href={RESUME} className="link">
           Read the resume
         </a>
@@ -264,12 +278,13 @@ const Serve = () => (
     </div>
 
     {/* The far side of the net was empty, so it carries the detail the
-        headline has no room for. */}
-    <dl className="m-0 mx-auto max-w-[42ch] self-center text-center">
+        headline has no room for. Set flush left: five short paragraphs centred
+        one under another have no edge for the eye to come back to. */}
+    <dl className="facts m-0 mx-auto max-w-[44ch] self-center">
       {ABOUT.map((fact) => (
         <motion.div key={fact.label} variants={ITEM} className="knock mt-5 first:mt-0">
           <dt className="readable meta">{fact.label}</dt>
-          <dd className="readable prose m-0 mt-1 text-[16px]">{fact.value}</dd>
+          <dd className="readable prose pt-1 text-[16px]">{fact.value}</dd>
         </motion.div>
       ))}
     </dl>
@@ -277,46 +292,58 @@ const Serve = () => (
 );
 
 const Record = () => (
-  <div className="grid gap-x-14 gap-y-8 md:grid-cols-2">
+  <div className="pane-grid">
     {RECORD.map((job) => (
-      <motion.article key={job.company} variants={ITEM} className="knock mx-auto max-w-[46ch]">
-        <p className="readable meta">{job.period}</p>
-        <h2 className="readable mt-1 text-[20px] font-medium tracking-[-0.02em]">
+      <motion.article key={job.company} variants={ITEM} className="knock mx-auto w-full max-w-[46ch]">
+        {/* The employer is the heading and the role sits under it. Run together
+            as one heading, the longer names wrapped to two and three lines and
+            the role was lost in the tail of them. */}
+        <h2 className="readable text-[20px] font-medium leading-snug tracking-[-0.02em]">
           {job.link ? <Ext href={job.link}>{job.company}</Ext> : job.company}
-          <span className="text-body">, {job.role}</span>
         </h2>
-        <p className="readable prose mt-2 text-[16px]">{job.description}</p>
+        <p className="readable pt-1 text-[15px] text-body">
+          {job.role}
+          <span className="meta">
+            <span aria-hidden="true"> &middot; </span>
+            {job.period}
+          </span>
+        </p>
+        <p className="readable prose pt-2 text-[16px]">{job.description}</p>
       </motion.article>
     ))}
   </div>
 );
 
 const Builds = () => (
-  <div className="grid gap-x-14 gap-y-8 md:grid-cols-2">
+  <div className="pane-grid">
     {BUILDS.map((project) => (
-      <motion.article key={project.title} variants={ITEM} className="knock mx-auto max-w-[46ch]">
+      <motion.article key={project.title} variants={ITEM} className="knock mx-auto w-full max-w-[46ch]">
         <h2 className="readable text-[22px] font-medium tracking-[-0.02em]">{project.title}</h2>
-        <p className="readable prose mt-2 text-[16px]">{project.description}</p>
-        <p className="readable meta mt-3">
-          {project.tech}
-          {project.links.map((l) => (
-            <span key={l.label}>
-              <span aria-hidden="true"> &middot; </span>
-              <Ext href={l.href}>{l.label}</Ext>
-            </span>
-          ))}
-        </p>
+        <p className="readable prose pt-1.5 text-[16px]">{project.description}</p>
+        <p className="readable meta pt-2.5">{project.tech}</p>
+        {/* The links are what a visitor acts on, so they get a line of their
+            own at reading size rather than trailing the stack in small type. */}
+        {project.links.length > 0 && (
+          <p className="readable flex flex-wrap gap-x-6 gap-y-1 pt-2 text-[15px]">
+            {project.links.map((l) => (
+              <Ext key={l.label} href={l.href}>
+                {l.label}
+                <Out />
+              </Ext>
+            ))}
+          </p>
+        )}
       </motion.article>
     ))}
   </div>
 );
 
 const OffCourt = () => (
-  <div className="grid gap-x-14 gap-y-8 md:grid-cols-2">
+  <div className="pane-grid">
     {OFF_COURT.map((item) => (
-      <motion.article key={item.title} variants={ITEM} className="knock mx-auto max-w-[46ch]">
+      <motion.article key={item.title} variants={ITEM} className="knock mx-auto w-full max-w-[46ch]">
         <h2 className="readable text-[19px] font-medium tracking-[-0.02em]">{item.title}</h2>
-        <p className="readable prose mt-1.5 text-[16px]">{item.body}</p>
+        <p className="readable prose pt-1.5 text-[16px]">{item.body}</p>
       </motion.article>
     ))}
   </div>
@@ -387,11 +414,26 @@ export default function App() {
   const observer = useRef(null);
   const [moreBelow, setMoreBelow] = useState(false);
 
-  const measure = useCallback(() => {
+  const checkMore = useCallback(() => {
     const el = mainRef.current;
     // 2px of slack: a fractional scroll position never quite meets the bottom.
     if (el) setMoreBelow(el.scrollHeight - el.scrollTop - el.clientHeight > 2);
   }, []);
+
+  const measure = useCallback(() => {
+    const el = mainRef.current;
+    if (!el) return;
+    // Whether the pane fits the court at all, with the spacers above and below
+    // it squeezed to their minimum (0.75rem each; see `.court-scroll` in
+    // index.css). Taken from the pane's own height, which the spacers do not
+    // affect, so setting the flag cannot change the answer it was set from.
+    const pane = paneNode.current;
+    if (pane) {
+      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      el.toggleAttribute("data-overflow", pane.offsetHeight + 1.5 * rem > el.clientHeight);
+    }
+    checkMore();
+  }, [checkMore]);
 
   const getObserver = useCallback(() => {
     if (!observer.current) observer.current = new ResizeObserver(measure);
@@ -425,7 +467,9 @@ export default function App() {
   // on every scroll event just to recolour a scrollbar.
   const scrollIdle = useRef(0);
   const onMainScroll = useCallback(() => {
-    measure();
+    // Scrolling moves the pane, it does not resize it: only the cue needs
+    // looking at again, not the fit.
+    checkMore();
     const el = mainRef.current;
     if (!el) return;
     el.dataset.scrolling = "";
@@ -433,7 +477,7 @@ export default function App() {
     scrollIdle.current = window.setTimeout(() => {
       delete el.dataset.scrolling;
     }, 900);
-  }, [measure]);
+  }, [checkMore]);
 
   useEffect(() => () => window.clearTimeout(scrollIdle.current), []);
 
@@ -452,29 +496,38 @@ export default function App() {
         the umpire's chair and the line judges do, and the reading matter sits
         inside them. The whole window is still the shuttle's court.
       */}
-      <div className="relative z-10 grid h-[100dvh] grid-cols-2 grid-rows-[auto_minmax(0,1fr)_auto] gap-x-6 gap-y-4 overflow-hidden px-5 py-5 md:px-10 md:py-7">
-        <a href="#serve" className="self-start text-[21px] font-semibold tracking-[-0.035em]">
-          Bank Leelathanapipat
-        </a>
+      <div className="relative z-10 grid h-[100dvh] grid-rows-[auto_minmax(0,1fr)_auto] gap-y-3 overflow-hidden px-4 py-4 md:gap-y-4 md:px-10 md:py-7">
+        {/* One row on a wide window; on a phone the name takes a line and the
+            panes the next. Stacked in a column beside the name, as they were,
+            the four links cost the court a fifth of a phone's height. */}
+        <header className="flex flex-wrap items-baseline justify-between gap-x-8">
+          <h1 className="m-0 whitespace-nowrap text-[19px] font-semibold tracking-[-0.035em] md:text-[21px]">
+            <a href="#serve">Bank Leelathanapipat</a>
+          </h1>
 
-        <nav aria-label="Panes" className="justify-self-end self-start text-right">
-          <ul className="m-0 flex list-none flex-col items-end gap-1 p-0 text-[15px] md:flex-row md:items-baseline md:gap-x-6">
-            {PANES.map((p) => (
-              <li key={p.id}>
-                <a
-                  href={`#${p.id}`}
-                  onClick={pick(p.id)}
-                  aria-current={pane === p.id ? "page" : undefined}
-                  className={pane === p.id ? "underline underline-offset-4" : "text-body hover:text-ink"}
-                >
-                  {p.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+          <nav aria-label="Panes">
+            {/* The padding is the tap target; the negative margin keeps the
+                first and last labels on the page margin all the same. */}
+            <ul className="-mx-2.5 m-0 flex list-none p-0 text-[15px]">
+              {PANES.map((p) => (
+                <li key={p.id}>
+                  <a
+                    href={`#${p.id}`}
+                    onClick={pick(p.id)}
+                    aria-current={pane === p.id ? "page" : undefined}
+                    className={`block px-2.5 py-1.5 underline-offset-[5px] transition-colors ${
+                      pane === p.id ? "underline decoration-[1.5px]" : "text-body hover:text-ink"
+                    }`}
+                  >
+                    {p.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </header>
 
-        <section aria-label="Court" className="relative col-span-2 flex min-h-0">
+        <section aria-label="Court" className="court-box relative min-h-0">
           <Court />
           {/* Centred with `my-auto` on the pane, not `items-center` here:
               centring pushes overflow out of BOTH ends, and the half above the
@@ -484,9 +537,9 @@ export default function App() {
           <main
             ref={mainRef}
             onScroll={onMainScroll}
-            // md:px-9, not 12: the scrollbar gutter (index.css) now takes 12px
-            // on each side, so this keeps the text the width it always was.
-            className="court-scroll relative flex min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-6 py-6 md:px-9"
+            // Where it sits on the court, and its padding, are in index.css,
+            // in the court's own units.
+            className="court-scroll overflow-y-auto overflow-x-hidden"
           >
             <AnimatePresence mode="wait">
               <motion.div
@@ -499,20 +552,16 @@ export default function App() {
                 // The entrance slides items up into place. A transform is not a
                 // resize, so the observer never sees it settle; check again.
                 onAnimationComplete={measure}
-                className="my-auto w-full"
+                className="my-auto w-full shrink-0"
               >
                 <Pane />
               </motion.div>
             </AnimatePresence>
           </main>
 
-          {/* Two words, centred on the net: at that width it fits the gap
-              between the two columns, so it covers no entry. Below the court
-              it sat where the shuttle comes to rest, and a click there grabbed
-              the shuttle instead. No fade on the edge instead: a mask on
-              <main> would make it the backdrop root, and every `.readable`
-              blur inside would stop softening the court lines behind the
-              text. */}
+          {/* Two words, set into the back line where the net meets it. Below
+              the court it sat where the shuttle comes to rest, and a click
+              there grabbed the shuttle instead. */}
           <AnimatePresence>
             {moreBelow && (
               <motion.button
@@ -523,9 +572,7 @@ export default function App() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 aria-label="Scroll down for more"
-                // `!px-1`: `.readable`'s own padding would make it 2px wider
-                // than the 56px gutter it has to fit.
-                className="readable meta absolute bottom-2 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap !px-1 hover:text-ink"
+                className="more-cue readable meta px-2 hover:text-ink"
               >
                 More <span aria-hidden="true" className="nudge">&darr;</span>
               </motion.button>
@@ -533,39 +580,52 @@ export default function App() {
           </AnimatePresence>
         </section>
 
-        <ul className="m-0 flex list-none flex-wrap items-end gap-x-5 gap-y-1 self-end p-0">
-          {LINKS.map((l) => (
-            <li key={l.label}>
-              <a
-                href={l.href}
-                target={l.href.startsWith("http") ? "_blank" : undefined}
-                rel={l.href.startsWith("http") ? "noreferrer" : undefined}
-                className="meta hover:text-ink"
-              >
-                {l.label}
-              </a>
-            </li>
-          ))}
-        </ul>
-
-        <div className="flex flex-col items-end gap-1 justify-self-end self-end">
-          <div role="group" aria-label="Court surface" className="flex gap-x-4">
-            {COURTS.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => setCourt(c.id)}
-                aria-pressed={court === c.id}
-                className={court === c.id ? "meta underline underline-offset-4" : "meta hover:text-ink"}
-              >
-                {c.label}
-              </button>
+        <footer className="flex flex-wrap items-center justify-between gap-x-8 gap-y-2">
+          <ul className="-mx-2 m-0 flex list-none flex-wrap p-0">
+            {LINKS.map((l) => (
+              <li key={l.label}>
+                <a
+                  href={l.href}
+                  target={l.href.startsWith("http") ? "_blank" : undefined}
+                  rel={l.href.startsWith("http") ? "noreferrer" : undefined}
+                  className="block px-2 py-1.5 text-[14px] text-meta transition-colors hover:text-ink"
+                >
+                  {l.label}
+                </a>
+              </li>
             ))}
+          </ul>
+
+          {/* The surfaces are shown, not named: three discs in the mats' own
+              colours say what the control does before it is tried, which the
+              words "Grey Green Red" alone did not. */}
+          <div className="ml-auto flex items-center gap-x-5">
+            <div role="group" aria-label="Court surface" className="flex items-center gap-x-3.5">
+              <span aria-hidden="true" className="meta">
+                Court
+              </span>
+              {COURTS.map((c) => (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setCourt(c.id)}
+                  aria-pressed={court === c.id}
+                  aria-label={c.label}
+                  title={`${c.label} court`}
+                  className="swatch"
+                  style={{ "--swatch": `var(--mat-${c.id})` }}
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={smash}
+              className="rounded-full border border-rule px-3.5 py-1 text-[13px] tracking-[0.01em] text-ink transition-colors hover:border-ink"
+            >
+              Smash
+            </button>
           </div>
-          <button type="button" onClick={smash} className="meta hover:text-ink">
-            Smash
-          </button>
-        </div>
+        </footer>
       </div>
 
       <Shuttle smashToken={smashToken} court={court} />

@@ -17,31 +17,33 @@
 */
 :root {
   color-scheme: dark;
-  /* Keep the three --mat hexes in sync with the boot script in index.html. */
-  --mat: #5a5c61;
+  /* Keep the three mat hexes in sync with the boot script in index.html. They
+     are named, not just assigned, so the surface picker can paint all three. */
+  --mat-grey: #5a5c61;
+  --mat-green: #1a7a33;
+  --mat-red: #b3232a;
+  --mat: var(--mat-grey);
+  --line-w: 3.5; /* px; the court's strokes do not scale with it */
   --line: rgba(255, 255, 255, 0.92);
   --ink: #fbfbf9;
   --body: #e8e8e5; /* 5.4:1 on the grey mat */
   --meta: #dadad6; /* 4.8:1 */
   --rule: rgba(255, 255, 255, 0.4);
   --selection: rgba(255, 255, 255, 0.24);
-  /* Canvas paints outside the Tailwind layer, so the shuttle reads its ink here. */
-  --shuttle-cork: #fbfaf7; /* white leather */
-  --shuttle-band: #141414; /* the tape where the feathers are set in */
-  --shuttle-skirt: #fbfbf8; /* feathers */
+  /* Canvas paints outside the Tailwind layer, so the streak reads its ink here. */
   --shuttle-trail: #ff4d1f; /* the streak behind it, and the words it lights */
   --on-trail: #0c0c0d;
 }
 
 :root[data-court="green"] {
-  --mat: #1a7a33;
+  --mat: var(--mat-green);
   --ink: #fbfdf9;
   --body: #f1f4ef; /* 4.9:1 */
   --meta: #eaede8; /* 4.6:1 */
 }
 
 :root[data-court="red"] {
-  --mat: #b3232a;
+  --mat: var(--mat-red);
   --ink: #fffaf9;
   --body: #f6e9e8; /* 5.6:1 */
   --meta: #efe0df; /* 5.1:1 */
@@ -68,11 +70,124 @@ body {
    otherwise let them override the pseudo-elements and lose the rounding.
    Scrollbar pseudo-elements do not transition, so it appears and goes rather
    than fading. */
-/* The gutter is reserved on both sides, so the two columns stay centred on the
-   net (and on the "More" cue that sits on it), and a pane that scrolls does
-   not shift sideways against one that does not. */
+/*
+  The court region is a size container, so everything laid on the court can be
+  measured against it in the same percentages Court.jsx draws with. A court
+  taller than it is wide is drawn turned, net across the screen, and the layout
+  turns with it (the `court` container queries below).
+*/
+.court-box {
+  container: court / size;
+}
+
+.court-portrait {
+  display: none;
+}
+
+.court g {
+  stroke-width: var(--line-w);
+}
+
+/*
+  The reading region is the court itself: it is clipped just inside the outer
+  boundary, so a scrolling pane disappears at the back line rather than running
+  across it onto the mat, and inset to the inner lines, so a pane that fits
+  rests wholly inside them and the alleys stay clear.
+
+  Across the court that inset is padding. Along it, it is a pair of spacers
+  (the pseudo-elements) that give way before the pane has to scroll: a pane a
+  little too tall for the inner lines spreads into the alleys and still shows
+  whole. Only a pane too tall for the court itself scrolls, and App.jsx then
+  sets `data-overflow`, which holds the spacers open so the pane starts under
+  the first inner line and ends above the last.
+
+  The gutter is reserved on both sides, so the two columns stay centred on the
+  net (and on the "More" cue that sits on it), and a pane that scrolls does not
+  shift sideways against one that does not.
+*/
 .court-scroll {
+  --inset: calc(7cqh + 0.75rem);
+  position: absolute;
+  inset: calc(4% + 2px) calc(3% + 2px);
+  display: flex;
+  flex-direction: column;
+  padding: 0 calc(7cqw + 0.25rem);
   scrollbar-gutter: stable both-edges;
+}
+
+.court-scroll::before,
+.court-scroll::after {
+  content: "";
+  flex: 0 1 var(--inset);
+  min-height: 0.75rem;
+}
+
+.court-scroll[data-overflow]::before,
+.court-scroll[data-overflow]::after {
+  flex-shrink: 0;
+}
+
+/* Two entries abreast, one each side of the net, wherever the court is wide
+   enough to carry them; otherwise a single column. */
+.pane-grid {
+  display: grid;
+  gap: 2rem 3.5rem;
+}
+
+/* The scroll cue sits in the back line, the way a label is set into a rule. */
+.more-cue {
+  position: absolute;
+  bottom: 4%;
+  left: 50%;
+  z-index: 10;
+  transform: translate(-50%, 50%);
+  white-space: nowrap;
+}
+
+@container court (min-width: 46rem) and (min-aspect-ratio: 1/1) {
+  .pane-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container court (max-aspect-ratio: 1/1) {
+  .court-landscape {
+    display: none;
+  }
+
+  .court-portrait {
+    display: block;
+  }
+
+  .court-scroll {
+    inset: calc(3% + 2px) calc(2.5% + 2px);
+    padding: 0 calc(4.5cqw + 0.5rem);
+  }
+
+  .more-cue {
+    bottom: 3%;
+  }
+}
+
+/* A laptop or a tablet on its side gives the court 35 to 40rem of height, and
+   the opening pane is the one that should never need scrolling there, so its
+   list of facts closes up. */
+@container court (max-height: 42rem) {
+  .facts > * + * {
+    margin-top: 0.8rem;
+  }
+
+  .facts .prose {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+}
+
+/* On a phone the full-weight line is a fifth of the alley it marks. */
+@container court (max-width: 30rem) {
+  .court g {
+    stroke-width: 2.5;
+  }
 }
 
 .court-scroll::-webkit-scrollbar {
@@ -141,33 +256,110 @@ body {
 }
 
 /*
-  Court lines are heavy enough now to fight the copy where the two cross, so
-  text frosts what is behind it. `backdrop-filter` blurs the court, never the
-  glyphs, so the type stays perfectly sharp while the line behind it goes soft.
-
-  This belongs on the text elements themselves rather than their containers: a
-  container is as wide as its grid column, so frosting one leaves a blurred
-  rectangle reaching far past a short line of text. `inline-block` shrinks the
-  box to the words where the words are shorter than the column.
-
-  The shuttle canvas sits above this layer, so it stays crisp as it flies over.
+  The classes below sit in the components layer, so a utility on the same
+  element overrides them. Unlayered, they beat every utility regardless of
+  specificity: `hover:text-ink` never fired on a `.meta` link, and `text-[16px]`
+  never shrank a `.prose` paragraph.
 */
-.readable {
-  display: inline-block;
-  vertical-align: top;
-  max-width: 100%;
-  padding: 0.22rem 0.45rem;
-  margin: -0.22rem 0;
-  -webkit-backdrop-filter: blur(9px);
-  backdrop-filter: blur(9px);
-}
+@layer components {
+  /*
+    Court lines are heavy enough to fight the copy where the two cross, so the
+    line gives way: each piece of text carries a patch of bare mat, and a line
+    stops cleanly at its edge and picks up on the far side, the way a rule on a
+    drawing breaks around its label. (This used to be a backdrop blur, which
+    left the line as a grey smear behind the words, and read as a rendering
+    fault rather than a decision.)
 
-/* Blur is a lie on a flat ground when the viewer has asked for less of it. */
-@media (prefers-reduced-transparency: reduce) {
+    This belongs on the text elements themselves rather than their containers:
+    a container is as wide as its grid column, so patching one clears the court
+    far past a short line of text. `fit-content` shrinks the patch to the words
+    where they are shorter than the column, and `block` keeps two short ones
+    from sharing a line, which is how "2024" came to sit beside "ODDS-Thailand".
+
+    Stacked patches overlap by their own padding (the negative margin), so a
+    heading and the paragraph under it clear one unbroken piece of court. Space
+    them with padding-top, not margin-top: a margin opens a sliver between the
+    two patches, and a line crossing there shows through it as a stray dot.
+
+    The shuttle canvas sits above this layer, so it flies over all of it.
+  */
   .readable {
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+    padding: 0.22rem 0.5rem;
+    margin: -0.22rem 0;
     background: var(--mat);
+    /* In step with <body>, or the patches lag the mat when the court changes. */
+    transition: background-color 260ms ease;
+  }
+
+  /*
+    A block the shuttle has knocked out of place (Shuttle.jsx marks it) rides
+    over its neighbours, patch and all, so it is the moved block that stays
+    whole and readable wherever it comes to rest.
+  */
+  .knock[data-shoved] {
+    position: relative;
+    z-index: 1;
+  }
+
+  /*
+    Every link in running text. Coloured links are the single most copied
+    thing about the site this one used to resemble, so these carry an underline
+    and no colour at all; the underline darkens to full ink on hover.
+  */
+  .link {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--rule);
+    transition: text-decoration-color 160ms ease;
+  }
+
+  .link:hover {
+    text-decoration-color: var(--ink);
+  }
+
+  .prose {
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--body);
+    text-wrap: pretty;
+  }
+
+  .meta {
+    font-size: 0.8125rem;
+    letter-spacing: 0.01em;
+    color: var(--meta);
+  }
+
+  /*
+    The surface picker: each mat as a disc of its own colour, ringed in the
+    line white. The one in play is the same colour as the ground it sits on,
+    so it is told apart by a second ring rather than by its fill.
+  */
+  .swatch {
+    position: relative;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 9999px;
+    background: var(--swatch);
+    box-shadow: 0 0 0 1.5px var(--line);
+  }
+
+  /* A disc this small is a poor target, so the hit area runs past it. */
+  .swatch::after {
+    content: "";
+    position: absolute;
+    inset: -0.5rem;
+  }
+
+  .swatch[aria-pressed="true"] {
+    box-shadow:
+      0 0 0 1.5px var(--line),
+      0 0 0 4.5px var(--mat),
+      0 0 0 6px var(--line);
   }
 }
 
@@ -180,36 +372,6 @@ a:focus-visible,
 button:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 3px;
-}
-
-/*
-  Every link in running text. Coloured links are the single most copied thing
-  about the site this one used to resemble, so these carry an underline and no
-  colour at all; the underline darkens to full ink on hover.
-*/
-.link {
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-  text-decoration-color: var(--rule);
-  transition: text-decoration-color 160ms ease;
-}
-
-.link:hover {
-  text-decoration-color: var(--ink);
-}
-
-.prose {
-  font-size: 1.0625rem;
-  line-height: 1.6;
-  color: var(--body);
-  text-wrap: pretty;
-}
-
-.meta {
-  font-size: 0.8125rem;
-  letter-spacing: 0.01em;
-  color: var(--meta);
 }
 
 /* The scroll cue's arrow dips now and then, enough to read as "this moves"
